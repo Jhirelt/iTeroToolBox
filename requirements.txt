@@ -1,0 +1,6 @@
+pywebview==4.4.1
+pyinstaller>=6.0.0
+pywin32>=306
+psutil>=5.9.0
+openpyxl>=3.1.0
+selenium>=4.20.0
