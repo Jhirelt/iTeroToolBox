@@ -1152,6 +1152,39 @@ def test_type_text(delay_sec=2):
 
 
 # ─────────────────────────────────────────────
+# APP SETTINGS (general, non-feature-specific)
+# ─────────────────────────────────────────────
+
+_APP_CFG_PATH = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroToolBox", "app_config.json")
+
+
+def _load_app_cfg():
+    try:
+        if os.path.exists(_APP_CFG_PATH):
+            with open(_APP_CFG_PATH, encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+
+def get_debug_mode():
+    return ok({"debug_mode": bool(_load_app_cfg().get("debug_mode", False))})
+
+
+def set_debug_mode(enabled=False):
+    try:
+        cfg = _load_app_cfg()
+        cfg["debug_mode"] = bool(enabled)
+        os.makedirs(os.path.dirname(_APP_CFG_PATH), exist_ok=True)
+        with open(_APP_CFG_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg, f)
+        return ok(None, msg="Saved. Restart the app for this to take effect.")
+    except Exception as e:
+        return err(f"Could not save: {e}")
+
+
+# ─────────────────────────────────────────────
 # MAT (myaligntech.com) SCRAPER
 # ─────────────────────────────────────────────
 
@@ -1226,6 +1259,48 @@ def mat_set_enabled(enabled):
         return err(str(e))
 
 
+_edge_binary_cache = None
+
+
+def _find_edge_binary():
+    """Locate the real msedge.exe. msedgedriver's own guess assumes the
+    consumer install layout (Program Files\\Microsoft Edge\\Application\\
+    msedge.exe) -- enterprise-managed installs commonly put it one level
+    deeper instead (Program Files\\Microsoft\\Edge\\Application\\msedge.exe),
+    which makes that guess point at a file that doesn't exist and produces
+    a "DevToolsActivePort file doesn't exist" crash on every launch. The
+    registry's App Paths entry is authoritative regardless of layout."""
+    global _edge_binary_cache
+    if _edge_binary_cache is not None:
+        return _edge_binary_cache or None
+
+    path = None
+    try:
+        with winreg.OpenKey(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe",
+        ) as key:
+            reg_path, _ = winreg.QueryValueEx(key, None)
+            if reg_path and os.path.exists(reg_path):
+                path = reg_path
+    except Exception:
+        pass
+
+    if not path:
+        for candidate in (
+            r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+            r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+            r"C:\Program Files (x86)\Microsoft Edge\Application\msedge.exe",
+            r"C:\Program Files\Microsoft Edge\Application\msedge.exe",
+        ):
+            if os.path.exists(candidate):
+                path = candidate
+                break
+
+    _edge_binary_cache = path or ""
+    return path
+
+
 def mat_scrape(serial):
     global _mat_driver
     try:
@@ -1263,6 +1338,9 @@ def mat_scrape(serial):
         from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
 
         opts = Options()
+        edge_binary = _find_edge_binary()
+        if edge_binary:
+            opts.binary_location = edge_binary
         if not show:
             opts.add_argument("--headless=new")
         opts.add_argument("--no-sandbox")
@@ -1518,7 +1596,30 @@ def _sf_get_driver():
         pass
 
     os.makedirs(_SF_PROFILE_DIR, exist_ok=True)
+
+    # If a previous run of this profile was killed/crashed (very possible
+    # while we were debugging the --no-sandbox crash earlier), Chromium
+    # marks the profile as "exited abnormally" and wants to show a
+    # "Restore pages?" prompt on next launch. In headless mode that prompt
+    # can't render, so the browser just sits there as a blank, unresponsive
+    # window forever. Patch the profile's Preferences to say it exited
+    # cleanly so that prompt never triggers.
+    prefs_path = os.path.join(_SF_PROFILE_DIR, "Default", "Preferences")
+    try:
+        if os.path.exists(prefs_path):
+            with open(prefs_path, encoding="utf-8") as f:
+                prefs = json.load(f)
+            prefs.setdefault("profile", {})["exit_type"] = "Normal"
+            prefs["profile"]["exited_cleanly"] = True
+            with open(prefs_path, "w", encoding="utf-8") as f:
+                json.dump(prefs, f)
+    except Exception:
+        pass
+
     opts = Options()
+    edge_binary = _find_edge_binary()
+    if edge_binary:
+        opts.binary_location = edge_binary
     opts.add_argument(f"--user-data-dir={_SF_PROFILE_DIR}")
     opts.add_argument("--profile-directory=Default")
     if not show_browser:
@@ -1530,6 +1631,9 @@ def _sf_get_driver():
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
+    opts.add_argument("--no-first-run")
+    opts.add_argument("--disable-session-crashed-bubble")
+    opts.add_argument("--disable-infobars")
     opts.add_experimental_option("excludeSwitches", ["enable-logging"])
 
     _sf_driver = webdriver.Edge(options=opts)
@@ -1670,6 +1774,13 @@ def sf_open_ticket(ticket_number=""):
         return err(f"Error searching for the ticket: {e}")
 
 
+# Scanner S/N format: PREFIX(3) + YEAR(4, 2017-20xx) + LETTER + 2 DIGITS +
+# LETTER + 3 DIGITS, e.g. YUC2022W18A069 — mirrors SN_REGEX in
+# itero_toolbox_v1.html, used here to trim the Asset field down to "S/N
+# onward" (Case.Asset text includes an internal record prefix before it).
+_SN_REGEX = re.compile(r"(?:BLX|YUC|NZK|WOA|PLA)(?:20(?:1[7-9]|[2-9]\d))[A-Z]\d{2}[A-Z]\d{3}")
+
+
 _SF_DEEP_EXTRACT_JS = r"""
 function deepQueryAll(sel, root) {
     root = root || document;
@@ -1702,6 +1813,10 @@ function deepText(el) {
             return;
         }
         if (node.nodeType !== Node.ELEMENT_NODE) return;
+        // <br> carries no text node of its own, so without this the line
+        // it separates gets silently glued to the next one (e.g. an
+        // address's street line running straight into the city line).
+        if (node.tagName === 'BR') { text += '\n'; return; }
         if (node.shadowRoot) {
             var sc = node.shadowRoot.childNodes;
             for (var i = 0; i < sc.length; i++) walk(sc[i]);
@@ -1710,11 +1825,10 @@ function deepText(el) {
         for (var j = 0; j < kids.length; j++) walk(kids[j]);
     }
     walk(el);
-    return text.trim();
+    return text.replace(/[ \t]*\n[ \t]*/g, '\n').trim();
 }
 
-function findValueElement(targetName) {
-    var containers = deepQueryAll("[data-target-selection-name='" + targetName + "']");
+function findValueElementIn(containers) {
     for (var i = 0; i < containers.length; i++) {
         // Try inside the target container itself first.
         var valEls = deepQueryAll('.test-id__field-value', containers[i]);
@@ -1744,8 +1858,30 @@ function findValueElement(targetName) {
     return null;
 }
 
+function findValueElement(targetName) {
+    return findValueElementIn(deepQueryAll("[data-target-selection-name='" + targetName + "']"));
+}
+
+// Some fields (e.g. Order Comments) don't have a stable/known API name to
+// build a data-target-selection-name selector from, but every field's host
+// <records-record-layout-item> carries a field-label attribute holding the
+// exact label text shown on the page (confirmed live: field-label="Additional
+// Support" wraps the "Additional Support" field) -- so look it up by that
+// visible label instead of guessing the underlying API field name.
+function findValueElementByLabel(labelText) {
+    var hosts = deepQueryAll('records-record-layout-item[field-label]').filter(function(el) {
+        return (el.getAttribute('field-label') || '').trim().toLowerCase() === labelText.toLowerCase();
+    });
+    return findValueElementIn(hosts);
+}
+
 function fieldValue(targetName) {
     var el = findValueElement(targetName);
+    return el ? deepText(el) : '';
+}
+
+function fieldValueByLabel(labelText) {
+    var el = findValueElementByLabel(labelText);
     return el ? deepText(el) : '';
 }
 
@@ -1783,6 +1919,9 @@ return {
     address: addressValue("sfdc:RecordField.Account.ShippingAddress"),
     asset:   fieldValue("sfdc:RecordField.Case.AssetId"),
     subject: fieldValue("sfdc:RecordField.Case.Subject"),
+    order_comments: fieldValueByLabel("Order Comments"),
+    additional_support: fieldValueByLabel("Additional Support"),
+    return_type: fieldValueByLabel("Return Type"),
     debug_container_found: matContainers.length,
     debug_value_el_found: matValueEls.length,
     debug_raw_html: matAncestorHtml.slice(0, 4000)
@@ -1839,9 +1978,9 @@ def _sf_search_all_frames(driver, script, max_depth=5):
 def sf_read_ticket():
     """Read key fields off the currently-open Salesforce ticket (Case) page.
 
-    Being built field-by-field against exact HTML confirmed on the live
-    page (data-target-selection-name -> .test-id__field-value), instead of
-    guessing selectors. Only MAT ID is wired up so far."""
+    Built field-by-field against exact HTML confirmed on the live page
+    (data-target-selection-name -> .test-id__field-value, or field-label
+    for fields without a known API name), instead of guessing selectors."""
     global _sf_driver
     if _sf_driver is None:
         return err("No Salesforce window is open. Open a ticket first.")
@@ -1857,17 +1996,31 @@ def sf_read_ticket():
     except Exception as e:
         return err(f"Error reading ticket: {e}")
 
-    mat_id  = (data.get("mat_id") or "").strip()
-    address = (data.get("address") or "").strip()
-    asset   = (data.get("asset") or "").strip()
-    subject = (data.get("subject") or "").strip()
+    mat_id             = (data.get("mat_id") or "").strip()
+    address            = (data.get("address") or "").strip()
+    asset              = (data.get("asset") or "").strip()
+    subject            = (data.get("subject") or "").strip()
+    order_comments     = (data.get("order_comments") or "").strip()
+    additional_support = (data.get("additional_support") or "").strip()
+    return_type        = (data.get("return_type") or "").strip()
+
+    # Asset text carries an internal record prefix before the actual
+    # scanner S/N (e.g. "Preview223167-YUC2022W18A103-SCANNER") — drop
+    # everything before the S/N and keep the rest of the string as-is.
+    if asset:
+        sn_match = _SN_REGEX.search(asset.upper())
+        if sn_match:
+            asset = asset[sn_match.start():]
+
     result = {
-        "mat_id":         mat_id or "MAT ID not found.",
-        "address":        address or "No address found.",
-        "asset":          asset or "No asset found.",
-        "asset_source":   "asset" if asset else "",
-        "subject":        subject or "No subject found.",
-        "order_comments": "No order comments yet.",
+        "mat_id":             mat_id or "Empty",
+        "address":            address or "Empty",
+        "asset":              asset or "Empty",
+        "asset_source":       "asset" if asset else "",
+        "subject":            subject or "Empty",
+        "order_comments":     order_comments or "Empty",
+        "additional_support": additional_support or "Empty",
+        "return_type":        return_type or "Empty",
     }
 
     if not mat_id:
@@ -1885,9 +2038,37 @@ def sf_read_ticket():
         result["debug_url"] = cur_url
         result["debug_title"] = cur_title
         result["debug_handles"] = n_handles
+        _sf_close_if_headless()
         return ok(result, msg="MAT ID not found — see debug box.")
 
+    _sf_close_if_headless()
     return ok(result)
+
+
+def _sf_close_if_headless():
+    """Quit the Salesforce driver right after we've pulled what we need out
+    of it. The SSO session lives in the persisted profile on disk (not in
+    the running process), so this loses nothing — but leaving the process
+    running between checks is exactly what turned into the orphaned,
+    profile-locking msedge.exe instances that kept crashing every later
+    launch. Skipped when "Show browser" is on, since then the technician
+    is presumably looking at the window and closing it out from under them
+    would be surprising."""
+    global _sf_driver
+    show_browser = False
+    try:
+        if os.path.exists(_SF_CFG_PATH):
+            with open(_SF_CFG_PATH, encoding="utf-8") as f:
+                show_browser = bool(json.load(f).get("show_browser", False))
+    except Exception:
+        pass
+    if show_browser or _sf_driver is None:
+        return
+    try:
+        _sf_driver.quit()
+    except Exception:
+        pass
+    _sf_driver = None
 
 
 def sf_close_browser():

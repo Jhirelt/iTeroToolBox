@@ -177,7 +177,7 @@ html.size-large #sidebar-icons{zoom:1.3}
 .iinput::placeholder{color:var(--text3)}.iinput:focus{border-color:var(--blue)}
 .iinput.agent{width:140px}.iinput.ticket{width:148px}.iinput.serial{width:190px}
 #in-serial{width:190px}
-#in-reason,#in-reason-sub{
+#in-model,#in-reason,#in-reason-sub{
   -webkit-appearance:none;appearance:none;
   padding:5px 20px 5px 8px;
   text-overflow:ellipsis;white-space:nowrap;overflow:hidden;
@@ -381,12 +381,6 @@ html.size-large #sidebar-icons{zoom:1.3}
 /* Compact (≤820px): intake wraps, inputs tighten */
 @media (max-width: 820px) {
   .intake-bar { padding:5px 10px; row-gap:5px; }
-  .iinput.serial { width:120px !important; }
-  #in-serial { width:160px !important; }
-  #in-model { width:150px !important; }
-  #in-reason { width:130px !important; }
-  #in-reason-sub { width:140px !important; }
-  #fl-subject-override { width:150px !important; }
   .content { padding:14px; }
 }
 
@@ -407,12 +401,6 @@ html.size-large #sidebar-icons{zoom:1.3}
   .bgrid-2{ grid-template-columns: 1fr !important; }
   .port-grid { grid-template-columns: repeat(2,1fr) !important; }
   .intake-bar { padding:4px 8px; gap:5px; }
-  .iinput.serial { width:100px !important; }
-  #in-serial { width:100px !important; }
-  #in-model  { width:115px !important; }
-  #in-reason { width:105px !important; }
-  #in-reason-sub { width:115px !important; }
-  #fl-subject-override { width:110px !important; }
 }
 
 /* Tiny (≤400px): 2-col doc, strip intake further */
@@ -423,11 +411,6 @@ html.size-large #sidebar-icons{zoom:1.3}
   .content { padding:6px; }
   .titlebar { height:32px; }
   .intake-bar { padding:3px 6px; row-gap:4px; }
-  .iinput.serial { width:88px !important; }
-  #in-serial { width:88px !important; }
-  #in-model  { width:100px !important; }
-  #in-reason { width:90px !important; }
-  #in-reason-sub { width:95px !important; }
 }
 
 /* Micro (≤340px): minimal intake — hide separators, squeeze everything */
@@ -438,11 +421,6 @@ html.size-large #sidebar-icons{zoom:1.3}
   .intake-bar { padding:3px 5px; gap:4px; }
   .iinput.ticket { width:100px !important; }
   .iinput.agent  { width:90px !important; }
-  .iinput.serial { width:80px !important; }
-  #in-serial { width:80px !important; }
-  #in-model  { width:90px !important; }
-  #in-reason { width:80px !important; }
-  #in-reason-sub { width:85px !important; }
   .fl-doc-row1 { grid-template-columns: 1fr 1fr !important; }
   .hgrid  { grid-template-columns: 1fr 1fr !important; }
   .bgrid  { grid-template-columns: 1fr !important; }
@@ -561,6 +539,10 @@ html.size-large #sidebar-icons{zoom:1.3}
         <button class="settings-item" id="size-large-btn" onclick="setUiSize('large')">Large</button>
       </div>
       <div style="height:1px;background:var(--border);margin:4px 0"></div>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;font-size:12px;color:var(--text2)" title="Enables DevTools (F12 / right-click Inspect). Requires restart.">
+        <input type="checkbox" id="debug-mode-chk" onchange="saveDebugMode()"> Debug mode (restart required)
+      </label>
+      <div style="height:1px;background:var(--border);margin:4px 0"></div>
       <!-- ── Connections (MAT + Salesforce) ───────────────────── -->
       <button class="settings-item" onclick="event.stopPropagation();toggleSettingsSection('connections')" style="display:flex;align-items:center;justify-content:space-between">
         <span>Connections</span>
@@ -636,10 +618,11 @@ html.size-large #sidebar-icons{zoom:1.3}
 
 <!-- INTAKE BAR -->
 <div class="intake-bar" id="intake-bar">
-  <div id="sn-wrap" style="display:flex;flex-direction:row;gap:6px;align-items:center">
-    <div style="position:relative;flex-shrink:0">
+ <div style="display:grid;grid-template-columns:316px 155px 1px 155px;column-gap:10px;align-items:center;width:100%;box-sizing:border-box;min-width:0">
+  <div id="sn-wrap" style="display:flex;flex-direction:row;gap:6px;align-items:center;min-width:0;overflow:hidden">
+    <div style="position:relative;flex-shrink:0;width:155px;min-width:0">
       <input class="iinput serial" id="in-serial" placeholder="Scanner S/N" autocomplete="off"
-        style="padding-right:22px"
+        style="width:100%;min-width:0;box-sizing:border-box;padding-right:22px"
         oninput="parseSN(this.value);flSyncFromIntake();matReset()"
         onpaste="var _e=this;setTimeout(function(){parseSN(_e.value);flSyncFromIntake();matReset();},30)">
       <button id="in-serial-mat-arrow" onclick="matOpenPopup('in-serial-mat-arrow')" title="MAT info"
@@ -649,9 +632,10 @@ html.size-large #sidebar-icons{zoom:1.3}
     </div>
     <input class="iinput" id="in-wand-sn" placeholder="Wand S/N" autocomplete="off"
       title="Wand serial number — auto-filled from MAT"
-      style="width:130px;height:26px;padding:2px 8px;font-size:11px;font-family:var(--mono)">
+      style="width:155px;min-width:0;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px;font-family:var(--mono);flex-shrink:0">
   </div>
-  <select class="iinput" id="in-model" style="flex:1 1 180px;min-width:180px" onchange="toggleSnField(this.value);updateSF();highlightNKeys(this.value);updateWandModelBanner(this.value);syncWandTabFromModel(this.value);checkSlfddModelCompat();if(document.getElementById('panel-partscatalog').classList.contains('active'))loadCatalog();flSyncFromIntake()">
+  <div id="in-model-wrap" style="min-width:0;overflow:hidden">
+  <select class="iinput" id="in-model" style="width:100%;min-width:0;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onchange="toggleSnField(this.value);updateSF();highlightNKeys(this.value);updateWandModelBanner(this.value);syncWandTabFromModel(this.value);checkSlfddModelCompat();if(document.getElementById('panel-partscatalog').classList.contains('active'))loadCatalog();flSyncFromIntake()">
     <option value="">Model</option>
     <option value="Office PC">Office PC</option>
     <option value="Element 2">Element 2</option>
@@ -670,8 +654,10 @@ html.size-large #sidebar-icons{zoom:1.3}
     <option value="5D Plus Lite LC">5D Plus Lite LC</option>
     <option value="Lumina - Mobile (PLA)">Lumina - Mobile</option>
   </select>
+  </div>
   <div class="isep"></div>
-  <select class="iinput" id="in-reason" style="flex:1 1 148px;min-width:148px;font-size:12px" onchange="reasonChanged()">
+  <div id="in-reason-wrap" style="min-width:0;overflow:hidden">
+  <select class="iinput" id="in-reason" style="width:100%;min-width:0;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" onchange="reasonChanged()">
     <option value="">Reason</option>
     <option value="Account Management">Account Management</option>
     <option value="Software">Software</option>
@@ -683,15 +669,18 @@ html.size-large #sidebar-icons{zoom:1.3}
     <option value="Billing">Billing</option>
     <option value="Demo">Demo</option>
   </select>
-  <select class="iinput" id="in-reason-sub" style="display:none;flex:1 1 160px;min-width:160px;font-size:12px" onchange="flSyncFromIntake()">
+  </div>
+ </div>
+ <div id="intake-row2" style="display:grid;grid-template-columns:auto 1fr auto;column-gap:10px;align-items:center;width:100%;box-sizing:border-box;min-width:0;margin-top:8px">
+  <div id="in-reason-sub-wrap" style="display:none;width:210px;min-width:0;overflow:hidden">
+  <select class="iinput" id="in-reason-sub" style="width:100%;min-width:0;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" onchange="flSyncFromIntake()">
     <option value="">Specific issue...</option>
   </select>
-  <div class="isep"></div>
+  </div>
   <input class="iinput" id="fl-subject-override" placeholder="+ Subject text..." autocomplete="off"
-    style="flex:1 1 200px;min-width:200px;height:26px;padding:2px 8px;font-size:11px;font-family:var(--mono)"
+    style="width:100%;min-width:0;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px;font-family:var(--mono)"
     oninput="flBuildSubject()" title="Appended to auto-generated subject">
-  <div class="isep"></div>
-  <div id="conn-wrap" style="display:flex;align-items:center;gap:5px;flex-shrink:0;margin-left:auto">
+  <div id="conn-wrap" style="display:flex;align-items:center;gap:5px;min-width:0">
     <div id="check-btn-wrap" style="flex-shrink:0;position:relative">
       <button id="check-btn" onclick="checkTogglePopup(event)" title="Check (MAT + Salesforce)"
         style="height:26px;padding:0 10px;font-family:var(--mono);font-size:11px;font-weight:600;
@@ -700,6 +689,7 @@ html.size-large #sidebar-icons{zoom:1.3}
         <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/></svg>Check</button>
     </div>
   </div>
+ </div>
 </div>
 
 <!-- Check popup: MAT always runs, ticket # is optional (SF only runs if given) -->
@@ -774,9 +764,9 @@ html.size-large #sidebar-icons{zoom:1.3}
       <span class="mlbl">Company</span>
       <span id="mat-popup-company-name" class="mval" style="color:var(--text2)">—</span>
     </div>
-    <div class="mrow cp" onclick="matCopyField('company_address',this)">
+    <div class="mrow cp" onclick="matCopyField('company_address',this)" style="align-items:flex-start;height:auto;min-height:28px;padding-top:5px;padding-bottom:5px">
       <span class="mlbl">Address</span>
-      <span id="mat-popup-company-address" class="mval" style="color:var(--text2)">—</span>
+      <span id="mat-popup-company-address" class="mval" style="color:var(--text2);white-space:pre-line">—</span>
     </div>
   </div>
 
@@ -1780,7 +1770,10 @@ html.size-large #sidebar-icons{zoom:1.3}
 
 <!-- ══════════════ TICKET CHECKER ══════════════ -->
 <div class="panel" id="panel-ticketchecker">
-  <div class="sh-title">Ticket Checker</div>
+  <div class="sh" style="display:flex;align-items:center;justify-content:space-between">
+    <span class="sh-title">Ticket Checker</span>
+    <button class="btn-sm" onclick="tcClear()" style="font-size:11px;padding:3px 10px;color:var(--red);border-color:var(--red)">Clear</button>
+  </div>
   <div style="display:flex;gap:8px;max-width:320px;margin-bottom:10px">
     <input id="tc-ticket-input" class="iinput" placeholder="Ticket # (optional)" autocomplete="off"
       style="flex:1;height:30px;padding:4px 10px;font-size:12px;font-family:var(--mono)"
@@ -1795,9 +1788,9 @@ html.size-large #sidebar-icons{zoom:1.3}
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">MAT ID</span>
       <span id="tc-f-matid" style="font-size:11px;font-family:var(--mono)">—</span>
     </div>
-    <div style="display:flex;gap:8px;align-items:baseline">
+    <div style="display:flex;gap:8px;align-items:flex-start">
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Address</span>
-      <span id="tc-f-address" style="font-size:11px">—</span>
+      <span id="tc-f-address" style="font-size:11px;white-space:pre-line">—</span>
     </div>
     <div style="display:flex;gap:8px;align-items:baseline">
       <span id="tc-f-asset-label" style="font-size:10px;color:var(--text3);flex:0 0 100px">Asset</span>
@@ -1808,9 +1801,9 @@ html.size-large #sidebar-icons{zoom:1.3}
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Subject</span>
       <span id="tc-f-subject" style="font-size:11px">—</span>
     </div>
-    <div style="display:flex;gap:8px;align-items:baseline">
+    <div style="display:flex;gap:8px;align-items:flex-start">
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Order Comments</span>
-      <span id="tc-f-ordercomments" style="font-size:11px">—</span>
+      <span id="tc-f-ordercomments" style="font-size:11px;white-space:pre-line">—</span>
     </div>
     <div style="height:1px;background:var(--border);margin:2px 0"></div>
     <div id="tc-compare-matid-row" style="display:none;gap:8px;align-items:baseline">
@@ -1820,6 +1813,18 @@ html.size-large #sidebar-icons{zoom:1.3}
     <div id="tc-compare-address-row" style="display:none;gap:8px;align-items:baseline">
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Address Check</span>
       <span id="tc-compare-address-text" style="font-size:11px;font-family:var(--mono)">—</span>
+    </div>
+    <div id="tc-compare-asset-row" style="display:none;gap:8px;align-items:baseline">
+      <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Asset Check</span>
+      <span id="tc-compare-asset-text" style="font-size:11px;font-family:var(--mono)">—</span>
+    </div>
+    <div id="tc-compare-support-row" style="display:none;gap:8px;align-items:baseline">
+      <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Support Check</span>
+      <span id="tc-compare-support-text" style="font-size:11px;font-family:var(--mono)">—</span>
+    </div>
+    <div id="tc-compare-returntype-row" style="display:none;gap:8px;align-items:baseline">
+      <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Return Type Check</span>
+      <span id="tc-compare-returntype-text" style="font-size:11px;font-family:var(--mono)">—</span>
     </div>
     <div id="tc-compare-row" style="display:none;gap:8px;align-items:baseline">
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">S/N Check</span>
@@ -2923,7 +2928,7 @@ var SN_ALL_MODELS = [
 function toggleSnField(model) {
   var wrap = document.getElementById('sn-wrap');
   var isPC = model === 'Office PC';
-  if (wrap) wrap.style.display = isPC ? 'none' : '';
+  if (wrap) wrap.style.display = isPC ? 'none' : 'flex';
   if (isPC) {
     var snEl = document.getElementById('in-serial');
     if (snEl) { snEl.value = ''; snEl.style.borderColor = ''; }
@@ -3057,6 +3062,7 @@ window.addEventListener('DOMContentLoaded', function() {
   qaRender();
   matLoadSettings();
   sfLoadSettings();
+  loadDebugMode();
   snipRender();
   hkRenderList();
 
@@ -3252,8 +3258,28 @@ function matCopyField(field, rowEl) {
   });
 }
 
+// Wipes both the in-memory MAT result and every bit of UI it fed —
+// otherwise a failed/slow scrape after this point leaves the *previous*
+// scanner's popup fields on screen, which reads as "the new search didn't
+// come through" when really it's just stale leftovers never cleared.
 function matReset() {
-  if (_matData) { _matData = null; matSetBtnReady(false); }
+  _matData     = null;
+  _matScraping = false;
+  matSetBtnReady(false);
+  matSetLoading(false);
+  matUpdateStatus('', '');
+
+  var g = function(id) { return document.getElementById(id); };
+  ['mat-popup-scanner-sn', 'mat-popup-wand', 'mat-popup-reg', 'mat-popup-model',
+   'mat-popup-pkg', 'mat-popup-expiry', 'mat-popup-company-id',
+   'mat-popup-company-name', 'mat-popup-company-address'].forEach(function(id) {
+    var el = g(id);
+    if (el) el.textContent = '—';
+  });
+  var elStatus = g('mat-popup-status');
+  if (elStatus) { elStatus.textContent = '—'; elStatus.style.color = 'var(--text3)'; }
+  var elNotesR  = g('mat-popup-notes-row');     if (elNotesR)  elNotesR.style.display  = 'none';
+  var elCoBlock = g('mat-popup-company-block'); if (elCoBlock) elCoBlock.style.display = 'none';
 }
 
 function matSetBtnReady(ready) {
@@ -3438,6 +3464,19 @@ function sfSaveShowBrowser() {
   pyApi('sf_save_settings', !!(chkEl && chkEl.checked));
 }
 
+function loadDebugMode() {
+  pyApi('get_debug_mode').then(function(r) {
+    if (!r || r.status !== 'ok') return;
+    var chkEl = document.getElementById('debug-mode-chk');
+    if (chkEl) chkEl.checked = !!(r.data || {}).debug_mode;
+  });
+}
+
+function saveDebugMode() {
+  var chkEl = document.getElementById('debug-mode-chk');
+  pyApi('set_debug_mode', !!(chkEl && chkEl.checked));
+}
+
 function sfSetStatus(msg, color, targetId) {
   var el = document.getElementById(targetId || 'sf-status-line');
   if (!el) return;
@@ -3460,6 +3499,34 @@ function sfCloseBrowser() {
   });
 }
 
+// Resets only the Ticket Checker panel's own state (ticket inputs, status,
+// fields, comparisons, debug box) — doesn't touch MAT data, the intake bar,
+// or anything outside this panel.
+function tcClear() {
+  var g = function(id) { return document.getElementById(id); };
+  if (g('tc-ticket-input')) g('tc-ticket-input').value = '';
+  if (g('check-popup-ticket')) g('check-popup-ticket').value = '';
+
+  var status = g('tc-status');
+  if (status) { status.textContent = ''; status.style.display = 'none'; }
+
+  var debugBox = g('tc-debug');
+  if (debugBox) { debugBox.value = ''; debugBox.style.display = 'none'; }
+
+  ['tc-f-matid', 'tc-f-address', 'tc-f-asset', 'tc-f-subject', 'tc-f-ordercomments'].forEach(function(id) {
+    if (g(id)) g(id).textContent = '—';
+  });
+  if (g('tc-f-asset-label')) g('tc-f-asset-label').textContent = 'Asset';
+
+  var fields = g('tc-fields');
+  if (fields) fields.style.display = 'none';
+
+  ['tc-compare-row', 'tc-compare-matid-row', 'tc-compare-address-row', 'tc-compare-asset-row', 'tc-compare-support-row', 'tc-compare-returntype-row'].forEach(function(id) {
+    var row = g(id);
+    if (row) row.style.display = 'none';
+  });
+}
+
 function sfSetFieldsLoading() {
   var fields = document.getElementById('tc-fields');
   var g = function(id) { return document.getElementById(id); };
@@ -3467,7 +3534,7 @@ function sfSetFieldsLoading() {
     if (g(id)) g(id).textContent = 'Loading…';
   });
   if (g('tc-f-asset-label')) g('tc-f-asset-label').textContent = 'Asset';
-  ['tc-compare-row', 'tc-compare-matid-row', 'tc-compare-address-row'].forEach(function(id) {
+  ['tc-compare-row', 'tc-compare-matid-row', 'tc-compare-address-row', 'tc-compare-asset-row', 'tc-compare-support-row', 'tc-compare-returntype-row'].forEach(function(id) {
     var row = g(id);
     if (row) row.style.display = 'none';
   });
@@ -3476,13 +3543,19 @@ function sfSetFieldsLoading() {
 
 // Shared by the intake-bar Check popup and the sidebar Ticket Checker panel
 // — same underlying process either way, just two entry points into it.
-// MAT always runs against the current intake Scanner S/N; Salesforce only
-// runs if a ticket number was given. Whichever ticket-number input wasn't
-// used to trigger this stays in sync with the one that was.
+// Salesforce only runs if a ticket number was given. Whichever ticket-number
+// input wasn't used to trigger this stays in sync with the one that was.
+//
+// MAT needs a Scanner S/N to run against. If one's already sitting in the
+// intake bar, MAT runs in parallel with Salesforce like before. If not (the
+// user gave only a ticket number), Salesforce has to be read first so the
+// S/N can be pulled out of the ticket's Subject — MAT then runs against
+// that discovered S/N before the fields/comparisons are shown.
 function checkRun(inputId, statusId, btnId) {
-  var sn = ((document.getElementById('in-serial') || {}).value || '').trim();
-  if (!sn) { sfSetStatus('Enter the scanner S/N first.', 'var(--amber)', statusId); return; }
-  if (!SN_REGEX_FULL.test(sn)) { sfSetStatus('Invalid/incomplete Scanner S/N.', 'var(--amber)', statusId); return; }
+  var snEl       = document.getElementById('in-serial');
+  var sn         = ((snEl || {}).value || '').trim();
+  var snProvided = !!sn;
+  if (snProvided && !SN_REGEX_FULL.test(sn)) { sfSetStatus('Invalid/incomplete Scanner S/N.', 'var(--amber)', statusId); return; }
 
   var input  = document.getElementById(inputId);
   var ticket = ((input || {}).value || '').trim();
@@ -3491,10 +3564,15 @@ function checkRun(inputId, statusId, btnId) {
     if (el && el !== input) el.value = ticket;
   });
 
-  var matPromise = _matEnabled ? matScrape(sn) : Promise.resolve(null);
+  if (!snProvided && !ticket) {
+    sfSetStatus('Enter a Scanner S/N or a ticket number.', 'var(--amber)', statusId);
+    return;
+  }
 
   var btn = document.getElementById(btnId);
   if (!ticket) {
+    // MAT-only path — S/N given, no ticket number.
+    if (_matEnabled) matScrape(sn);
     var fields = document.getElementById('tc-fields');
     if (fields) fields.style.display = 'none';
     var row = document.getElementById('tc-compare-row');
@@ -3505,7 +3583,12 @@ function checkRun(inputId, statusId, btnId) {
 
   sfSetFieldsLoading();
   if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
-  sfSetStatus('Running MAT + Salesforce…', 'var(--text3)', statusId);
+
+  // A Scanner S/N already known lets MAT run in parallel with Salesforce;
+  // otherwise it has to wait until the Subject gives us one.
+  var matPromise = snProvided && _matEnabled ? matScrape(sn) : null;
+
+  sfSetStatus(snProvided ? 'Running MAT + Salesforce…' : 'Running Salesforce…', 'var(--text3)', statusId);
   pyApiLong('sf_open_ticket', ticket).then(function(r) {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
     var st = r && r.data && r.data.status_text;
@@ -3513,11 +3596,15 @@ function checkRun(inputId, statusId, btnId) {
               : st === 'login_required' ? 'var(--amber)'
               : (r && r.status === 'ok') ? 'var(--text3)' : 'var(--red)';
     sfSetStatus((r && r.msg) || '', color, statusId);
-    if (st === 'opened') {
+    if (st !== 'opened') return;
+
+    if (matPromise) {
       // Wait for MAT to finish too before reading + comparing — otherwise
       // the S/N cross-check races against a still-in-flight MAT scrape and
       // reads _matData before it's populated, always showing a mismatch.
       matPromise.then(function() { sfReadTicketFields(statusId); });
+    } else {
+      sfDiscoverSnThenReadFields(statusId);
     }
   }).catch(function() {
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
@@ -3528,40 +3615,77 @@ function checkRun(inputId, statusId, btnId) {
 function sfReadTicketFields(statusId) {
   pyApiLong('sf_read_ticket').then(function(r) {
     if (!r || r.status !== 'ok') return;
-    var d = r.data || {};
-    var fields = document.getElementById('tc-fields');
-    var g = function(id) { return document.getElementById(id); };
-    if (g('tc-f-matid'))    g('tc-f-matid').textContent = d.mat_id || '—';
-    if (g('tc-f-address'))  g('tc-f-address').textContent = d.address || '—';
-    if (g('tc-f-asset'))    g('tc-f-asset').textContent = d.asset || '—';
-    if (g('tc-f-asset-label')) g('tc-f-asset-label').textContent = d.asset_source === 'serial' ? 'Serial (no Asset)' : 'Asset';
-    if (g('tc-f-subject'))  g('tc-f-subject').textContent = d.subject || '—';
-    if (g('tc-f-ordercomments')) g('tc-f-ordercomments').textContent = d.order_comments || '—';
-    if (fields) fields.style.display = 'flex';
-    checkCompareSN(d);
-    checkCompareMatId(d);
-    checkCompareAddress(d);
-    var debugBox = g('tc-debug');
-    if (d.debug_container_found !== undefined) {
-      sfSetStatus('MAT ID not found — debug info below (select all + copy):', 'var(--red)', statusId);
-      if (debugBox) {
-        debugBox.value =
-          'url: '            + (d.debug_url || '') + '\n' +
-          'title: '          + (d.debug_title || '') + '\n' +
-          'handles: '        + d.debug_handles + '\n' +
-          'frames_visited: ' + d.debug_frames_visited + '\n' +
-          'container_found: ' + d.debug_container_found + '\n' +
-          'value_el_found: '  + d.debug_value_el_found + '\n' +
-          'raw_html:\n' + (d.debug_raw_html || '');
-        debugBox.style.display = 'block';
-        debugBox.focus();
-        debugBox.select();
-      }
-      console.log('sf_read_ticket debug:', d);
-    } else if (debugBox) {
-      debugBox.style.display = 'none';
-    }
+    sfPopulateFieldsAndCompare(r.data || {}, statusId);
   });
+}
+
+// No Scanner S/N was given up front — read the ticket once to get the
+// Subject, pull the S/N out of it (same SN_REGEX every other S/N field on
+// the page is matched against), mirror it into the intake bar, and only
+// then run MAT against it before showing fields/comparisons.
+function sfDiscoverSnThenReadFields(statusId) {
+  pyApiLong('sf_read_ticket').then(function(r) {
+    if (!r || r.status !== 'ok') return;
+    var d = r.data || {};
+    var subjectM = (d.subject || '').toUpperCase().match(SN_REGEX);
+    var foundSn  = subjectM ? subjectM[0] : '';
+
+    if (foundSn) {
+      var snEl = document.getElementById('in-serial');
+      if (snEl) snEl.value = foundSn;
+    }
+
+    if (!foundSn || !_matEnabled) {
+      if (!foundSn) {
+        sfSetStatus('No Scanner S/N found in the ticket Subject — enter one manually to cross-check against MAT.', 'var(--amber)', statusId);
+      }
+      sfPopulateFieldsAndCompare(d, statusId);
+      return;
+    }
+
+    sfSetStatus('Scanner S/N found in Subject (' + foundSn + ') — running MAT…', 'var(--text3)', statusId);
+    matScrape(foundSn).then(function() {
+      sfPopulateFieldsAndCompare(d, statusId);
+    });
+  });
+}
+
+function sfPopulateFieldsAndCompare(d, statusId) {
+  var fields = document.getElementById('tc-fields');
+  var g = function(id) { return document.getElementById(id); };
+  if (g('tc-f-matid'))    g('tc-f-matid').textContent = d.mat_id || '—';
+  if (g('tc-f-address'))  g('tc-f-address').textContent = d.address || '—';
+  if (g('tc-f-asset'))    g('tc-f-asset').textContent = d.asset || '—';
+  if (g('tc-f-asset-label')) g('tc-f-asset-label').textContent = d.asset_source === 'serial' ? 'Serial (no Asset)' : 'Asset';
+  if (g('tc-f-subject'))  g('tc-f-subject').textContent = d.subject || '—';
+  if (g('tc-f-ordercomments')) g('tc-f-ordercomments').textContent = d.order_comments || '—';
+  if (fields) fields.style.display = 'flex';
+  checkCompareSN(d);
+  checkCompareMatId(d);
+  checkCompareAddress(d);
+  checkCompareAsset(d);
+  checkCompareSupport(d);
+  checkCompareReturnType(d);
+  var debugBox = g('tc-debug');
+  if (d.debug_container_found !== undefined) {
+    sfSetStatus('MAT ID not found — debug info below (select all + copy):', 'var(--red)', statusId);
+    if (debugBox) {
+      debugBox.value =
+        'url: '            + (d.debug_url || '') + '\n' +
+        'title: '          + (d.debug_title || '') + '\n' +
+        'handles: '        + d.debug_handles + '\n' +
+        'frames_visited: ' + d.debug_frames_visited + '\n' +
+        'container_found: ' + d.debug_container_found + '\n' +
+        'value_el_found: '  + d.debug_value_el_found + '\n' +
+        'raw_html:\n' + (d.debug_raw_html || '');
+      debugBox.style.display = 'block';
+      debugBox.focus();
+      debugBox.select();
+    }
+    console.log('sf_read_ticket debug:', d);
+  } else if (debugBox) {
+    debugBox.style.display = 'none';
+  }
 }
 
 // Cross-checks the Scanner S/N across its four sources: the intake bar
@@ -3677,10 +3801,45 @@ function _extractPostalCode(addr) {
   return '';
 }
 
+// Country names/abbreviations vary the same way states do (MAT/SF may say
+// "US", "USA", "U.S.A." or spell out "United States") — normalize to a
+// short code so that difference alone never drives a mismatch.
+var _COUNTRY_ABBR = {
+  'UNITED STATES OF AMERICA': 'US', 'UNITED STATES': 'US', USA: 'US', 'U S A': 'US',
+  AMERICA: 'US', CANADA: 'CA', MEXICO: 'MX'
+};
+var _COUNTRY_NAMES_BY_LENGTH = Object.keys(_COUNTRY_ABBR).sort(function(a, b) { return b.length - a.length; });
+
+function _extractCountry(addr) {
+  var up = (addr || '').toUpperCase().replace(/[.,]/g, ' ');
+  for (var i = 0; i < _COUNTRY_NAMES_BY_LENGTH.length; i++) {
+    var name = _COUNTRY_NAMES_BY_LENGTH[i];
+    var re = new RegExp('\\b' + name.replace(/ /g, '\\s+') + '\\b');
+    if (re.test(up)) return _COUNTRY_ABBR[name];
+  }
+  var tokens = up.split(/[^A-Z]+/);
+  // Bare "CA" is ambiguous with the California state abbreviation, so it's
+  // deliberately not treated as a country token here — only the full
+  // "Canada" (matched above) counts.
+  if (tokens.indexOf('US') !== -1) return 'US';
+  return '';
+}
+
+// Street lines rarely match character-for-character once you account for
+// abbreviations ("St" vs "Street"), suite/apt numbers, or extra spacing —
+// but the first few characters (house number + start of the street name)
+// are the part most likely to survive verbatim across both systems.
+function _normalizeAddressPrefix(addr, len) {
+  len = len || 6;
+  var cleaned = (addr || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return cleaned.slice(0, len);
+}
+
 // Addresses rarely match character-for-character (MAT abbreviates states,
 // Salesforce spells them out; street suffixes, spacing and field order all
-// vary), so this compares on the two most reliable, format-independent
-// anchors instead of the raw strings: postal/ZIP code and state/province.
+// vary), so this compares on reliable, format-independent anchors instead
+// of the raw strings: the first 6 chars of the street (house number +
+// start of name), state/province, ZIP/postal code, and country.
 function checkCompareAddress(sfData) {
   var row  = document.getElementById('tc-compare-address-row');
   var text = document.getElementById('tc-compare-address-text');
@@ -3698,22 +3857,153 @@ function checkCompareAddress(sfData) {
     return;
   }
 
-  var matZip   = _extractPostalCode(matAddr), sfZip   = _extractPostalCode(sfAddr);
-  var matState = _extractStateAbbr(matAddr),  sfState = _extractStateAbbr(sfAddr);
-  var zipMatch   = !!(matZip && sfZip && matZip === sfZip);
-  var stateMatch = !!(matState && sfState && matState === sfState);
+  var matZip     = _extractPostalCode(matAddr),     sfZip     = _extractPostalCode(sfAddr);
+  var matState   = _extractStateAbbr(matAddr),      sfState   = _extractStateAbbr(sfAddr);
+  var matCountry = _extractCountry(matAddr),        sfCountry = _extractCountry(sfAddr);
+  var matPrefix  = _normalizeAddressPrefix(matAddr), sfPrefix  = _normalizeAddressPrefix(sfAddr);
 
-  if (zipMatch && stateMatch) {
-    text.textContent = 'Match (' + matState + ' ' + matZip + ')';
+  var zipMatch     = !!(matZip && sfZip && matZip === sfZip);
+  var stateMatch   = !!(matState && sfState && matState === sfState);
+  var prefixMatch  = !!(matPrefix && sfPrefix && matPrefix === sfPrefix);
+  // Missing country on either side shouldn't block a match — only a real
+  // US vs. non-US disagreement should.
+  var countryMatch = !matCountry || !sfCountry || matCountry === sfCountry;
+  var stateKnown   = !!(matState && sfState);
+
+  if ((zipMatch || prefixMatch) && (stateMatch || !stateKnown) && countryMatch) {
+    var label = matState ? (matState + (matZip ? ' ' + matZip : '')) : (matZip || '');
+    text.textContent = 'Match' + (label ? ' (' + label + ')' : '');
     text.style.color = 'var(--green)';
-  } else if (zipMatch && (!matState || !sfState)) {
-    text.textContent = 'Likely match — ZIP/postal ' + matZip + ' agrees.';
+  } else if (!countryMatch) {
+    text.textContent = 'Mismatch — country differs (MAT: ' + (matCountry || '?') + ' | SF: ' + (sfCountry || '?') + ')';
+    text.style.color = 'var(--red)';
+  } else if (stateKnown && !stateMatch) {
+    text.textContent = 'Mismatch — state differs (MAT: ' + matState + ' | SF: ' + sfState + ')';
+    text.style.color = 'var(--red)';
+  } else if (zipMatch || prefixMatch) {
+    text.textContent = 'Likely match — ' + (zipMatch ? 'ZIP/postal ' + matZip : 'street') + ' agrees.';
     text.style.color = 'var(--green)';
-  } else if (zipMatch) {
-    text.textContent = 'ZIP/postal agrees (' + matZip + ') but state differs — MAT: ' + matState + ' | SF: ' + sfState;
-    text.style.color = 'var(--amber)';
   } else {
     text.textContent = 'Mismatch — MAT: ' + matAddr + ' | SF: ' + sfAddr;
+    text.style.color = 'var(--red)';
+  }
+}
+
+// Shared by every PPC/Wand-Replacement-only check below, so the "does this
+// ticket even call for this check" test lives in exactly one place.
+function _isPpcReplacement(subject)  { return /PPC\s*Replacement/i.test(subject || ''); }
+function _isWandReplacement(subject) { return /Wand\s*Replacement/i.test(subject || ''); }
+
+// Two independent paths through the same "Asset Check" row, picked by what
+// the Subject says is being replaced:
+//  - PPC Replacement  → Asset must be the BASEUNIT record (has a real
+//    scanner S/N like YUC2022W18A103), not the SCANNER one.
+//  - Wand Replacement → the wand has no scanner S/N of its own; Asset is
+//    just a numeric pair like "223167-8842WAND" — everything left of the
+//    "-" is ignored, and the digits to its right must match MAT's Wand S/N.
+// Neither path applies (row stays hidden) unless the Subject actually says
+// so, so this stays out of the way on every other ticket type.
+function checkCompareAsset(sfData) {
+  var row  = document.getElementById('tc-compare-asset-row');
+  var text = document.getElementById('tc-compare-asset-text');
+  if (!row || !text) return;
+
+  var subject           = sfData.subject || '';
+  var isPpcReplacement  = _isPpcReplacement(subject);
+  var isWandReplacement = _isWandReplacement(subject);
+
+  if (!isPpcReplacement && !isWandReplacement) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+
+  var asset = (sfData.asset || '').toUpperCase();
+
+  if (isPpcReplacement) {
+    var m = asset.match(SN_REGEX);
+    if (!m) {
+      text.textContent = 'PPC Replacement — no valid S/N found in Asset (' + (sfData.asset || 'Empty') + ').';
+      text.style.color = 'var(--red)';
+      return;
+    }
+    var rest = asset.slice(m.index + m[0].length);
+    if (/^-BASEUNIT\b/.test(rest)) {
+      text.textContent = 'Match: ' + m[0] + '-BASEUNIT';
+      text.style.color = 'var(--green)';
+    } else if (/^-SCANNER\b/.test(rest)) {
+      text.textContent = 'Mismatch — PPC Replacement needs BASEUNIT, Asset is ' + m[0] + '-SCANNER.';
+      text.style.color = 'var(--red)';
+    } else {
+      text.textContent = 'Mismatch — PPC Replacement needs BASEUNIT, Asset: ' + (sfData.asset || 'Empty');
+      text.style.color = 'var(--red)';
+    }
+    return;
+  }
+
+  // Wand Replacement path — the "-" is the reference point: ignore
+  // whatever's to its left (an internal record number), the digits to its
+  // right are the Wand S/N to match against MAT's Wand S/N.
+  var dashIdx = asset.indexOf('-');
+  if (dashIdx === -1) {
+    text.textContent = 'Wand Replacement — no "-" found in Asset to read the Wand S/N from (' + (sfData.asset || 'Empty') + ').';
+    text.style.color = 'var(--red)';
+    return;
+  }
+  var rightPart = asset.slice(dashIdx + 1);
+  var numMatch = rightPart.match(/\d+/);
+  var assetWandNum = numMatch ? numMatch[0] : '';
+  var matWandNum = ((_matData && _matData.wand_sn) || '').replace(/\D/g, '');
+
+  if (!assetWandNum || !matWandNum) {
+    text.textContent = 'Missing Wand S/N on the ' + (!assetWandNum ? 'Asset' : 'MAT') + ' side.';
+    text.style.color = 'var(--amber)';
+    return;
+  }
+  if (assetWandNum === matWandNum) {
+    text.textContent = 'Match: ' + assetWandNum + ' (Wand)';
+    text.style.color = 'var(--green)';
+  } else {
+    text.textContent = 'Mismatch — Wand Replacement, Asset: ' + assetWandNum + ' | MAT Wand: ' + matWandNum;
+    text.style.color = 'var(--red)';
+  }
+}
+
+// On a PPC or Wand Replacement ticket, "Additional Support" must be "Parts
+// Needed" — hidden on every other ticket type.
+function checkCompareSupport(sfData) {
+  var row  = document.getElementById('tc-compare-support-row');
+  var text = document.getElementById('tc-compare-support-text');
+  if (!row || !text) return;
+
+  var subject = sfData.subject || '';
+  if (!_isPpcReplacement(subject) && !_isWandReplacement(subject)) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+
+  var val = (sfData.additional_support || '').trim();
+  if (/^Parts\s*Needed$/i.test(val)) {
+    text.textContent = 'Match: Parts Needed';
+    text.style.color = 'var(--green)';
+  } else {
+    text.textContent = 'Mismatch — expected "Parts Needed", Additional Support: ' + (val || 'Empty');
+    text.style.color = 'var(--red)';
+  }
+}
+
+// On a PPC or Wand Replacement ticket, "Return Type" must be "RMA" —
+// hidden on every other ticket type.
+function checkCompareReturnType(sfData) {
+  var row  = document.getElementById('tc-compare-returntype-row');
+  var text = document.getElementById('tc-compare-returntype-text');
+  if (!row || !text) return;
+
+  var subject = sfData.subject || '';
+  if (!_isPpcReplacement(subject) && !_isWandReplacement(subject)) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+
+  var val = (sfData.return_type || '').trim();
+  if (/^RMA$/i.test(val)) {
+    text.textContent = 'Match: RMA';
+    text.style.color = 'var(--green)';
+  } else {
+    text.textContent = 'Mismatch — expected "RMA", Return Type: ' + (val || 'Empty');
     text.style.color = 'var(--red)';
   }
 }
@@ -4247,7 +4537,7 @@ function saveSessionHistory(){
 }
 
 function resetDocFields(){
-  var ids=['fl-caller-name','fl-caller-phone','fl-caller-email','fl-mat-id','fl-tvid','fl-tvpass','fl-issue-desc','fl-actions-extra','fl-subject-override','fl-agent-notes'];
+  var ids=['fl-caller-name','fl-caller-phone','fl-caller-email','fl-mat-id','fl-tvid','fl-tvpass','fl-issue-desc','fl-actions-extra','fl-subject-override'];
   ids.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
   var selects=['fl-outcome'];
   selects.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';})
@@ -4266,9 +4556,10 @@ function resetDocFields(){
   var desc=document.getElementById('fl-out-desc');if(desc){desc.textContent='—';desc.style.display='none';}
   var caret=document.getElementById('fl-desc-caret');if(caret)caret.textContent='▶';
   // also reset intake bar fields (keep agent, clear case/serial/model/reason)
-  var iids=['in-serial','in-reason'];
+  var iids=['in-serial','in-reason','in-wand-sn'];
   iids.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
   var ms=document.getElementById('in-model');if(ms)ms.value='';
+  matReset();
   _wandDone=false;
   var wp=document.getElementById('wand-flow-panel');if(wp)wp.style.display='none';
   reasonChanged(); // rebuilds/hides the sub-issue select, resets KB selection, calls flSyncFromIntake
@@ -6347,7 +6638,8 @@ function reasonChanged() {
       subSel.appendChild(o);
     });
     subSel.value = '';
-    subSel.style.display = subs.length ? '' : 'none';
+    var subWrap = document.getElementById('in-reason-sub-wrap');
+    if (subWrap) subWrap.style.display = subs.length ? '' : 'none';
   }
   _flSelectedKb = null;
   flSyncFromIntake();
@@ -6710,12 +7002,13 @@ var SNIP_BUILT_IN = [
   { id:'n4', cat:'networking', risk:'safe',    label:'WiFi networks nearby',     cmd:'netsh wlan show networks' },
   { id:'n5', cat:'networking', risk:'safe',    label:'Flush DNS',                cmd:'ipconfig /flushdns' },
   { id:'n6', cat:'networking', risk:'caution', label:'Disable IPv6',             cmd:'netsh int ipv6 set state disabled' },
+  { id:'n7', cat:'networking', risk:'caution', label:'WLAN report (auto-opens)', cmd:'powershell Start-Process cmd -Verb runAs -ArgumentList \'/k \\"netsh wlan show wlanreport & timeout /t 2 & explorer /select,C:\\ProgramData\\Microsoft\\Windows\\WlanReport\\wlan-report-latest.html\\"\'' },
   // Event Viewer
   { id:'e1', cat:'eventviewer', risk:'safe',   label:'Event 41 — Kernel-Power (unexpected shutdown)', cmd:'wevtutil qe System /q:"*[System[Provider[@Name=\'Microsoft-Windows-Kernel-Power\'] and (EventID=41)]]" /f:text /c:20 > "%temp%\\k41.txt" & (for %A in ("%temp%\\k41.txt") do if %~zA==0 (echo No events found) else (type "%temp%\\k41.txt")) & del "%temp%\\k41.txt"' },
   { id:'e2', cat:'eventviewer', risk:'safe',   label:'Event 12 — OS Boot (Kernel-General)',           cmd:'wevtutil qe System /q:"*[System[Provider[@Name=\'Microsoft-Windows-Kernel-General\'] and (EventID=12)]]" /f:text /c:20 > "%temp%\\k12.txt" & (for %A in ("%temp%\\k12.txt") do if %~zA==0 (echo No events found) else (type "%temp%\\k12.txt")) & del "%temp%\\k12.txt"' },
   { id:'e3', cat:'eventviewer', risk:'safe',   label:'Event 105 — Power Transition (AC/battery)',    cmd:'wevtutil qe System /q:"*[System[Provider[@Name=\'Microsoft-Windows-Kernel-Power\'] and (EventID=105)]]" /f:text /c:20 > "%temp%\\k105.txt" & (for %A in ("%temp%\\k105.txt") do if %~zA==0 (echo No events found) else (type "%temp%\\k105.txt")) & del "%temp%\\k105.txt"' },
   // Battery
-  { id:'b1', cat:'battery', risk:'safe',       label:'Battery report (14 days)', cmd:'powercfg /batteryreport /duration 14 /output "C:\\Users\\iTero\\Documents\\battery-report.html"' },
+  { id:'b1', cat:'battery', risk:'safe',       label:'Battery report (auto-opens)', cmd:'schtasks /create /tn "TempCmd" /tr "cmd.exe /k powercfg /batteryreport /output C:\\Users\\iTero\\Downloads\\battery-report.html & timeout /t 2 & explorer /select,C:\\Users\\iTero\\Downloads\\battery-report.html" /sc once /st 00:00 /ru iTero /it /f & schtasks /run /tn "TempCmd" & schtasks /delete /tn "TempCmd" /f' },
   { id:'b2', cat:'battery', risk:'safe',       label:'Power efficiency report',  cmd:'powercfg /energy /output "C:\\Users\\iTero\\Documents\\energy-report.html"' },
   // Registry
   { id:'r1', cat:'registry', risk:'safe',      label:'Query Cadent registry',    cmd:'reg query "HKLM\\SOFTWARE\\Cadent" /s' },
@@ -6788,7 +7081,7 @@ function snipRender() {
       + '<span class="snip-code" title="'+cmdTitle+'">'+s.label+'</span>'
       + '<span class="snip-tag" style="'+risk+';flex-shrink:0;font-size:10px;padding:1px 6px;border-radius:3px;border:1px solid">'+s.risk+'</span>'
       + '<button class="btn-sm p" onclick="snipRun(\''+s.id+'\')">Run</button>'
-      + '<button class="btn-sm" onclick="snipCopy(\''+s.id+'\')">Copy</button>'
+      + '<button class="btn-sm" onclick="snipCopy(\''+s.id+'\', this)">Copy</button>'
       + (s.cat === 'custom' ? '<button class="btn-sm r" onclick="snipDeleteCustom(\''+s.id+'\')">Del</button>' : '')
       + '</div>';
   }
@@ -6833,10 +7126,21 @@ function snipRun(id) {
   if (s) runCmd(s.cmd, 'Snippet: '+s.label);
 }
 
-function snipCopy(id) {
+function snipCopy(id, btnEl) {
   var all = SNIP_BUILT_IN.concat(snipGetCustom().map(function(c,i){ return {id:'c'+i, cmd:c.cmd, label:c.label}; }));
   var s = all.filter(function(x){ return x.id === id; })[0];
-  if (s) copyText(s.cmd);
+  if (!s) return;
+  copyText(s.cmd);
+  if (!btnEl) return;
+  var prevText = btnEl.textContent, prevColor = btnEl.style.color, prevBorder = btnEl.style.borderColor;
+  btnEl.textContent = '✓ Copied';
+  btnEl.style.color = 'var(--green)';
+  btnEl.style.borderColor = 'var(--green)';
+  setTimeout(function() {
+    btnEl.textContent = prevText;
+    btnEl.style.color = prevColor;
+    btnEl.style.borderColor = prevBorder;
+  }, 1200);
 }
 
 function snipDeleteCustom(id) {

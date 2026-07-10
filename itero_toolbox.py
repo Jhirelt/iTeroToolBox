@@ -224,6 +224,12 @@ class ToolboxAPI:
     def sf_save_settings(self, show_browser=False):
         return backend.sf_save_settings(show_browser)
 
+    def get_debug_mode(self):
+        return backend.get_debug_mode()
+
+    def set_debug_mode(self, enabled=False):
+        return backend.set_debug_mode(enabled)
+
     # ── KB data (Subject Constructor) ───────
     def get_kb_data(self):
         return backend.get_kb_data()
@@ -407,6 +413,8 @@ def main():
     global _window
     api = ToolboxAPI()
 
+    debug_mode = json.loads(backend.get_debug_mode()).get("data", {}).get("debug_mode", False)
+
     backend.start_hotkey_listener()
 
     _window = webview.create_window(
@@ -424,7 +432,7 @@ def main():
     webview.start(
         func=_strip_caption,
         gui="edgechromium",
-        debug=False,
+        debug=debug_mode,
         private_mode=False,
         storage_path=os.path.join(os.environ.get("TEMP", "C:\\Temp"), "itero_toolbox_cache"),
     )
