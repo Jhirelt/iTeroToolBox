@@ -1190,8 +1190,9 @@ def set_debug_mode(enabled=False):
 
 import base64
 
-_MAT_CFG_PATH = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroToolBox", "mat_config.json")
-_mat_driver = None  # kept alive while browser is open in visible mode
+_MAT_CFG_PATH     = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroToolBox", "mat_config.json")
+_MAT_PROFILE_DIR  = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroToolBox", "mat_profile")
+_mat_driver = None  # kept alive between calls — same window/session reused
 
 _SCANNER_TAB_ID  = "ui-id-5"
 _SCANNER_SN_ID   = "ctl00_body_tabsContainer_scannerTab_txtScanner"
@@ -1301,6 +1302,86 @@ def _find_edge_binary():
     return path
 
 
+_MAT_LOGIN_URL = "https://myaligntech.com/login.aspx?auth=false&ReturnUrl=%2f"
+
+
+def _mat_prep_profile():
+    """Same 'exited abnormally' patch as the SF profile — stops headless
+    Chromium from wedging on an unshowable 'Restore pages?' prompt."""
+    prefs_path = os.path.join(_MAT_PROFILE_DIR, "Default", "Preferences")
+    try:
+        if os.path.exists(prefs_path):
+            with open(prefs_path, encoding="utf-8") as f:
+                prefs = json.load(f)
+            prefs.setdefault("profile", {})["exit_type"] = "Normal"
+            prefs["profile"]["exited_cleanly"] = True
+            with open(prefs_path, "w", encoding="utf-8") as f:
+                json.dump(prefs, f)
+    except Exception:
+        pass
+
+
+def _mat_launch_driver(show):
+    from selenium import webdriver
+    from selenium.webdriver.edge.options import Options
+
+    os.makedirs(_MAT_PROFILE_DIR, exist_ok=True)
+    _mat_prep_profile()
+
+    opts = Options()
+    edge_binary = _find_edge_binary()
+    if edge_binary:
+        opts.binary_location = edge_binary
+    opts.add_argument(f"--user-data-dir={_MAT_PROFILE_DIR}")
+    opts.add_argument("--profile-directory=Default")
+    if not show:
+        opts.add_argument("--headless=new")
+    opts.add_argument("--no-sandbox")
+    opts.add_argument("--disable-dev-shm-usage")
+    opts.add_argument("--disable-gpu")
+    opts.add_argument("--no-first-run")
+    opts.add_argument("--disable-session-crashed-bubble")
+    opts.add_argument("--disable-infobars")
+    opts.add_experimental_option("excludeSwitches", ["enable-logging"])
+    return webdriver.Edge(options=opts)
+
+
+def _mat_get_driver(show):
+    """Reuse the persistent MAT driver across calls — same profile dir as
+    always, so a manually-completed SSO login survives past this one call
+    instead of being thrown away before its cookie is on disk."""
+    global _mat_driver
+    if _mat_driver is not None:
+        try:
+            _ = _mat_driver.window_handles  # liveness check
+            return _mat_driver
+        except Exception:
+            _mat_driver = None
+    _mat_driver = _mat_launch_driver(show)
+    return _mat_driver
+
+
+def _mat_close_if_headless():
+    """Mirror of _sf_close_if_headless — quit the driver after use so we
+    don't leave an orphaned msedge.exe around, unless the technician has
+    'Show browser' on and is presumably looking at it."""
+    global _mat_driver
+    show_browser = False
+    try:
+        if os.path.exists(_MAT_CFG_PATH):
+            with open(_MAT_CFG_PATH, encoding="utf-8") as f:
+                show_browser = bool(json.load(f).get("show_browser", False))
+    except Exception:
+        pass
+    if show_browser or _mat_driver is None:
+        return
+    try:
+        _mat_driver.quit()
+    except Exception:
+        pass
+    _mat_driver = None
+
+
 def mat_scrape(serial):
     global _mat_driver
     try:
@@ -1316,64 +1397,67 @@ def mat_scrape(serial):
     except Exception as e:
         return err(f"Config read error: {e}")
 
-    # Close any leftover driver from previous run
-    if _mat_driver is not None:
-        try:
-            _mat_driver.quit()
-        except Exception:
-            pass
-        _mat_driver = None
-
     try:
-        from selenium import webdriver
         from selenium.webdriver.common.by import By
-        from selenium.webdriver.edge.options import Options
         from selenium.webdriver.support.ui import WebDriverWait
         from selenium.webdriver.support import expected_conditions as EC
+        from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
     except ImportError:
         return err("selenium not installed. Run: pip install selenium")
 
     driver = None
     try:
-        from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
-
-        opts = Options()
-        edge_binary = _find_edge_binary()
-        if edge_binary:
-            opts.binary_location = edge_binary
-        if not show:
-            opts.add_argument("--headless=new")
-        opts.add_argument("--no-sandbox")
-        opts.add_argument("--disable-dev-shm-usage")
-        opts.add_argument("--disable-gpu")
-        opts.add_experimental_option("excludeSwitches", ["enable-logging"])
-
-        driver = webdriver.Edge(options=opts)
+        driver = _mat_get_driver(show)
         # Ignore stale refs — elements go stale during ASP.NET postbacks
         wait = WebDriverWait(driver, 25,
                              ignored_exceptions=[StaleElementReferenceException,
                                                  NoSuchElementException])
 
         # ── Login ──────────────────────────────────────────────
-        LOGIN_URL = "https://myaligntech.com/login.aspx?auth=false&ReturnUrl=%2f"
-        driver.get(LOGIN_URL)
-        wait.until(EC.presence_of_element_located((By.ID, "LoginControl_UserName")))
-        driver.find_element(By.ID, "LoginControl_UserName").clear()
-        driver.find_element(By.ID, "LoginControl_UserName").send_keys(email)
-        driver.find_element(By.ID, "LoginControl_Password").clear()
-        driver.find_element(By.ID, "LoginControl_Password").send_keys(password)
-        # Use JS click on login button to avoid any overlay issues
-        driver.execute_script(
-            "document.getElementById('LoginControl_LoginButton').click();"
-        )
+        driver.get(_MAT_LOGIN_URL)
+        time.sleep(1.0)
 
-        wait.until(lambda d: "login.aspx" not in d.current_url)
-        time.sleep(0.8)
+        def _on_mat():
+            u = driver.current_url.lower()
+            return "myaligntech.com" in u and "login.aspx" not in u
 
-        if "login.aspx" in driver.current_url.lower():
-            if show: _mat_driver = driver
-            else: driver.quit()
-            return err("MAT login failed — check credentials in Settings → MAT.")
+        if not _on_mat():
+            # Either the local login form, or the site bounced us out to a
+            # Microsoft/Okta SSO page instead.
+            has_local_form = False
+            try:
+                driver.find_element(By.ID, "LoginControl_UserName")
+                has_local_form = True
+            except Exception:
+                pass
+
+            if has_local_form:
+                driver.find_element(By.ID, "LoginControl_UserName").clear()
+                driver.find_element(By.ID, "LoginControl_UserName").send_keys(email)
+                driver.find_element(By.ID, "LoginControl_Password").clear()
+                driver.find_element(By.ID, "LoginControl_Password").send_keys(password)
+                driver.execute_script(
+                    "document.getElementById('LoginControl_LoginButton').click();"
+                )
+                wait.until(lambda d: "login.aspx" not in d.current_url)
+                time.sleep(0.8)
+
+            if not _on_mat():
+                # SSO gate (or the local form failed) — needs a human. If
+                # we're headless there's nothing for them to look at, so
+                # relaunch visibly and hand it back for a one-time manual
+                # pass; the session then persists in the profile on disk
+                # for every call after this one, headless or not.
+                if not show:
+                    try:
+                        driver.quit()
+                    except Exception:
+                        pass
+                    _mat_driver = None
+                    driver = _mat_get_driver(True)
+                    driver.get(_MAT_LOGIN_URL)
+                return ok({"status_text": "login_required"},
+                          msg="Log in on the MAT window that opened, then try again.")
 
         # ── Click Scanner tab via JS (jQuery UI anchor with tabindex=-1) ───
         wait.until(EC.presence_of_element_located((By.ID, _SCANNER_TAB_ID)))
@@ -1498,10 +1582,7 @@ def mat_scrape(serial):
         except Exception:
             pass
 
-        if show:
-            _mat_driver = driver
-        else:
-            driver.quit()
+        _mat_close_if_headless()
 
         result = {
             "serial":          serial,
@@ -1525,6 +1606,7 @@ def mat_scrape(serial):
         if driver:
             try: driver.quit()
             except Exception: pass
+        _mat_driver = None
         return err(f"MAT scrape error: {e}")
 
 
@@ -1922,6 +2004,9 @@ return {
     order_comments: fieldValueByLabel("Order Comments"),
     additional_support: fieldValueByLabel("Additional Support"),
     return_type: fieldValueByLabel("Return Type"),
+    ticket_type: fieldValueByLabel("Ticket Type"),
+    issue_type: fieldValueByLabel("Issue Type"),
+    sub_issue_type: fieldValueByLabel("Sub-Issue Type"),
     debug_container_found: matContainers.length,
     debug_value_el_found: matValueEls.length,
     debug_raw_html: matAncestorHtml.slice(0, 4000)
@@ -2003,6 +2088,9 @@ def sf_read_ticket():
     order_comments     = (data.get("order_comments") or "").strip()
     additional_support = (data.get("additional_support") or "").strip()
     return_type        = (data.get("return_type") or "").strip()
+    ticket_type        = (data.get("ticket_type") or "").strip()
+    issue_type         = (data.get("issue_type") or "").strip()
+    sub_issue_type     = (data.get("sub_issue_type") or "").strip()
 
     # Asset text carries an internal record prefix before the actual
     # scanner S/N (e.g. "Preview223167-YUC2022W18A103-SCANNER") — drop
@@ -2021,6 +2109,9 @@ def sf_read_ticket():
         "order_comments":     order_comments or "Empty",
         "additional_support": additional_support or "Empty",
         "return_type":        return_type or "Empty",
+        "ticket_type":        ticket_type or "Empty",
+        "issue_type":         issue_type or "Empty",
+        "sub_issue_type":     sub_issue_type or "Empty",
     }
 
     if not mat_id:

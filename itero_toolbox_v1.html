@@ -529,21 +529,17 @@ html.size-large #sidebar-icons{zoom:1.3}
       <button class="settings-item" onclick="event.stopPropagation();toggleSettingsSection('size')" style="display:flex;align-items:center;justify-content:space-between">
         <span>Size</span>
         <span style="display:flex;align-items:center;gap:4px;color:var(--text3);font-size:11px">
-          <span id="size-current-label">Normal</span>
+          <span id="size-current-label">Small</span>
           <svg id="size-section-caret" width="8" height="8" viewBox="0 0 8 8" style="transition:transform .12s"><path d="M1.5 3l2.5 2.5L6.5 3" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
       </button>
       <div id="size-section" style="display:none;padding-left:6px">
-        <button class="settings-item" id="size-normal-btn" onclick="setUiSize('normal')">Normal</button>
+        <button class="settings-item" id="size-normal-btn" onclick="setUiSize('normal')">Small</button>
         <button class="settings-item" id="size-medium-btn" onclick="setUiSize('medium')">Medium</button>
         <button class="settings-item" id="size-large-btn" onclick="setUiSize('large')">Large</button>
       </div>
       <div style="height:1px;background:var(--border);margin:4px 0"></div>
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:7px 14px;font-size:12px;color:var(--text2)" title="Enables DevTools (F12 / right-click Inspect). Requires restart.">
-        <input type="checkbox" id="debug-mode-chk" onchange="saveDebugMode()"> Debug mode (restart required)
-      </label>
-      <div style="height:1px;background:var(--border);margin:4px 0"></div>
-      <!-- ── Connections (MAT + Salesforce) ───────────────────── -->
+      <!-- ── Connections (Debug + MAT + Salesforce) ────────────── -->
       <button class="settings-item" onclick="event.stopPropagation();toggleSettingsSection('connections')" style="display:flex;align-items:center;justify-content:space-between">
         <span>Connections</span>
         <span style="display:flex;align-items:center;gap:4px;color:var(--text3);font-size:11px">
@@ -551,6 +547,14 @@ html.size-large #sidebar-icons{zoom:1.3}
         </span>
       </button>
       <div id="connections-section" style="display:none;padding-left:6px">
+        <!-- Debug mode -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px" title="Enables DevTools (F12 / right-click Inspect). Requires restart.">
+          <span style="font-size:12px;color:var(--text2)">Debug mode (restart required)</span>
+          <label class="hk-switch">
+            <input type="checkbox" id="debug-mode-chk" onchange="saveDebugMode()"><span class="hk-slider"></span>
+          </label>
+        </div>
+        <div style="height:1px;background:var(--border);margin:4px 0"></div>
         <!-- MAT credentials -->
         <button class="settings-item" onclick="event.stopPropagation();toggleSettingsSection('mat')" style="display:flex;align-items:center;justify-content:space-between">
           <span>MAT</span>
@@ -559,21 +563,21 @@ html.size-large #sidebar-icons{zoom:1.3}
           </span>
         </button>
         <div id="mat-section" style="display:none;padding:6px 10px 8px;box-sizing:border-box;width:100%;background:var(--bg3);border-radius:var(--r)">
-          <div style="font-size:10px;color:var(--text3);letter-spacing:.06em;margin-bottom:8px">myaligntech.com</div>
           <div style="display:flex;flex-direction:column;gap:6px">
             <input id="mat-email-inp" class="iinput" type="email" placeholder="Email"
               style="width:100%;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px">
             <input id="mat-pass-inp" class="iinput" type="password" placeholder="Password"
               style="width:100%;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px">
-            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--text2)">
-              <input type="checkbox" id="mat-show-browser-chk"> Open browser (visible)
-            </label>
-            <div style="display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:11px;color:var(--text2)">Visible</span>
+              <label class="hk-switch">
+                <input type="checkbox" id="mat-show-browser-chk"><span class="hk-slider"></span>
+              </label>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
               <button id="mat-toggle-btn" class="btn-sm" onclick="matToggleEnabled()" style="min-width:40px">OFF</button>
               <button class="btn-sm p" onclick="matSaveCredentials()">Save</button>
-              <span id="mat-save-msg" style="display:none;font-size:11px;color:var(--green)">✓ Saved</span>
             </div>
-            <div id="mat-status-line" style="display:none;font-size:10px;font-family:var(--mono);padding:2px 0"></div>
           </div>
         </div>
         <div style="height:1px;background:var(--border);margin:4px 0"></div>
@@ -585,15 +589,16 @@ html.size-large #sidebar-icons{zoom:1.3}
           </span>
         </button>
         <div id="sf-section" style="display:none;padding:6px 10px 8px;box-sizing:border-box;width:100%;background:var(--bg3);border-radius:var(--r)">
-          <div style="font-size:10px;color:var(--text3);letter-spacing:.06em;margin-bottom:8px">aligntech.lightning.force.com</div>
-          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--text2);margin-bottom:8px">
-            <input type="checkbox" id="sf-show-browser-chk" onchange="sfSaveShowBrowser()"> Open browser (visible)
-          </label>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <button class="btn-sm p" onclick="sfOpenHome()">Open</button>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:11px;color:var(--text2)">Visible</span>
+            <label class="hk-switch">
+              <input type="checkbox" id="sf-show-browser-chk" onchange="sfSaveShowBrowser()"><span class="hk-slider"></span>
+            </label>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="btn-sm p" onclick="sfOpenHome()">ON</button>
             <button class="btn-sm r" onclick="sfCloseBrowser()">Close session</button>
           </div>
-          <div id="sf-status-line" style="display:none;font-size:10px;font-family:var(--mono);padding:4px 0"></div>
         </div>
       </div>
       <div style="height:1px;background:var(--border);margin:4px 0"></div>
@@ -1829,6 +1834,27 @@ html.size-large #sidebar-icons{zoom:1.3}
     <div id="tc-compare-row" style="display:none;gap:8px;align-items:baseline">
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">S/N Check</span>
       <span id="tc-compare-text" style="font-size:11px;font-family:var(--mono)">—</span>
+    </div>
+  </div>
+
+  <div id="tc-categorization-wrap" style="display:none;max-width:420px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:14px">
+    <div onclick="tcToggleCategorization()" style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none">
+      <span id="tc-categorization-caret" style="font-family:var(--mono);font-size:10px;color:var(--text3)">▶</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Categorization</span>
+    </div>
+    <div id="tc-categorization-body" style="display:none;flex-direction:column;gap:6px;margin-top:8px">
+      <div style="display:flex;gap:8px;align-items:baseline">
+        <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Ticket Type</span>
+        <span id="tc-f-tickettype" style="font-size:11px">—</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:baseline">
+        <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Issue Type</span>
+        <span id="tc-f-issuetype" style="font-size:11px">—</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:baseline">
+        <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Sub-Issue Type</span>
+        <span id="tc-f-subissuetype" style="font-size:11px">—</span>
+      </div>
     </div>
   </div>
 
@@ -3090,7 +3116,10 @@ window.addEventListener('DOMContentLoaded', function() {
     var wrap = document.getElementById('settings-wrap');
     if (wrap && !wrap.contains(e.target)) {
       var menu = document.getElementById('settings-menu');
-      if (menu) menu.style.display = 'none';
+      if (menu && menu.style.display !== 'none') {
+        menu.style.display = 'none';
+        _settingsMarkClosed();
+      }
     }
   });
 
@@ -3180,6 +3209,7 @@ function doLogin() {
 function doLogout() {
   var menu = document.getElementById('settings-menu');
   if (menu) menu.style.display = 'none';
+  _settingsMarkClosed();
   pyApi('clear_user_profile').then(function() {
     var nameEl = document.getElementById('login-name');
     var roleEl = document.getElementById('login-role');
@@ -3210,6 +3240,16 @@ function matOpenPopup(anchorId) {
   var pop = document.getElementById('mat-popup');
   var btn = document.getElementById(anchorId || 'check-btn');
   if (!pop || !btn) return;
+
+  // Clicking the same trigger that's already open should close it —
+  // previously this always re-opened, so the arrow could never toggle
+  // itself shut (only clicking elsewhere in the app closed it).
+  if (pop.style.display !== 'none' && pop._openedBy === (anchorId || 'check-btn')) {
+    pop.style.display = 'none';
+    return;
+  }
+  pop._openedBy = anchorId || 'check-btn';
+
   var r = btn.getBoundingClientRect();
   pop.style.top     = (r.bottom + 5) + 'px';
   pop.style.left    = r.right + 'px';
@@ -3329,6 +3369,13 @@ function matScrape(sn) {
       return;
     }
     var d    = r.data || {};
+
+    if (d.status_text === 'login_required') {
+      matUpdateStatus(r.msg || 'Log in on the MAT window that opened, then try again.', 'warn');
+      matSetBtnReady(false);
+      return;
+    }
+
     var wand = d.wand_sn || '';
     var reg  = d.reg_to  || '';
 
@@ -3426,25 +3473,18 @@ function matSaveCredentials() {
   var show    = !!(document.getElementById('mat-show-browser-chk') || {}).checked;
   if (!email) { alert('Enter MAT email.'); return; }
   if (!pass)  { alert('Enter MAT password.'); return; }
-  pyApi('mat_save_credentials', email, pass, show, _matEnabled).then(function(r) {
-    var msg = document.getElementById('mat-save-msg');
-    if (msg) {
-      msg.style.display = '';
-      setTimeout(function() { msg.style.display = 'none'; }, 2500);
-    }
-  });
+  pyApi('mat_save_credentials', email, pass, show, _matEnabled);
 }
 
+// Deliberately doesn't prefill email/password — the settings panel never
+// echoes stored credentials back to the screen. Only the toggle states
+// (visible, enabled) reflect what's saved.
 function matLoadSettings() {
   pyApi('mat_get_credentials').then(function(r) {
     if (!r || r.status !== 'ok') return;
     var d = r.data || {};
-    var emailEl = document.getElementById('mat-email-inp');
-    var passEl  = document.getElementById('mat-pass-inp');
-    var chkEl   = document.getElementById('mat-show-browser-chk');
-    if (emailEl) emailEl.value = d.email    || '';
-    if (passEl)  passEl.value  = d.password || '';
-    if (chkEl)   chkEl.checked = !!d.show_browser;
+    var chkEl = document.getElementById('mat-show-browser-chk');
+    if (chkEl) chkEl.checked = !!d.show_browser;
     _matEnabled = !!d.enabled;
     matRefreshToggle();
   });
@@ -3486,17 +3526,11 @@ function sfSetStatus(msg, color, targetId) {
 }
 
 function sfOpenHome() {
-  pyApiLong('sf_open_home').then(function(r) {
-    sfSetStatus((r && r.msg) || '', (r && r.status === 'ok') ? 'var(--green)' : 'var(--red)');
-  }).catch(function() {
-    sfSetStatus('Connection error', 'var(--red)');
-  });
+  pyApiLong('sf_open_home');
 }
 
 function sfCloseBrowser() {
-  pyApiLong('sf_close_browser').then(function(r) {
-    sfSetStatus((r && r.msg) || 'Closed.', 'var(--text3)');
-  });
+  pyApiLong('sf_close_browser');
 }
 
 // Resets only the Ticket Checker panel's own state (ticket inputs, status,
@@ -3513,13 +3547,21 @@ function tcClear() {
   var debugBox = g('tc-debug');
   if (debugBox) { debugBox.value = ''; debugBox.style.display = 'none'; }
 
-  ['tc-f-matid', 'tc-f-address', 'tc-f-asset', 'tc-f-subject', 'tc-f-ordercomments'].forEach(function(id) {
+  ['tc-f-matid', 'tc-f-address', 'tc-f-asset', 'tc-f-subject', 'tc-f-ordercomments',
+   'tc-f-tickettype', 'tc-f-issuetype', 'tc-f-subissuetype'].forEach(function(id) {
     if (g(id)) g(id).textContent = '—';
   });
   if (g('tc-f-asset-label')) g('tc-f-asset-label').textContent = 'Asset';
 
   var fields = g('tc-fields');
   if (fields) fields.style.display = 'none';
+
+  var catWrap = g('tc-categorization-wrap');
+  if (catWrap) catWrap.style.display = 'none';
+  var catBody = g('tc-categorization-body');
+  if (catBody) catBody.style.display = 'none';
+  var catCaret = g('tc-categorization-caret');
+  if (catCaret) catCaret.textContent = '▶';
 
   ['tc-compare-row', 'tc-compare-matid-row', 'tc-compare-address-row', 'tc-compare-asset-row', 'tc-compare-support-row', 'tc-compare-returntype-row'].forEach(function(id) {
     var row = g(id);
@@ -3530,7 +3572,8 @@ function tcClear() {
 function sfSetFieldsLoading() {
   var fields = document.getElementById('tc-fields');
   var g = function(id) { return document.getElementById(id); };
-  ['tc-f-matid', 'tc-f-address', 'tc-f-asset', 'tc-f-subject', 'tc-f-ordercomments'].forEach(function(id) {
+  ['tc-f-matid', 'tc-f-address', 'tc-f-asset', 'tc-f-subject', 'tc-f-ordercomments',
+   'tc-f-tickettype', 'tc-f-issuetype', 'tc-f-subissuetype'].forEach(function(id) {
     if (g(id)) g(id).textContent = 'Loading…';
   });
   if (g('tc-f-asset-label')) g('tc-f-asset-label').textContent = 'Asset';
@@ -3538,6 +3581,8 @@ function sfSetFieldsLoading() {
     var row = g(id);
     if (row) row.style.display = 'none';
   });
+  var catWrap = g('tc-categorization-wrap');
+  if (catWrap) catWrap.style.display = 'none';
   if (fields) fields.style.display = 'flex';
 }
 
@@ -3650,6 +3695,15 @@ function sfDiscoverSnThenReadFields(statusId) {
   });
 }
 
+function tcToggleCategorization() {
+  var body  = document.getElementById('tc-categorization-body');
+  var caret = document.getElementById('tc-categorization-caret');
+  if (!body) return;
+  var collapsed = body.style.display === 'none';
+  body.style.display = collapsed ? 'flex' : 'none';
+  if (caret) caret.textContent = collapsed ? '▼' : '▶';
+}
+
 function sfPopulateFieldsAndCompare(d, statusId) {
   var fields = document.getElementById('tc-fields');
   var g = function(id) { return document.getElementById(id); };
@@ -3660,6 +3714,12 @@ function sfPopulateFieldsAndCompare(d, statusId) {
   if (g('tc-f-subject'))  g('tc-f-subject').textContent = d.subject || '—';
   if (g('tc-f-ordercomments')) g('tc-f-ordercomments').textContent = d.order_comments || '—';
   if (fields) fields.style.display = 'flex';
+
+  if (g('tc-f-tickettype'))   g('tc-f-tickettype').textContent   = d.ticket_type || '—';
+  if (g('tc-f-issuetype'))    g('tc-f-issuetype').textContent    = d.issue_type || '—';
+  if (g('tc-f-subissuetype')) g('tc-f-subissuetype').textContent = d.sub_issue_type || '—';
+  var catWrap = g('tc-categorization-wrap');
+  if (catWrap) catWrap.style.display = '';
   checkCompareSN(d);
   checkCompareMatId(d);
   checkCompareAddress(d);
@@ -4042,19 +4102,47 @@ document.addEventListener('click', function(e) {
 });
 
 // ── Settings menu ────────────────────────────────────────────
+// Sections stay expanded across a quick reopen (picking up a forgotten
+// setting shouldn't mean re-expanding everything), but collapse once the
+// menu's been closed for a while — otherwise it's always in whatever state
+// you left it, cluttered with every section from a session ago.
+var SETTINGS_SECTION_NAMES  = ['theme', 'size', 'connections', 'mat', 'sf'];
+var SETTINGS_COLLAPSE_AFTER_MS = 60000;
+var _settingsClosedAt = 0;
+
+function _settingsMarkClosed() {
+  _settingsClosedAt = Date.now();
+}
+
+function _settingsCollapseAllSections() {
+  SETTINGS_SECTION_NAMES.forEach(function(name) {
+    var section = document.getElementById(name + '-section');
+    var caret   = document.getElementById(name + '-section-caret');
+    if (section) section.style.display = 'none';
+    if (caret)   caret.style.transform = 'rotate(0deg)';
+  });
+}
+
 function toggleSettingsMenu(e) {
   if (e) e.stopPropagation();
   var menu = document.getElementById('settings-menu');
   var btn  = document.getElementById('settings-btn');
   if (!menu) return;
   var opening = menu.style.display === 'none';
-  if (opening && btn) {
-    var rect = btn.getBoundingClientRect();
-    var top  = rect.bottom + 6;
-    var left = Math.max(8, rect.right - 170);
-    menu.style.top = top + 'px';
-    menu.style.left = left + 'px';
-    menu.style.maxHeight = Math.max(120, window.innerHeight - top - 10) + 'px';
+  if (opening) {
+    if (_settingsClosedAt && (Date.now() - _settingsClosedAt) > SETTINGS_COLLAPSE_AFTER_MS) {
+      _settingsCollapseAllSections();
+    }
+    if (btn) {
+      var rect = btn.getBoundingClientRect();
+      var top  = rect.bottom + 6;
+      var left = Math.max(8, rect.right - 170);
+      menu.style.top = top + 'px';
+      menu.style.left = left + 'px';
+      menu.style.maxHeight = Math.max(120, window.innerHeight - top - 10) + 'px';
+    }
+  } else {
+    _settingsMarkClosed();
   }
   menu.style.display = opening ? 'block' : 'none';
 }
@@ -4138,7 +4226,7 @@ function setUiSize(mode, skipSave) {
   if (nb) nb.className = 'settings-item' + (mode === 'normal' ? ' active' : '');
   if (mb) mb.className = 'settings-item' + (mode === 'medium' ? ' active' : '');
   if (lb) lb.className = 'settings-item' + (mode === 'large'  ? ' active' : '');
-  var SIZE_LABELS = { normal: 'Normal', medium: 'Medium', large: 'Large' };
+  var SIZE_LABELS = { normal: 'Small', medium: 'Medium', large: 'Large' };
   var sizeLabel = document.getElementById('size-current-label');
   if (sizeLabel) sizeLabel.textContent = SIZE_LABELS[mode] || mode;
   // Zoom changes the layout but this WebView host doesn't always repaint the

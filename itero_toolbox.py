@@ -439,6 +439,18 @@ def main():
 
     backend.stop_hotkey_listener()
 
+    # Quit any Selenium-driven Edge windows (SF, MAT) gracefully instead of
+    # leaving them orphaned — an abrupt kill can stop Chromium from flushing
+    # the SSO session cookie to disk, forcing a fresh login next launch.
+    try:
+        backend.sf_close_browser()
+    except Exception:
+        pass
+    try:
+        backend.mat_close_browser()
+    except Exception:
+        pass
+
 
 if __name__ == "__main__":
     main()
