@@ -177,6 +177,22 @@ html.size-large #sidebar-icons{zoom:1.3}
 .iinput::placeholder{color:var(--text3)}.iinput:focus{border-color:var(--blue)}
 .iinput.agent{width:140px}.iinput.ticket{width:148px}.iinput.serial{width:190px}
 #in-serial{width:190px}
+
+/* Reorderable dropdowns (Reason / Specific Issue) — native <select> can't
+   support drag-to-reorder inside its own popup, so these render a custom
+   trigger + floating panel instead; the <select> itself stays in the DOM
+   (hidden) as the real value/onchange source every existing consumer reads. */
+.reorder-trigger{width:100%;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;overflow:hidden}
+.reorder-trigger>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.reorder-trigger>svg{flex-shrink:0;color:var(--text3);transition:transform .15s var(--ease-out)}
+.reorder-trigger.open>svg{transform:rotate(180deg)}
+.reorder-panel{position:fixed;z-index:2000;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);box-shadow:0 8px 24px rgba(0,0,0,.35);overflow-y:auto;overflow-x:hidden;padding:4px 0}
+.reorder-row{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:12px;font-family:var(--sans);color:var(--text2);cursor:pointer;user-select:none;position:relative;transition:background .12s,transform .18s var(--ease-out)}
+.reorder-row:hover{background:var(--bg4);color:var(--text)}
+.reorder-row.selected{color:var(--blue);font-weight:600}
+.reorder-row.dragging{background:var(--blue-bg);color:var(--blue);box-shadow:0 4px 10px rgba(0,0,0,.3);transition:none}
+.reorder-handle{flex-shrink:0;width:12px;height:12px;color:var(--text3);cursor:grab;touch-action:none}
+.reorder-row.dragging .reorder-handle{cursor:grabbing}
 #in-model,#in-reason,#in-reason-sub{
   -webkit-appearance:none;appearance:none;
   padding:5px 20px 5px 8px;
@@ -549,13 +565,19 @@ html.size-large #sidebar-icons{zoom:1.3}
       <div id="connections-section" style="display:none;padding-left:6px">
         <!-- Debug mode -->
         <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px" title="Enables DevTools (F12 / right-click Inspect). Requires restart.">
-          <span style="font-size:12px;color:var(--text2)">Debug mode (restart required)</span>
+          <span style="font-size:12px;color:var(--text2)">Debug</span>
           <label class="hk-switch">
             <input type="checkbox" id="debug-mode-chk" onchange="saveDebugMode()"><span class="hk-slider"></span>
           </label>
         </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px" title="Shows the elevated CMD terminal panel at the bottom of the app (TS/ESC roles only — Front Line never sees it). Applies immediately, no restart needed.">
+          <span style="font-size:12px;color:var(--text2)">CMD</span>
+          <label class="hk-switch">
+            <input type="checkbox" id="cmd-visible-chk" onchange="onCmdVisibleToggle()"><span class="hk-slider"></span>
+          </label>
+        </div>
         <div style="height:1px;background:var(--border);margin:4px 0"></div>
-        <!-- MAT credentials -->
+        <!-- MAT -->
         <button class="settings-item" onclick="event.stopPropagation();toggleSettingsSection('mat')" style="display:flex;align-items:center;justify-content:space-between">
           <span>MAT</span>
           <span style="display:flex;align-items:center;gap:4px;color:var(--text3);font-size:11px">
@@ -564,19 +586,14 @@ html.size-large #sidebar-icons{zoom:1.3}
         </button>
         <div id="mat-section" style="display:none;padding:6px 10px 8px;box-sizing:border-box;width:100%;background:var(--bg3);border-radius:var(--r)">
           <div style="display:flex;flex-direction:column;gap:6px">
-            <input id="mat-email-inp" class="iinput" type="email" placeholder="Email"
-              style="width:100%;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px">
-            <input id="mat-pass-inp" class="iinput" type="password" placeholder="Password"
-              style="width:100%;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <span style="font-size:11px;color:var(--text2)">Visible</span>
               <label class="hk-switch">
-                <input type="checkbox" id="mat-show-browser-chk"><span class="hk-slider"></span>
+                <input type="checkbox" id="mat-show-browser-chk" onchange="matSaveShowBrowser()"><span class="hk-slider"></span>
               </label>
             </div>
             <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
               <button id="mat-toggle-btn" class="btn-sm" onclick="matToggleEnabled()" style="min-width:40px">OFF</button>
-              <button class="btn-sm p" onclick="matSaveCredentials()">Save</button>
             </div>
           </div>
         </div>
@@ -602,7 +619,7 @@ html.size-large #sidebar-icons{zoom:1.3}
         </div>
       </div>
       <div style="height:1px;background:var(--border);margin:4px 0"></div>
-      <button class="settings-item" onclick="doLogout()" style="color:var(--red)">Log out</button>
+      <button id="logout-btn" class="settings-item" onclick="confirmLogout(event)" style="color:var(--red)">Log out</button>
     </div>
   </div>
 
@@ -623,7 +640,7 @@ html.size-large #sidebar-icons{zoom:1.3}
 
 <!-- INTAKE BAR -->
 <div class="intake-bar" id="intake-bar">
- <div style="display:grid;grid-template-columns:316px 155px 1px 155px;column-gap:10px;align-items:center;width:100%;box-sizing:border-box;min-width:0">
+ <div style="display:grid;grid-template-columns:241px 155px 1px 155px;column-gap:10px;align-items:center;width:100%;box-sizing:border-box;min-width:0">
   <div id="sn-wrap" style="display:flex;flex-direction:row;gap:6px;align-items:center;min-width:0;overflow:hidden">
     <div style="position:relative;flex-shrink:0;width:155px;min-width:0">
       <input class="iinput serial" id="in-serial" placeholder="Scanner S/N" autocomplete="off"
@@ -637,10 +654,10 @@ html.size-large #sidebar-icons{zoom:1.3}
     </div>
     <input class="iinput" id="in-wand-sn" placeholder="Wand S/N" autocomplete="off"
       title="Wand serial number — auto-filled from MAT"
-      style="width:155px;min-width:0;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px;font-family:var(--mono);flex-shrink:0">
+      style="width:80px;min-width:0;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px;font-family:var(--mono);flex-shrink:0">
   </div>
   <div id="in-model-wrap" style="min-width:0;overflow:hidden">
-  <select class="iinput" id="in-model" style="width:100%;min-width:0;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onchange="toggleSnField(this.value);updateSF();highlightNKeys(this.value);updateWandModelBanner(this.value);syncWandTabFromModel(this.value);checkSlfddModelCompat();if(document.getElementById('panel-partscatalog').classList.contains('active'))loadCatalog();flSyncFromIntake()">
+  <select class="iinput" id="in-model" style="width:100%;min-width:0;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onchange="toggleSnField(this.value);updateSF();highlightNKeys(this.value);updateWandModelBanner(this.value);syncWandTabFromModel(this.value);checkSlfddModelCompat();if(document.getElementById('panel-partscatalog').classList.contains('active'))loadCatalog();flRefreshSoftwareSubs();flSyncFromIntake()">
     <option value="">Model</option>
     <option value="Office PC">Office PC</option>
     <option value="Element 2">Element 2</option>
@@ -657,13 +674,13 @@ html.size-large #sidebar-icons{zoom:1.3}
     <option value="5D Flex">5D Flex</option>
     <option value="5D Plus LC">5D Plus LC</option>
     <option value="5D Plus Lite LC">5D Plus Lite LC</option>
-    <option value="Lumina - Mobile (PLA)">Lumina - Mobile</option>
+    <option value="Lumina - Mobile">Lumina - Mobile</option>
   </select>
   </div>
   <div class="isep"></div>
-  <div id="in-reason-wrap" style="min-width:0;overflow:hidden">
-  <select class="iinput" id="in-reason" style="width:100%;min-width:0;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" onchange="reasonChanged()">
-    <option value="">Reason</option>
+  <div id="in-reason-wrap" style="min-width:0;overflow:hidden;position:relative">
+  <select class="iinput" id="in-reason" style="display:none" onchange="reasonChanged()">
+    <option value="">None</option>
     <option value="Account Management">Account Management</option>
     <option value="Software">Software</option>
     <option value="Hardware">Hardware</option>
@@ -673,14 +690,25 @@ html.size-large #sidebar-icons{zoom:1.3}
     <option value="Networking">Networking</option>
     <option value="Billing">Billing</option>
     <option value="Demo">Demo</option>
+    <option value="Wand Replacement">Wand Replacement</option>
+    <option value="PPC Replacement">PPC Replacement</option>
+    <option value="Part Replacement">Part Replacement</option>
   </select>
+  <button type="button" id="in-reason-reorder-btn" class="iinput reorder-trigger" onclick="reorderToggle('in-reason', event)" style="width:100%;min-width:0;box-sizing:border-box;font-size:12px">
+    <span>Request</span>
+    <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 3l2.5 2.5L6.5 3" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
   </div>
  </div>
  <div id="intake-row2" style="display:grid;grid-template-columns:auto 1fr auto;column-gap:10px;align-items:center;width:100%;box-sizing:border-box;min-width:0;margin-top:8px">
-  <div id="in-reason-sub-wrap" style="display:none;width:210px;min-width:0;overflow:hidden">
-  <select class="iinput" id="in-reason-sub" style="width:100%;min-width:0;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" onchange="flSyncFromIntake()">
-    <option value="">Specific issue...</option>
+  <div id="in-reason-sub-wrap" style="display:none;width:140px;min-width:0;overflow:hidden;position:relative">
+  <select class="iinput" id="in-reason-sub" style="display:none" onchange="flSyncFromIntake()">
+    <option value="">None</option>
   </select>
+  <button type="button" id="in-reason-sub-reorder-btn" class="iinput reorder-trigger" onclick="reorderToggle('in-reason-sub', event)" style="width:100%;min-width:0;box-sizing:border-box;font-size:12px">
+    <span>None</span>
+    <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 3l2.5 2.5L6.5 3" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
   </div>
   <input class="iinput" id="fl-subject-override" placeholder="+ Subject text..." autocomplete="off"
     style="width:100%;min-width:0;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px;font-family:var(--mono)"
@@ -879,9 +907,6 @@ html.size-large #sidebar-icons{zoom:1.3}
     <span id="fl-subj-copy-hint" style="font-family:var(--mono);font-size:10px;color:var(--text3);flex-shrink:0;transition:color .15s">Copy</span>
   </div>
 
-  <!-- KB suggestions — populated by flRenderKbSuggestions() -->
-  <div id="fl-kb-suggest" onclick="event.stopPropagation()" style="display:none;flex-wrap:wrap;align-items:center;gap:6px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:5px 12px;margin-top:-6px;margin-bottom:12px;font-family:var(--mono);font-size:11px;color:var(--text3)"></div>
-
   <!-- Row 1: Caller + IDs -->
   <div class="fl-doc-row1" style="display:grid;grid-template-columns:1fr 1.1fr 1.5fr 1.15fr 1.15fr;gap:6px;margin-bottom:8px">
     <div>
@@ -899,20 +924,30 @@ html.size-large #sidebar-icons{zoom:1.3}
       <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">EMAIL</label>
       <input class="iinput" id="fl-caller-email" placeholder="Email" autocomplete="off" type="text" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="flBuildOutputs()">
     </div>
+    <!-- TS role repurposes these last two cells to host the FU/KB buttons
+         (see applyRole()) instead of TV ID/Pass, which TS doesn't use —
+         each cell keeps both its original content and a TS-only slot,
+         toggled instead of removed so the grid track layout never shifts. -->
     <div id="fl-tvid-wrap" style="position:relative">
-      <div style="display:flex;align-items:center;justify-content:space-between;height:14px;margin-bottom:2px">
-        <label style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:14px">TV ID</label>
-        <button id="fl-tv-extra-btn" onclick="event.stopPropagation();flToggleTvExtra()" title="Add another TV ID / Pass" style="font-size:9px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);cursor:pointer">+</button>
+      <div id="fl-tvid-content">
+        <div style="display:flex;align-items:center;justify-content:space-between;height:14px;margin-bottom:2px">
+          <label style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:14px">TV ID</label>
+          <button id="fl-tv-extra-btn" onclick="event.stopPropagation();flToggleTvExtra()" title="Add another TV ID / Pass" style="font-size:9px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);cursor:pointer">+</button>
+        </div>
+        <input class="iinput" id="fl-tvid" placeholder="TV ID" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="this.value=this.value.replace(/[^0-9]/g,'');flBuildOutputs()">
+        <div id="fl-tv-extra-panel" onclick="event.stopPropagation()" style="display:none;position:absolute;top:100%;right:0;margin-top:4px;width:230px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:8px;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.3)">
+          <div id="fl-tv-extra-rows" style="display:flex;flex-direction:column;gap:5px"></div>
+          <button onclick="flAddTvExtraRow()" style="margin-top:6px;font-family:var(--mono);font-size:10px;padding:2px 8px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;width:100%">+ Add another</button>
+        </div>
       </div>
-      <input class="iinput" id="fl-tvid" placeholder="TV ID" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="this.value=this.value.replace(/[^0-9]/g,'');flBuildOutputs()">
-      <div id="fl-tv-extra-panel" onclick="event.stopPropagation()" style="display:none;position:absolute;top:100%;right:0;margin-top:4px;width:230px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:8px;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.3)">
-        <div id="fl-tv-extra-rows" style="display:flex;flex-direction:column;gap:5px"></div>
-        <button onclick="flAddTvExtraRow()" style="margin-top:6px;font-family:var(--mono);font-size:10px;padding:2px 8px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;width:100%">+ Add another</button>
-      </div>
+      <div id="fl-ts-slot-fu" style="display:none;height:24px;align-items:end"></div>
     </div>
-    <div>
-      <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">TV PASS</label>
-      <input class="iinput" id="fl-tvpass" placeholder="Password" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" type="text" oninput="flBuildOutputs()">
+    <div id="fl-tvpass-wrap">
+      <div id="fl-tvpass-content">
+        <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">TV PASS</label>
+        <input class="iinput" id="fl-tvpass" placeholder="Password" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" type="text" oninput="flBuildOutputs()">
+      </div>
+      <div id="fl-ts-slot-kb" style="display:none;height:24px;align-items:end"></div>
     </div>
   </div>
 
@@ -991,7 +1026,7 @@ html.size-large #sidebar-icons{zoom:1.3}
   </div>
 
   <!-- Outcome + Follow Up -->
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:8px;align-items:end">
+  <div id="fl-outcome-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:8px;align-items:end">
     <div>
       <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px">OUTCOME</label>
       <select class="iinput" id="fl-outcome" style="width:155px;height:28px;padding:3px 8px" onchange="flBuildOutputs()">
@@ -1001,7 +1036,7 @@ html.size-large #sidebar-icons{zoom:1.3}
         <option value="Customer will call back">CX will call back</option>
       </select>
     </div>
-    <div>
+    <div id="fl-followup-wrap">
       <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px;visibility:hidden">·</label>
       <input type="checkbox" id="fl-followup-chk" style="display:none">
       <button id="fl-followup-btn" title="Follow up" onclick="document.getElementById('fl-followup-chk').checked=!document.getElementById('fl-followup-chk').checked;flFollowupToggle()" style="display:flex;align-items:center;gap:5px;height:22px;padding:0 9px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s">
@@ -1011,7 +1046,7 @@ html.size-large #sidebar-icons{zoom:1.3}
     </div>
     <div id="fl-kb-ind-wrap" style="display:none">
       <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px;visibility:hidden">·</label>
-      <button id="fl-kb-ind-btn" onclick="flClearSelectedKb()" title="No KB added yet" style="display:flex;align-items:center;gap:5px;height:22px;padding:0 9px;background:var(--red-bg);border:1px solid var(--red);border-radius:20px;cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s">
+      <button id="fl-kb-ind-btn" onclick="flToggleKbIndicator()" title="No KB added yet" style="display:flex;align-items:center;gap:5px;height:22px;padding:0 9px;background:var(--red-bg);border:1px solid var(--red);border-radius:20px;cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s">
         <svg width="10" height="10" viewBox="0 0 14 14" fill="none" style="flex-shrink:0"><path id="fl-kb-ind-path" d="M3 3l8 8M11 3l-8 8" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span id="fl-kb-ind-lbl" style="font-family:var(--mono);font-size:10px;color:var(--red);transition:color .15s">KB</span>
       </button>
@@ -1789,6 +1824,7 @@ html.size-large #sidebar-icons{zoom:1.3}
   <textarea id="tc-debug" readonly style="display:none;width:100%;max-width:420px;height:110px;font-family:var(--mono);font-size:10px;line-height:1.4;margin-bottom:14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px;resize:vertical"></textarea>
 
   <div id="tc-fields" style="display:none;max-width:420px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:14px;display:flex;flex-direction:column;gap:6px">
+    <div id="tc-not-replacement-banner" style="display:none;font-size:11px;font-weight:600;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--r);padding:6px 8px">This is not a replacement ticket.</div>
     <div style="display:flex;gap:8px;align-items:baseline">
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">MAT ID</span>
       <span id="tc-f-matid" style="font-size:11px;font-family:var(--mono)">—</span>
@@ -1810,6 +1846,12 @@ html.size-large #sidebar-icons{zoom:1.3}
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Order Comments</span>
       <span id="tc-f-ordercomments" style="font-size:11px;white-space:pre-line">—</span>
     </div>
+    <div style="display:flex;gap:8px;align-items:baseline">
+      <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Chargeable</span>
+      <span id="tc-f-chargeable" style="font-size:11px">—</span>
+    </div>
+    <div id="tc-order-status-banner" style="display:none;font-size:11px;font-weight:600;color:var(--red);background:var(--red-bg);border:1px solid var(--red);border-radius:var(--r);padding:6px 8px">Order Status is populated.</div>
+    <div id="tc-sap-so-banner" style="display:none;font-size:11px;font-weight:600;color:var(--red);background:var(--red-bg);border:1px solid var(--red);border-radius:var(--r);padding:6px 8px">SAP SO is populated.</div>
     <div style="height:1px;background:var(--border);margin:2px 0"></div>
     <div id="tc-compare-matid-row" style="display:none;gap:8px;align-items:baseline">
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">MAT ID Check</span>
@@ -1830,6 +1872,10 @@ html.size-large #sidebar-icons{zoom:1.3}
     <div id="tc-compare-returntype-row" style="display:none;gap:8px;align-items:baseline">
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Return Type Check</span>
       <span id="tc-compare-returntype-text" style="font-size:11px;font-family:var(--mono)">—</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:baseline">
+      <span style="font-size:10px;color:var(--text3);flex:0 0 100px">Mail Check</span>
+      <span id="tc-mail-check-text" style="font-size:11px;font-family:var(--mono)">—</span>
     </div>
     <div id="tc-compare-row" style="display:none;gap:8px;align-items:baseline">
       <span style="font-size:10px;color:var(--text3);flex:0 0 100px">S/N Check</span>
@@ -2566,16 +2612,74 @@ function clearCmd(){
 function focusCmdInput(){
   document.getElementById('cmd-in').focus();
 }
+// Tech Support doesn't use TV ID/Pass, so its
+// layout reclaims those two grid cells for the FU/KB buttons instead —
+// widens Name a bit in the process. Every other role keeps the original
+// layout untouched. Cells always keep both their normal content and the
+// TS-only slot in the DOM (just toggled), so the grid's column count never
+// changes and moving nodes back and forth is always safe to repeat.
+function applyTsLayout(isTs) {
+  var row1 = document.querySelector('.fl-doc-row1');
+  if (row1) {
+    if (isTs) {
+      // The responsive breakpoints below ~680px width force this same
+      // property to 2-3 columns via !important (see @media rules), which
+      // silently wins over a plain inline style and was why the FU/KB
+      // buttons weren't fully showing up — setProperty(...,'important')
+      // is the one way an inline style can out-rank an author stylesheet's
+      // !important rule, so TS keeps its 5-column layout at any width.
+      row1.style.setProperty('grid-template-columns', '1.2fr 1fr 1.5fr auto auto', 'important');
+    } else {
+      // Drop back to the plain (non-!important) inline value so the
+      // responsive breakpoints behave exactly as they did before any of
+      // this TS-layout code existed.
+      row1.style.removeProperty('grid-template-columns');
+      row1.style.gridTemplateColumns = '1fr 1.1fr 1.5fr 1.15fr 1.15fr';
+    }
+  }
+
+  var tvIdContent   = document.getElementById('fl-tvid-content');
+  var tvPassContent = document.getElementById('fl-tvpass-content');
+  var slotFu     = document.getElementById('fl-ts-slot-fu');
+  var slotKb     = document.getElementById('fl-ts-slot-kb');
+  var fuWrap     = document.getElementById('fl-followup-wrap');
+  var kbWrap     = document.getElementById('fl-kb-ind-wrap');
+  var outcomeRow = document.getElementById('fl-outcome-row');
+
+  if (isTs) {
+    if (tvIdContent)   tvIdContent.style.display   = 'none';
+    if (tvPassContent) tvPassContent.style.display = 'none';
+    if (slotFu && fuWrap) { slotFu.appendChild(fuWrap); slotFu.style.display = 'flex'; }
+    if (slotKb && kbWrap) { slotKb.appendChild(kbWrap); slotKb.style.display = 'flex'; }
+  } else {
+    if (tvIdContent)   tvIdContent.style.display   = '';
+    if (tvPassContent) tvPassContent.style.display = '';
+    if (slotFu) slotFu.style.display = 'none';
+    if (slotKb) slotKb.style.display = 'none';
+    // Always re-append in this order — appendChild moves an existing node
+    // rather than duplicating it, so this is safe to call every time and
+    // always restores [Outcome, FU, KB] regardless of current position.
+    if (outcomeRow && fuWrap) outcomeRow.appendChild(fuWrap);
+    if (outcomeRow && kbWrap) outcomeRow.appendChild(kbWrap);
+  }
+}
+
 // FL = Front Line: hide advanced tools (registry, kill, clean install)
 // TS = Tech Support: show everything
 function applyRole(role){
   if(sessionActive){
+    // This used to only log to the CMD panel, which is now hidden by
+    // default (Settings → Connections → CMD) — silently doing nothing
+    // from the technician's point of view. alert() guarantees they
+    // actually see why the role switch didn't take effect.
     appendCmd('warn','! Cannot change role while a session is active. End the session first.');
+    alert('Cannot change role while a session is active. End the session first (Clear button), then switch roles.');
     var sel=document.getElementById('in-role');
     if(sel)sel.value=currentRole||'';
     return;
   }
   currentRole=role;
+  applyTsLayout(role === 'TS');
 
   // Role badge
   var badge = document.getElementById('role-badge');
@@ -2606,12 +2710,16 @@ function applyRole(role){
   // Without this reset, switching roles mid-session (no app restart) left items
   // hidden by a previous role permanently stuck, since each branch only showed
   // ids from its own list instead of undoing what any other role had hidden.
+  // (TV ID/Pass visibility is NOT handled here — applyTsLayout() above already
+  // owns showing/hiding their inner content vs. the FU/KB slot; the wraps
+  // themselves must stay visible in every role since TS repurposes them to
+  // host the FU/KB buttons instead of hiding them outright.)
   flHide.concat(tsElems).forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
 
   if(role === 'FL'){
     flHide.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
     tsElems.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
-    var cmd=document.getElementById('cmd-panel-wrap'); if(cmd)cmd.style.display='none';
+    applyCmdVisibility(false); // Front Line never sees the CMD terminal, regardless of the setting
     var model=document.getElementById('in-model')?document.getElementById('in-model').value:'';
     _updateLuminaFLBanner(model);
     // Navigate to documentation panel
@@ -2621,13 +2729,13 @@ function applyRole(role){
   } else if(role === 'TS'){
     // ESC-only items hidden for plain TS
     escOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
-    var cmd=document.getElementById('cmd-panel-wrap'); if(cmd)cmd.style.display='';
+    applyCmdVisibility(_cmdVisible); // hidden by default — technician opts in via Settings → Connections
     var banner=document.getElementById('lumina-fl-banner'); if(banner)banner.style.display='none';
     var slfddBtns=document.querySelectorAll('#slfdd-btn-driver,#slfdd-btn-util');
     slfddBtns.forEach(function(b){b.disabled=false;b.style.cursor='';});
   } else if(role === 'ESC'){
     // ESC = TS permissions + escalations nav
-    var cmd=document.getElementById('cmd-panel-wrap'); if(cmd)cmd.style.display='';
+    applyCmdVisibility(_cmdVisible);
     var banner=document.getElementById('lumina-fl-banner'); if(banner)banner.style.display='none';
     var slfddBtns=document.querySelectorAll('#slfdd-btn-driver,#slfdd-btn-util');
     slfddBtns.forEach(function(b){b.disabled=false;b.style.cursor='';});
@@ -2923,7 +3031,7 @@ var SN_MAP = {
            label: 'NZK → 5D Plus or Lumina Mobile variants  (N6 wand)' },
   'WOA': { wand: 'N6', models: ['Flex','5D Flex','5D Plus LC','5D Plus Lite LC'],
            label: 'WOA → Flex / LC variants  (N6 wand)' },
-  'PLA': { wand: 'N4', models: ['Lumina - Mobile (PLA)'],
+  'PLA': { wand: 'N4', models: ['Lumina - Mobile'],
            label: 'PLA → Lumina Mobile  (N4 wand)' }
 };
 
@@ -2934,21 +3042,21 @@ var SN_REGEX      = new RegExp('(?:' + SN_PREFIX_ALT + ')(?:20(?:1[7-9]|[2-9]\\d
 var SN_REGEX_FULL = new RegExp('^' + SN_REGEX.source + '$');
 
 var SN_ALL_MODELS = [
-  ['Element 2','iTero Element 2'],
-  ['Element 2 5D','iTero Element 2 5D'],
-  ['5D Plus - Cart','iTero 5D Plus - Cart'],
-  ['5D Plus Lite - Cart','iTero 5D Plus Lite - Cart'],
-  ['Lumina - Cart','iTero Lumina - Cart'],
-  ['Lumina Pro - Cart','iTero Lumina Pro - Cart'],
-  ['5D Plus - Mobile','iTero 5D Plus - Mobile'],
-  ['5D Plus Lite - Mobile','iTero 5D Plus Lite - Mobile'],
-  ['Lumina - Mobile','iTero Lumina - Mobile'],
-  ['Lumina Pro - Mobile','iTero Lumina Pro - Mobile'],
-  ['Flex','iTero Flex'],
-  ['5D Flex','iTero 5D Flex'],
-  ['5D Plus LC','iTero 5D Plus LC'],
-  ['5D Plus Lite LC','iTero 5D Plus Lite LC'],
-  ['Lumina - Mobile','iTero Lumina - Mobile']
+  ['Element 2','Element 2'],
+  ['Element 2 5D','Element 2 5D'],
+  ['5D Plus - Cart','5D Plus - Cart'],
+  ['5D Plus Lite - Cart','5D Plus Lite - Cart'],
+  ['Lumina - Cart','Lumina - Cart'],
+  ['Lumina Pro - Cart','Lumina Pro - Cart'],
+  ['5D Plus - Mobile','5D Plus - Mobile'],
+  ['5D Plus Lite - Mobile','5D Plus Lite - Mobile'],
+  ['Lumina - Mobile','Lumina - Mobile'],
+  ['Lumina Pro - Mobile','Lumina Pro - Mobile'],
+  ['Flex','Flex'],
+  ['5D Flex','5D Flex'],
+  ['5D Plus LC','5D Plus LC'],
+  ['5D Plus Lite LC','5D Plus Lite LC'],
+  ['Lumina - Mobile','Lumina - Mobile']
 ];
 
 function toggleSnField(model) {
@@ -2979,7 +3087,7 @@ function snFillModelDropdown(info, modelSel) {
   if (info.models.length === 1) {
     var opt = document.createElement('option');
     opt.value = info.models[0];
-    opt.textContent = 'iTero ' + info.models[0];
+    opt.textContent = info.models[0];
     modelSel.appendChild(opt);
     modelSel.value = info.models[0];
   } else {
@@ -2990,7 +3098,7 @@ function snFillModelDropdown(info, modelSel) {
     for (var j = 0; j < info.models.length; j++) {
       var o = document.createElement('option');
       o.value = info.models[j];
-      o.textContent = 'iTero ' + info.models[j];
+      o.textContent = info.models[j];
       modelSel.appendChild(o);
     }
     modelSel.value = info.models.indexOf(prevVal) !== -1 ? prevVal : '';
@@ -3019,6 +3127,7 @@ function parseSN(raw) {
     modelSel.style.borderColor = modelSel.value ? 'var(--green)' : 'var(--amber)';
     updateWandModelBanner(modelSel.value);
     if (modelSel.value) syncWandTabFromModel(modelSel.value);
+    flRefreshSoftwareSubs();
     return;
   }
 
@@ -3047,6 +3156,7 @@ function parseSN(raw) {
   modelSel.style.borderColor = modelSel.value ? 'var(--green)' : 'var(--amber)';
   updateWandModelBanner(modelSel.value);
   if (modelSel.value) syncWandTabFromModel(modelSel.value);
+  flRefreshSoftwareSubs();
 
   // Full 14-char length reached but it didn't match SN_REGEX above → the
   // year/letter/digit structure is wrong; flag it clearly instead of
@@ -3089,6 +3199,7 @@ window.addEventListener('DOMContentLoaded', function() {
   matLoadSettings();
   sfLoadSettings();
   loadDebugMode();
+  loadCmdVisible();
   snipRender();
   hkRenderList();
 
@@ -3206,10 +3317,91 @@ function doLogin() {
   });
 }
 
+// Log out asks first (popup near the button, not a native confirm()) and,
+// once confirmed, wipes every bit of technician-entered state before
+// actually logging out — intake fields, MAT/Ticket Checker data, KB/wand
+// flow state, everything — so nothing carries over to whoever logs in
+// next on this machine. Ending the session also saves it to history first
+// if it had any data, same as the regular Clear button.
+function confirmLogout(e) {
+  if (e) e.stopPropagation();
+  if (document.getElementById('logout-confirm-popup')) { _closeLogoutConfirm(); return; }
+
+  var btn = document.getElementById('logout-btn');
+  if (!btn) return;
+
+  var popup = document.createElement('div');
+  popup.id = 'logout-confirm-popup';
+  popup.style.cssText = 'position:fixed;z-index:2100;background:var(--bg3);border:1px solid var(--border2);' +
+    'border-radius:var(--r);box-shadow:0 8px 24px rgba(0,0,0,.35);padding:10px 12px;width:220px;font-family:var(--sans)';
+
+  var msg = document.createElement('div');
+  msg.textContent = 'End the session and clear everything?';
+  msg.style.cssText = 'font-size:12px;color:var(--text);margin-bottom:10px;line-height:1.4';
+  popup.appendChild(msg);
+
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
+
+  var noBtn = document.createElement('button');
+  noBtn.textContent = 'No';
+  noBtn.style.cssText = 'font-family:var(--mono);font-size:11px;padding:4px 12px;background:var(--bg4);' +
+    'border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);cursor:pointer';
+  noBtn.onclick = function(ev) { ev.stopPropagation(); _closeLogoutConfirm(); };
+
+  var yesBtn = document.createElement('button');
+  yesBtn.textContent = 'Yes';
+  yesBtn.style.cssText = 'font-family:var(--mono);font-size:11px;padding:4px 12px;background:var(--red-bg);' +
+    'border:1px solid var(--red);border-radius:var(--r);color:var(--red);cursor:pointer';
+  yesBtn.onclick = function(ev) {
+    ev.stopPropagation();
+    _closeLogoutConfirm();
+    performLogoutClear();
+  };
+
+  btnRow.appendChild(noBtn);
+  btnRow.appendChild(yesBtn);
+  popup.appendChild(btnRow);
+  document.body.appendChild(popup);
+
+  var r = btn.getBoundingClientRect();
+  popup.style.left = Math.max(8, r.right - 220) + 'px';
+  popup.style.top  = (r.bottom + 6) + 'px';
+}
+
+function _closeLogoutConfirm() {
+  var popup = document.getElementById('logout-confirm-popup');
+  if (popup) popup.remove();
+}
+
+document.addEventListener('click', function(e) {
+  var popup = document.getElementById('logout-confirm-popup');
+  if (!popup) return;
+  var btn = document.getElementById('logout-btn');
+  if (popup.contains(e.target)) return;
+  if (btn && btn.contains(e.target)) return;
+  _closeLogoutConfirm();
+});
+
+function performLogoutClear() {
+  try { clearWithSave(); } catch (e) {}
+  try { tcClear(); } catch (e) {}
+  doLogout();
+}
+
 function doLogout() {
   var menu = document.getElementById('settings-menu');
   if (menu) menu.style.display = 'none';
   _settingsMarkClosed();
+  // _profileReady gating is what's supposed to stop autoStartSession() from
+  // firing — but clearWithSave() (called just before this) ends up calling
+  // it anyway via resetDocFields -> reasonChanged -> flSyncFromIntake ->
+  // flBuildOutputs, and since _profileReady was never reset, that call
+  // flips sessionActive back to true in the same breath it was cleared.
+  // The next login then hits applyRole()'s "session active" guard and gets
+  // silently rejected. Reset both here so a fresh login always starts clean.
+  _profileReady = false;
+  sessionActive = false;
   pyApi('clear_user_profile').then(function() {
     var nameEl = document.getElementById('login-name');
     var roleEl = document.getElementById('login-role');
@@ -3353,7 +3545,52 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// MAT's own model text rarely matches our option values character-for-
+// character (e.g. MAT might say "iTero 5D Plus Lite Cart" while our value
+// is "5D Plus Lite - Cart"), so match on significant words instead: score
+// each currently-available option (already scoped to this S/N's wand
+// family by parseSN/snFillModelDropdown) by whether ALL of its own words
+// show up somewhere in MAT's text, and auto-select the option with the
+// most words satisfied that way. Requiring full coverage (not just any
+// overlap) is what keeps "5D Plus - Cart" from winning over the correct
+// "5D Plus Lite - Cart" just because they share three words — the Lite
+// variant only wins when its own extra "LITE" word is also present in
+// MAT's text.
+function _matModelTokens(s) {
+  return (s || '').toUpperCase().split(/[^A-Z0-9]+/).filter(function(t) { return t && t !== 'ITERO'; });
+}
+
+function matMatchModel(matModelText, modelSel) {
+  var matTokens = _matModelTokens(matModelText);
+  if (!matTokens.length) return '';
+  var matSet = {};
+  matTokens.forEach(function(t) { matSet[t] = true; });
+
+  var best = '', bestCount = 0;
+  for (var i = 0; i < modelSel.options.length; i++) {
+    var val = modelSel.options[i].value;
+    if (!val || val === 'Office PC') continue;
+    var tokens = _matModelTokens(val);
+    if (!tokens.length) continue;
+    var allFound = tokens.every(function(t) { return matSet[t]; });
+    if (allFound && tokens.length > bestCount) {
+      best = val;
+      bestCount = tokens.length;
+    }
+  }
+  return best;
+}
+
 function matScrape(sn) {
+  // Same scanner already scraped and cached — just re-populate the fields
+  // from what we already have instead of re-running the whole MAT lookup
+  // (a real Selenium/browser round trip) for data we're not going to get
+  // any newer a second time.
+  if (_matData && _matData.serial === sn) {
+    matApplyData(_matData);
+    return Promise.resolve(_matData);
+  }
+
   _matScraping = true;
   _matData = null;
   matSetLoading(true);
@@ -3376,10 +3613,18 @@ function matScrape(sn) {
       return;
     }
 
+    _matData = d;
+    matApplyData(d);
+  });
+}
+
+// Populates every MAT-derived field (popup, Wand S/N, model auto-select,
+// Warranty auto-Active, company info, notes, status line) from a MAT
+// result — shared by a fresh scrape and by re-displaying already-cached
+// data when the same scanner is searched again.
+function matApplyData(d) {
     var wand = d.wand_sn || '';
     var reg  = d.reg_to  || '';
-
-    _matData = d;
 
     if (wand) {
       var wandEl = document.getElementById('in-wand-sn');
@@ -3401,6 +3646,21 @@ function matScrape(sn) {
     if (elReg)   elReg.textContent   = reg  || '—';
     if (elModel) elModel.textContent = d.scanner_model || '—';
 
+    if (d.scanner_model) {
+      var modelSel = document.getElementById('in-model');
+      if (modelSel) {
+        var matchedModel = matMatchModel(d.scanner_model, modelSel);
+        if (matchedModel && modelSel.value !== matchedModel) {
+          modelSel.value = matchedModel;
+          modelSel.style.borderColor = 'var(--green)';
+          updateWandModelBanner(modelSel.value);
+          syncWandTabFromModel(modelSel.value);
+          flRefreshSoftwareSubs();
+          flSyncFromIntake();
+        }
+      }
+    }
+
     if (elStatus) {
       var st = d.status || '';
       elStatus.textContent = st || '—';
@@ -3408,6 +3668,23 @@ function matScrape(sn) {
     }
     if (elPkg)    elPkg.textContent    = d.sw_package || 'empty';
     if (elExpiry) elExpiry.textContent = d.sw_expiry  || '—';
+
+    // Package still valid (expiry date is in the future)? Auto-mark the
+    // Warranty status as Active on a replacement ticket — but never
+    // overwrite a status the agent already picked themselves.
+    if (d.sw_expiry) {
+      var expiryDate = new Date(d.sw_expiry);
+      var reasonNow  = (document.getElementById('in-reason') || {}).value || '';
+      if (!isNaN(expiryDate.getTime()) && expiryDate > new Date() &&
+          REPLACEMENT_REASONS.indexOf(reasonNow) !== -1) {
+        var warrantySel = document.getElementById('in-reason-sub');
+        if (warrantySel && !warrantySel.value) {
+          warrantySel.value = 'Active';
+          reorderRefreshTrigger('in-reason-sub');
+          flBuildOutputs();
+        }
+      }
+    }
 
     var elCoId    = document.getElementById('mat-popup-company-id');
     var elCoName  = document.getElementById('mat-popup-company-name');
@@ -3442,7 +3719,6 @@ function matScrape(sn) {
     );
 
     matSetBtnReady(!!(wand || reg));
-  });
 }
 
 function matUpdateStatus(msg, state) {
@@ -3467,13 +3743,9 @@ function matToggleEnabled() {
   pyApi('mat_set_enabled', _matEnabled);
 }
 
-function matSaveCredentials() {
-  var email   = (document.getElementById('mat-email-inp')      || {}).value || '';
-  var pass    = (document.getElementById('mat-pass-inp')       || {}).value || '';
-  var show    = !!(document.getElementById('mat-show-browser-chk') || {}).checked;
-  if (!email) { alert('Enter MAT email.'); return; }
-  if (!pass)  { alert('Enter MAT password.'); return; }
-  pyApi('mat_save_credentials', email, pass, show, _matEnabled);
+function matSaveShowBrowser() {
+  var show = !!(document.getElementById('mat-show-browser-chk') || {}).checked;
+  pyApi('mat_save_show_browser', show);
 }
 
 // Deliberately doesn't prefill email/password — the settings panel never
@@ -3517,6 +3789,41 @@ function saveDebugMode() {
   pyApi('set_debug_mode', !!(chkEl && chkEl.checked));
 }
 
+// The CMD panel is already sitting in the DOM (just hidden/shown), so
+// unlike debug mode this setting applies immediately — no restart, just a
+// confirmation when turning it on since it's an elevated/Administrator
+// terminal. Front Line always stays hidden regardless of this setting.
+var _cmdVisible = false;
+
+function applyCmdVisibility(visible) {
+  var cmd = document.getElementById('cmd-panel-wrap');
+  var handle = document.getElementById('cmd-drag-handle');
+  if (cmd)    cmd.style.display    = visible ? '' : 'none';
+  if (handle) handle.style.display = visible ? '' : 'none';
+}
+
+function loadCmdVisible() {
+  pyApi('get_cmd_visible').then(function(r) {
+    if (!r || r.status !== 'ok') return;
+    _cmdVisible = !!(r.data || {}).cmd_visible;
+    var chkEl = document.getElementById('cmd-visible-chk');
+    if (chkEl) chkEl.checked = _cmdVisible;
+    if (currentRole && currentRole !== 'FL') applyCmdVisibility(_cmdVisible);
+  });
+}
+
+function onCmdVisibleToggle() {
+  var chkEl = document.getElementById('cmd-visible-chk');
+  if (!chkEl) return;
+  if (chkEl.checked) {
+    var confirmed = confirm('The CMD terminal runs commands with Administrator privileges. Only enable it if you know what you\'re doing.\n\nShow it now?');
+    if (!confirmed) { chkEl.checked = false; return; }
+  }
+  _cmdVisible = chkEl.checked;
+  pyApi('set_cmd_visible', _cmdVisible);
+  if (currentRole !== 'FL') applyCmdVisibility(_cmdVisible);
+}
+
 function sfSetStatus(msg, color, targetId) {
   var el = document.getElementById(targetId || 'sf-status-line');
   if (!el) return;
@@ -3548,10 +3855,19 @@ function tcClear() {
   if (debugBox) { debugBox.value = ''; debugBox.style.display = 'none'; }
 
   ['tc-f-matid', 'tc-f-address', 'tc-f-asset', 'tc-f-subject', 'tc-f-ordercomments',
-   'tc-f-tickettype', 'tc-f-issuetype', 'tc-f-subissuetype'].forEach(function(id) {
-    if (g(id)) g(id).textContent = '—';
+   'tc-f-tickettype', 'tc-f-issuetype', 'tc-f-subissuetype', 'tc-f-chargeable', 'tc-mail-check-text'].forEach(function(id) {
+    if (g(id)) { g(id).textContent = '—'; g(id).style.color = ''; }
   });
   if (g('tc-f-asset-label')) g('tc-f-asset-label').textContent = 'Asset';
+
+  var notReplacementBanner = g('tc-not-replacement-banner');
+  if (notReplacementBanner) notReplacementBanner.style.display = 'none';
+
+  var orderStatusBanner = g('tc-order-status-banner');
+  if (orderStatusBanner) orderStatusBanner.style.display = 'none';
+
+  var sapSoBanner = g('tc-sap-so-banner');
+  if (sapSoBanner) sapSoBanner.style.display = 'none';
 
   var fields = g('tc-fields');
   if (fields) fields.style.display = 'none';
@@ -3573,14 +3889,20 @@ function sfSetFieldsLoading() {
   var fields = document.getElementById('tc-fields');
   var g = function(id) { return document.getElementById(id); };
   ['tc-f-matid', 'tc-f-address', 'tc-f-asset', 'tc-f-subject', 'tc-f-ordercomments',
-   'tc-f-tickettype', 'tc-f-issuetype', 'tc-f-subissuetype'].forEach(function(id) {
-    if (g(id)) g(id).textContent = 'Loading…';
+   'tc-f-tickettype', 'tc-f-issuetype', 'tc-f-subissuetype', 'tc-f-chargeable', 'tc-mail-check-text'].forEach(function(id) {
+    if (g(id)) { g(id).textContent = 'Loading…'; g(id).style.color = ''; }
   });
   if (g('tc-f-asset-label')) g('tc-f-asset-label').textContent = 'Asset';
   ['tc-compare-row', 'tc-compare-matid-row', 'tc-compare-address-row', 'tc-compare-asset-row', 'tc-compare-support-row', 'tc-compare-returntype-row'].forEach(function(id) {
     var row = g(id);
     if (row) row.style.display = 'none';
   });
+  var notReplacementBanner = g('tc-not-replacement-banner');
+  if (notReplacementBanner) notReplacementBanner.style.display = 'none';
+  var orderStatusBanner = g('tc-order-status-banner');
+  if (orderStatusBanner) orderStatusBanner.style.display = 'none';
+  var sapSoBanner = g('tc-sap-so-banner');
+  if (sapSoBanner) sapSoBanner.style.display = 'none';
   var catWrap = g('tc-categorization-wrap');
   if (catWrap) catWrap.style.display = 'none';
   if (fields) fields.style.display = 'flex';
@@ -3667,13 +3989,17 @@ function sfReadTicketFields(statusId) {
 // No Scanner S/N was given up front — read the ticket once to get the
 // Subject, pull the S/N out of it (same SN_REGEX every other S/N field on
 // the page is matched against), mirror it into the intake bar, and only
-// then run MAT against it before showing fields/comparisons.
+// then run MAT against it before showing fields/comparisons. If the
+// Subject doesn't have one, fall back to whatever S/N is embedded in the
+// Asset text (e.g. "172923-YUC2021W13A183-SCANNER") before giving up.
 function sfDiscoverSnThenReadFields(statusId) {
   pyApiLong('sf_read_ticket').then(function(r) {
     if (!r || r.status !== 'ok') return;
     var d = r.data || {};
     var subjectM = (d.subject || '').toUpperCase().match(SN_REGEX);
-    var foundSn  = subjectM ? subjectM[0] : '';
+    var assetM   = !subjectM ? (d.asset || '').toUpperCase().match(SN_REGEX) : null;
+    var foundSn  = subjectM ? subjectM[0] : (assetM ? assetM[0] : '');
+    var foundIn  = subjectM ? 'Subject' : (assetM ? 'Asset' : '');
 
     if (foundSn) {
       var snEl = document.getElementById('in-serial');
@@ -3682,13 +4008,13 @@ function sfDiscoverSnThenReadFields(statusId) {
 
     if (!foundSn || !_matEnabled) {
       if (!foundSn) {
-        sfSetStatus('No Scanner S/N found in the ticket Subject — enter one manually to cross-check against MAT.', 'var(--amber)', statusId);
+        sfSetStatus('No Scanner S/N found in the ticket Subject or Asset — enter one manually to cross-check against MAT.', 'var(--amber)', statusId);
       }
       sfPopulateFieldsAndCompare(d, statusId);
       return;
     }
 
-    sfSetStatus('Scanner S/N found in Subject (' + foundSn + ') — running MAT…', 'var(--text3)', statusId);
+    sfSetStatus('Scanner S/N found in ' + foundIn + ' (' + foundSn + ') — running MAT…', 'var(--text3)', statusId);
     matScrape(foundSn).then(function() {
       sfPopulateFieldsAndCompare(d, statusId);
     });
@@ -3715,11 +4041,39 @@ function sfPopulateFieldsAndCompare(d, statusId) {
   if (g('tc-f-ordercomments')) g('tc-f-ordercomments').textContent = d.order_comments || '—';
   if (fields) fields.style.display = 'flex';
 
+  var notReplacementBanner = g('tc-not-replacement-banner');
+  if (notReplacementBanner) {
+    notReplacementBanner.style.display = _isReplacementTicket(d.subject) ? 'none' : '';
+  }
+
   if (g('tc-f-tickettype'))   g('tc-f-tickettype').textContent   = d.ticket_type || '—';
   if (g('tc-f-issuetype'))    g('tc-f-issuetype').textContent    = d.issue_type || '—';
   if (g('tc-f-subissuetype')) g('tc-f-subissuetype').textContent = d.sub_issue_type || '—';
   var catWrap = g('tc-categorization-wrap');
   if (catWrap) catWrap.style.display = '';
+
+  if (g('tc-f-chargeable')) g('tc-f-chargeable').textContent = d.chargeable || '—';
+
+  var orderStatusBanner = g('tc-order-status-banner');
+  if (orderStatusBanner) {
+    orderStatusBanner.style.display = (d.order_status || '').trim() ? '' : 'none';
+  }
+  var sapSoBanner = g('tc-sap-so-banner');
+  if (sapSoBanner) {
+    sapSoBanner.style.display = (d.sap_so || '').trim() ? '' : 'none';
+  }
+
+  var mailCheckText = g('tc-mail-check-text');
+  if (mailCheckText) {
+    if (d.mail_sent) {
+      mailCheckText.textContent = 'Sent';
+      mailCheckText.style.color = 'var(--green)';
+    } else {
+      mailCheckText.textContent = 'Not sent';
+      mailCheckText.style.color = 'var(--red)';
+    }
+  }
+
   checkCompareSN(d);
   checkCompareMatId(d);
   checkCompareAddress(d);
@@ -3845,7 +4199,12 @@ function _extractStateAbbr(addr) {
     var re = new RegExp('\\b' + name.replace(/ /g, '\\s+') + '\\b');
     if (re.test(up)) return _STATE_ABBR[name];
   }
-  var tokens = up.split(/[^A-Z]+/);
+  // Split on non-alphanumeric only (keep digits attached to adjacent
+  // letters) -- splitting on every non-letter, as before, tore ordinal
+  // street suffixes like "92nd" into "92" + "ND", and "ND" (North Dakota)
+  // then won the state match before a real "FL" later in the string ever
+  // got a chance.
+  var tokens = up.split(/[^A-Z0-9]+/);
   for (var j = 0; j < tokens.length; j++) {
     if (_STATE_ABBR_SET[tokens[j]]) return tokens[j];
   }
@@ -3877,7 +4236,9 @@ function _extractCountry(addr) {
     var re = new RegExp('\\b' + name.replace(/ /g, '\\s+') + '\\b');
     if (re.test(up)) return _COUNTRY_ABBR[name];
   }
-  var tokens = up.split(/[^A-Z]+/);
+  // Same digit/letter split as _extractStateAbbr, for the same reason —
+  // otherwise something like "92nd" could tear off a false "ND"-style token.
+  var tokens = up.split(/[^A-Z0-9]+/);
   // Bare "CA" is ambiguous with the California state abbreviation, so it's
   // deliberately not treated as a country token here — only the full
   // "Canada" (matched above) counts.
@@ -3953,6 +4314,12 @@ function checkCompareAddress(sfData) {
 // ticket even call for this check" test lives in exactly one place.
 function _isPpcReplacement(subject)  { return /PPC\s*Replacement/i.test(subject || ''); }
 function _isWandReplacement(subject) { return /Wand\s*Replacement/i.test(subject || ''); }
+
+// Broader than the two above — any of the recognized replacement types,
+// used only to flag tickets that aren't a replacement at all so the
+// disclaimer banner doesn't fire on the PPC/Wand-specific checks' turf.
+var _REPLACEMENT_SUBJECT_RE = /(Part|Wand|PPC|Monitor|Screen|Base\s*Unit|Unit)\s*Replacement/i;
+function _isReplacementTicket(subject) { return _REPLACEMENT_SUBJECT_RE.test(subject || ''); }
 
 // Two independent paths through the same "Asset Check" row, picked by what
 // the Subject says is being replaced:
@@ -4627,6 +4994,7 @@ function saveSessionHistory(){
 function resetDocFields(){
   var ids=['fl-caller-name','fl-caller-phone','fl-caller-email','fl-mat-id','fl-tvid','fl-tvpass','fl-issue-desc','fl-actions-extra','fl-subject-override'];
   ids.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  _lastAutoIssueDesc = '';
   var selects=['fl-outcome'];
   selects.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';})
   var chk=document.getElementById('fl-followup-chk');if(chk)chk.checked=false;
@@ -4636,6 +5004,7 @@ function resetDocFields(){
   _orderExtra = [];
   var orderExtraPanel = document.getElementById('fl-order-extra-panel'); if (orderExtraPanel) orderExtraPanel.style.display = 'none';
   _flSelectedKb = null;
+  _flKbManuallyAdded = false;
   _tvExtra = [];
   var tvExtraPanel = document.getElementById('fl-tv-extra-panel'); if (tvExtraPanel) tvExtraPanel.style.display = 'none';
   flUpdateTvExtraTooltip();
@@ -6083,12 +6452,13 @@ var ACCOUNT_SUBS = ['Add Relationship','Add a lab','Delete/Remove','Bridging','L
 var REASON_SUB_CATS = {
   'Account Management': ACCOUNT_SUBS,
   'Request':            ACCOUNT_SUBS.concat(['Expedite Case']),
-  'Hardware':           ['Wand Disconnections','Physical Damage','Battery','Power Issues',
+  'Hardware':           ['Issue','Wand Disconnections','Physical Damage','Battery','Power Issues',
                           'Webcam Issues','Touchscreen Issues','Wand Overheating','Faulty Wand Noises',
                           'Part Replacement','Cleaning & Disinfection'],
-  'Software':           ['Design Suite','IOSim','IOSim Pro','Oral Health Suite','iTero Needs to be Closed','Manual Registration','Duplicate Case',
+  'Software':           ['Issue','Design Suite','IOSim','IOSim Pro','Oral Health Suite','iTero Needs to be Closed','Manual Registration','Duplicate Case',
                           'Gray Screen Error','Slow Performance','Factory Reset','Scanning Assistance',
-                          'OrthoCAD','Lumina Issues','Progress Assessment','Rx / Case Procedure','Restorative/Ortho Scenario'],
+                          'OrthoCAD','Lumina Issues','Progress Assessment','Rx / Case Procedure','Restorative/Ortho Scenario',
+                          'Software Update','Clean Install'],
   'Third Party Software': ['Glidewell','exocad Milling','Dentrix Integration','DPMS / Lab Connector API'],
   'Networking':         ['Ports and IP','Basic Troubleshooting'],
   'Inquiry':            ['Pricing / Shipping Fees','POC List','Phone Extensions / IVR','Process Time Frames',
@@ -6248,6 +6618,11 @@ function kbSuggest(reason, sub, freeText) {
 }
 
 var _flSelectedKb = null;
+// Tech Support's simplified description just says "KB: added." without
+// naming a specific article, so its KB indicator can be toggled on/off
+// manually instead of requiring one of the suggested KB chips to be
+// picked. Kept separate from _flSelectedKb (a real, specific KB).
+var _flKbManuallyAdded = false;
 
 function flKbFullLabel(kb) {
   return kb.prefix ? kb.name + ' — ' + kb.prefix : kb.name;
@@ -6273,6 +6648,12 @@ function flUpdateKbIndicator() {
     btn.style.background  = 'var(--blue-bg)';
     if (path) { path.setAttribute('d', KB_IND_CHECK_PATH); path.setAttribute('stroke', 'var(--blue)'); }
     if (lbl) { lbl.style.color = 'var(--blue)'; lbl.textContent = 'KB ' + _flSelectedKb.kb_id; }
+  } else if (_flKbManuallyAdded) {
+    btn.title = 'KB added · click to remove';
+    btn.style.borderColor = 'var(--blue)';
+    btn.style.background  = 'var(--blue-bg)';
+    if (path) { path.setAttribute('d', KB_IND_CHECK_PATH); path.setAttribute('stroke', 'var(--blue)'); }
+    if (lbl) { lbl.style.color = 'var(--blue)'; lbl.textContent = 'KB'; }
   } else {
     btn.title = 'No KB added yet';
     btn.style.borderColor = 'var(--red)';
@@ -6287,6 +6668,92 @@ function flClearSelectedKb() {
   _flSelectedKb = null;
   flBuildOutputs();
 }
+
+// The KB indicator button doubles as: (1) for Tech Support's simpler
+// description (just "KB: added.", no specific article named), a manual
+// "KB used" toggle; (2) for every other role, the trigger for a popup
+// listing the suggested KBs (kbSuggest()) right at the button instead of
+// a row that used to sit inline, taking up space, whether or not anyone
+// was looking at it. Either way, clicking it while a KB is already
+// selected always just clears that selection first.
+function flToggleKbIndicator() {
+  if (_flSelectedKb) { flClearSelectedKb(); return; }
+
+  var role = (document.getElementById('in-role') || {}).value || currentRole || '';
+  if (role === 'TS') {
+    _flKbManuallyAdded = !_flKbManuallyAdded;
+    flBuildOutputs();
+    return;
+  }
+
+  if (document.getElementById('fl-kb-suggest-popup')) { _flCloseKbSuggestPopup(); return; }
+  flOpenKbSuggestPopup();
+}
+
+function _flCloseKbSuggestPopup() {
+  var popup = document.getElementById('fl-kb-suggest-popup');
+  if (popup) popup.remove();
+}
+
+function flOpenKbSuggestPopup() {
+  _flCloseKbSuggestPopup();
+
+  var reason = (document.getElementById('in-reason') || {}).value || '';
+  if (!reason) return; // nothing to suggest without a reason picked
+
+  var sub    = (document.getElementById('in-reason-sub')      || {}).value || '';
+  var desc   = (document.getElementById('fl-issue-desc')      || {}).value || '';
+  var custom = (document.getElementById('fl-subject-override') || {}).value || '';
+  var kbs = kbSuggest(reason, sub, desc + ' ' + custom);
+  if (!kbs.length) return;
+
+  var btn = document.getElementById('fl-kb-ind-btn');
+  if (!btn) return;
+
+  var popup = document.createElement('div');
+  popup.id = 'fl-kb-suggest-popup';
+  popup.className = 'reorder-panel'; // reuse the same floating-panel look
+  document.body.appendChild(popup);
+
+  kbs.forEach(function(kb) {
+    var row = document.createElement('div');
+    row.className = 'reorder-row';
+    row.title = 'KB ' + kb.kb_id + ' — ' + flKbFullLabel(kb) + ' (' + kb.category + ')';
+
+    var num = document.createElement('b');
+    num.textContent = 'KB ' + kb.kb_id;
+    num.style.cssText = 'font-weight:700;color:var(--text);flex-shrink:0';
+    row.appendChild(num);
+
+    var lbl = document.createElement('span');
+    lbl.textContent = ' — ' + kb.name;
+    lbl.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    row.appendChild(lbl);
+
+    row.addEventListener('click', function(e) {
+      e.stopPropagation();
+      flUseKb(kb);
+      _flCloseKbSuggestPopup();
+    });
+
+    popup.appendChild(row);
+  });
+
+  var r = btn.getBoundingClientRect();
+  popup.style.left = r.left + 'px';
+  popup.style.top = (r.bottom + 4) + 'px';
+  popup.style.width = Math.max(r.width, 260) + 'px';
+  popup.style.maxHeight = Math.min(320, window.innerHeight - r.bottom - 12) + 'px';
+}
+
+document.addEventListener('click', function(e) {
+  var popup = document.getElementById('fl-kb-suggest-popup');
+  if (!popup) return;
+  var btn = document.getElementById('fl-kb-ind-btn');
+  if (popup.contains(e.target)) return;
+  if (btn && btn.contains(e.target)) return;
+  _flCloseKbSuggestPopup();
+});
 
 function flToggleNotes() {
   var ta = document.getElementById('fl-agent-notes');
@@ -6359,57 +6826,14 @@ function flUpdateTvExtraTooltip() {
     : 'Add another TV ID / Pass';
 }
 
+// The suggested-KB list itself now only exists as the popup opened from
+// the KB indicator button (flOpenKbSuggestPopup) instead of an
+// always-in-flow row — this just keeps the indicator's own state current,
+// and live-refreshes the popup's contents if it happens to be open while
+// the technician keeps typing.
 function flRenderKbSuggestions() {
   flUpdateKbIndicator();
-
-  var box = document.getElementById('fl-kb-suggest');
-  if (!box) return;
-
-  box.innerHTML = '';
-
-  // Once a KB is added, the confirmation lives next to Follow Up — keep this
-  // row free for picking suggestions for a different KB if needed.
-  if (_flSelectedKb) { box.style.display = 'none'; return; }
-
-  var reason   = (document.getElementById('in-reason')     || {}).value || '';
-  // No reason picked yet -> nothing KB-related should show at all.
-  if (!reason) { box.style.display = 'none'; return; }
-
-  var sub      = (document.getElementById('in-reason-sub') || {}).value || '';
-  var desc     = (document.getElementById('fl-issue-desc') || {}).value || '';
-  var custom   = (document.getElementById('fl-subject-override') || {}).value || '';
-  var kbs = kbSuggest(reason, sub, desc + ' ' + custom);
-
-  if (!kbs.length) { box.style.display = 'none'; return; }
-  box.style.display = 'flex';
-
-  var label = document.createElement('span');
-  label.textContent = 'KB:';
-  label.style.color = 'var(--text3)';
-  label.style.flexShrink = '0';
-  box.appendChild(label);
-
-  kbs.forEach(function(kb) {
-    var chip = document.createElement('span');
-    chip.style.cssText = 'display:inline-block;border:1px solid var(--border2);border-radius:var(--r);padding:1px 8px;' +
-      'cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(320px,100%);vertical-align:bottom;color:var(--text2)';
-    chip.title = 'KB ' + kb.kb_id + ' — ' + flKbFullLabel(kb) + ' (' + kb.category + ')';
-
-    var num = document.createElement('b');
-    num.textContent = 'KB ' + kb.kb_id;
-    num.style.fontWeight = '700';
-    num.style.color = 'var(--text)';
-    chip.appendChild(num);
-    chip.appendChild(document.createTextNode(' — ' + kb.name));
-
-    chip.onmouseover = function() { chip.style.borderColor = 'var(--text2)'; chip.style.color = 'var(--text)'; };
-    chip.onmouseout  = function() { chip.style.borderColor = 'var(--border2)'; chip.style.color = 'var(--text2)'; };
-    chip.onclick = function(e) {
-      e.stopPropagation();
-      flUseKb(kb);
-    };
-    box.appendChild(chip);
-  });
+  if (document.getElementById('fl-kb-suggest-popup')) flOpenKbSuggestPopup();
 }
 
 function flUseKb(kb) {
@@ -6713,13 +7137,270 @@ function qaOpenEditor(idx) {
   document.body.appendChild(overlay);
 }
 
+// ── Reorderable dropdowns (Reason / Specific Issue) ─────────────────────
+// Native <select> elements can't support drag-to-reorder inside their own
+// popup, so these two get a custom trigger button + floating panel instead.
+// The <select> itself stays in the DOM (just visually hidden) as the real
+// value/onchange source of truth — every existing consumer (reasonChanged,
+// flSyncFromIntake, etc.) keeps working untouched; only how the user picks
+// a value changes.
+var _reorderOpenId = null;
+var _reorderDrag = null;
+
+function _reorderOrderKey(nativeId) {
+  if (nativeId === 'in-reason-sub') {
+    var reason = (document.getElementById('in-reason') || {}).value || '';
+    return 'itero_order_in-reason-sub__' + reason;
+  }
+  return 'itero_order_' + nativeId;
+}
+
+function _reorderLoadOrder(nativeId) {
+  try {
+    var arr = JSON.parse(localStorage.getItem(_reorderOrderKey(nativeId)) || '[]');
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) { return []; }
+}
+
+function _reorderSaveOrder(nativeId, values) {
+  try { localStorage.setItem(_reorderOrderKey(nativeId), JSON.stringify(values)); } catch (e) {}
+}
+
+// Reorders the native <select>'s actual <option> elements (skipping the
+// blank/"None" placeholder, which always stays first) to match whatever
+// order was saved for it. New options not yet in the saved order are
+// appended at the end; stale saved entries that no longer exist are
+// dropped — safe even as the underlying option lists change over time.
+function reorderApplySavedOrder(nativeId) {
+  var sel = document.getElementById(nativeId);
+  if (!sel) return;
+  var blank = null, opts = [];
+  Array.prototype.forEach.call(sel.options, function(o) {
+    if (o.value === '') blank = o; else opts.push(o);
+  });
+  var saved = _reorderLoadOrder(nativeId);
+  var byValue = {};
+  opts.forEach(function(o) { byValue[o.value] = o; });
+  var ordered = [];
+  saved.forEach(function(v) { if (byValue[v]) { ordered.push(byValue[v]); delete byValue[v]; } });
+  opts.forEach(function(o) { if (byValue[o.value]) ordered.push(o); });
+
+  var prevVal = sel.value;
+  if (blank) sel.appendChild(blank);
+  ordered.forEach(function(o) { sel.appendChild(o); });
+  sel.value = prevVal;
+}
+
+function _reorderTriggerId(nativeId) { return nativeId + '-reorder-btn'; }
+
+// Rebuilds the custom trigger's displayed label from the native select's
+// current value/options — call any time the native select's options or
+// value change from code (reasonChanged, flRefreshSoftwareSubs, initial
+// load...) so the visible trigger stays in sync.
+function reorderRefreshTrigger(nativeId) {
+  reorderApplySavedOrder(nativeId);
+  var sel = document.getElementById(nativeId);
+  var btn = document.getElementById(_reorderTriggerId(nativeId));
+  if (!sel || !btn) return;
+  var lbl = btn.querySelector('span');
+  var opt = sel.options[sel.selectedIndex];
+  if (lbl) lbl.textContent = opt ? opt.textContent : '';
+  if (_reorderOpenId === nativeId) _reorderRenderPanelRows(nativeId);
+}
+
+function _reorderCloseAll() {
+  var panel = document.getElementById('reorder-panel');
+  if (panel) panel.remove();
+  if (_reorderOpenId) {
+    var btn = document.getElementById(_reorderTriggerId(_reorderOpenId));
+    if (btn) btn.classList.remove('open');
+  }
+  _reorderOpenId = null;
+}
+
+function reorderToggle(nativeId, e) {
+  if (e) e.stopPropagation();
+  if (_reorderOpenId === nativeId) { _reorderCloseAll(); return; }
+  _reorderCloseAll();
+  _reorderOpenId = nativeId;
+  var btn = document.getElementById(_reorderTriggerId(nativeId));
+  if (btn) btn.classList.add('open');
+
+  var panel = document.createElement('div');
+  panel.id = 'reorder-panel';
+  panel.className = 'reorder-panel';
+  document.body.appendChild(panel);
+
+  _reorderPositionPanel(nativeId);
+  _reorderRenderPanelRows(nativeId);
+}
+
+function _reorderPositionPanel(nativeId) {
+  var btn = document.getElementById(_reorderTriggerId(nativeId));
+  var panel = document.getElementById('reorder-panel');
+  if (!btn || !panel) return;
+  var r = btn.getBoundingClientRect();
+  panel.style.left = r.left + 'px';
+  panel.style.top = (r.bottom + 4) + 'px';
+  panel.style.width = Math.max(r.width, 180) + 'px';
+  panel.style.maxHeight = Math.min(320, window.innerHeight - r.bottom - 12) + 'px';
+}
+
+// Reason and normal Specific Issue lists are user-orderable, but Warranty
+// (Specific Issue repurposed for Wand/PPC/Part Replacement) has a fixed,
+// meaningful order (Active, Inactive, ...) that shouldn't be shuffled.
+function _reorderIsDraggable(nativeId) {
+  if (nativeId !== 'in-reason-sub') return true;
+  var reason = (document.getElementById('in-reason') || {}).value || '';
+  return REPLACEMENT_REASONS.indexOf(reason) === -1;
+}
+
+function _reorderRenderPanelRows(nativeId) {
+  var sel = document.getElementById(nativeId);
+  var panel = document.getElementById('reorder-panel');
+  if (!sel || !panel) return;
+  panel.innerHTML = '';
+  var draggable = _reorderIsDraggable(nativeId);
+
+  Array.prototype.forEach.call(sel.options, function(opt) {
+    var row = document.createElement('div');
+    row.className = 'reorder-row' + (opt.value === sel.value ? ' selected' : '');
+    row.dataset.value = opt.value;
+
+    if (opt.value !== '' && draggable) {
+      var handle = document.createElement('span');
+      handle.className = 'reorder-handle';
+      handle.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none">' +
+        '<circle cx="4" cy="3" r="1" fill="currentColor"/><circle cx="8" cy="3" r="1" fill="currentColor"/>' +
+        '<circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="8" cy="6" r="1" fill="currentColor"/>' +
+        '<circle cx="4" cy="9" r="1" fill="currentColor"/><circle cx="8" cy="9" r="1" fill="currentColor"/></svg>';
+      handle.addEventListener('pointerdown', function(e) { _reorderDragStart(e, nativeId, row); });
+      row.appendChild(handle);
+    }
+
+    var lbl = document.createElement('span');
+    lbl.textContent = opt.textContent;
+    lbl.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    row.appendChild(lbl);
+
+    row.addEventListener('click', function() {
+      if (row.classList.contains('dragging') || row._justDragged) return;
+      sel.value = opt.value;
+      var btn = document.getElementById(_reorderTriggerId(nativeId));
+      var btnLbl = btn && btn.querySelector('span');
+      if (btnLbl) btnLbl.textContent = opt.textContent;
+      sel.dispatchEvent(new Event('change'));
+      _reorderCloseAll();
+    });
+
+    panel.appendChild(row);
+  });
+}
+
+function _reorderDragStart(e, nativeId, row) {
+  e.preventDefault();
+  e.stopPropagation();
+  var panel = document.getElementById('reorder-panel');
+  if (!panel) return;
+  var rows = Array.prototype.slice.call(panel.querySelectorAll('.reorder-row'));
+  var fromIndex = rows.indexOf(row);
+
+  _reorderDrag = {
+    nativeId: nativeId, row: row, rows: rows, fromIndex: fromIndex,
+    toIndex: fromIndex, rowH: row.offsetHeight, startY: e.clientY
+  };
+  row.classList.add('dragging');
+
+  document.addEventListener('pointermove', _reorderDragMove);
+  document.addEventListener('pointerup', _reorderDragEnd);
+}
+
+function _reorderDragMove(e) {
+  if (!_reorderDrag) return;
+  var d = _reorderDrag;
+  var dy = e.clientY - d.startY;
+  d.row.style.transform = 'translateY(' + dy + 'px)';
+
+  var newIndex = d.fromIndex + Math.round(dy / d.rowH);
+  newIndex = Math.max(0, Math.min(d.rows.length - 1, newIndex));
+  // Never let a row cross above the blank/"None" placeholder at index 0.
+  if (d.rows[0] && d.rows[0].dataset.value === '' && newIndex === 0) newIndex = 1;
+
+  if (newIndex !== d.toIndex) {
+    d.toIndex = newIndex;
+    d.rows.forEach(function(r, i) {
+      if (r === d.row) return;
+      var shift = 0;
+      if (d.fromIndex < d.toIndex && i > d.fromIndex && i <= d.toIndex) shift = -1;
+      if (d.fromIndex > d.toIndex && i < d.fromIndex && i >= d.toIndex) shift = 1;
+      r.style.transform = shift ? 'translateY(' + (shift * d.rowH) + 'px)' : '';
+    });
+  }
+}
+
+function _reorderDragEnd() {
+  if (!_reorderDrag) return;
+  var d = _reorderDrag;
+  document.removeEventListener('pointermove', _reorderDragMove);
+  document.removeEventListener('pointerup', _reorderDragEnd);
+
+  var reordered = d.rows.slice();
+  reordered.splice(d.fromIndex, 1);
+  reordered.splice(d.toIndex, 0, d.row);
+
+  d.rows.forEach(function(r) { r.style.transform = ''; });
+  d.row.classList.remove('dragging');
+
+  if (d.toIndex !== d.fromIndex) {
+    var values = reordered.map(function(r) { return r.dataset.value; }).filter(function(v) { return v !== ''; });
+    _reorderSaveOrder(d.nativeId, values);
+    reorderApplySavedOrder(d.nativeId);
+    d.row._justDragged = true;
+    setTimeout(function() { d.row._justDragged = false; }, 0);
+  }
+
+  _reorderRenderPanelRows(d.nativeId);
+  _reorderDrag = null;
+}
+
+document.addEventListener('click', function(e) {
+  if (!_reorderOpenId) return;
+  var panel = document.getElementById('reorder-panel');
+  var btn = document.getElementById(_reorderTriggerId(_reorderOpenId));
+  if (panel && panel.contains(e.target)) return;
+  if (btn && btn.contains(e.target)) return;
+  _reorderCloseAll();
+});
+
+// "FTI Reinstallation" only makes sense on the WOA/PLA scanner families
+// (Flex / LC variants and Lumina Mobile PLA) — guided by the selected
+// model, same WOA+PLA model list already used for the wand-photos flow.
+function flSoftwareSubIssues() {
+  var subs = (REASON_SUB_CATS['Software'] || []).slice();
+  var model = (document.getElementById('in-model') || {}).value || '';
+  var woaPla = (SN_MAP['WOA'].models || []).concat(SN_MAP['PLA'].models || []);
+  if (woaPla.indexOf(model) !== -1) subs.push('FTI Reinstallation');
+  return subs;
+}
+
+// Wand/PPC/Part Replacement build their subject in their own special
+// format (see flBuildSubjectReplacement) and repurpose the Specific Issue
+// dropdown into a Warranty status picker instead of a normal sub-issue list.
+var REPLACEMENT_REASONS = ['Wand Replacement', 'PPC Replacement', 'Part Replacement'];
+var WARRANTY_OPTIONS = ['Active', 'Inactive', 'Customer Satisfaction', 'Physical Damage', 'DOA'];
+
 function reasonChanged() {
+  reorderRefreshTrigger('in-reason');
+
   var reason = (document.getElementById('in-reason') || {}).value || '';
   var subSel = document.getElementById('in-reason-sub');
-  var subs   = REASON_SUB_CATS[reason] || [];
+  var isWarranty = REPLACEMENT_REASONS.indexOf(reason) !== -1;
+  var subs   = reason === 'Software' ? flSoftwareSubIssues()
+             : isWarranty ? WARRANTY_OPTIONS
+             : (REASON_SUB_CATS[reason] || []);
 
   if (subSel) {
-    subSel.innerHTML = '<option value="">Specific issue...</option>';
+    subSel.innerHTML = isWarranty ? '<option value="">Warranty</option>' : '<option value="">None</option>';
     subs.forEach(function(s) {
       var o = document.createElement('option');
       o.value = s; o.textContent = s;
@@ -6728,22 +7409,62 @@ function reasonChanged() {
     subSel.value = '';
     var subWrap = document.getElementById('in-reason-sub-wrap');
     if (subWrap) subWrap.style.display = subs.length ? '' : 'none';
+    reorderRefreshTrigger('in-reason-sub');
   }
   _flSelectedKb = null;
+  _flKbManuallyAdded = false;
   flSyncFromIntake();
 }
+
+// Keeps "FTI Reinstallation" in sync with the model without wiping an
+// already-picked specific issue — called whenever the model changes while
+// Software is the selected reason (reasonChanged() itself always resets
+// the selection, which would be disruptive to call on every model change).
+function flRefreshSoftwareSubs() {
+  var reason = (document.getElementById('in-reason') || {}).value || '';
+  if (reason !== 'Software') return;
+  var subSel = document.getElementById('in-reason-sub');
+  if (!subSel) return;
+
+  var prevVal = subSel.value;
+  var subs = flSoftwareSubIssues();
+
+  subSel.innerHTML = '<option value="">None</option>';
+  subs.forEach(function(s) {
+    var o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    subSel.appendChild(o);
+  });
+  subSel.value = subs.indexOf(prevVal) !== -1 ? prevVal : '';
+
+  var subWrap = document.getElementById('in-reason-sub-wrap');
+  if (subWrap) subWrap.style.display = subs.length ? '' : 'none';
+  reorderRefreshTrigger('in-reason-sub');
+
+  flSyncFromIntake();
+}
+
+// Tech Support writes up tickets in its own format — everywhere else in
+// the app calls a scanner "Element 2 5D" etc., but TS shorthand only
+// abbreviates the Element line; every other model keeps its normal name.
+var TS_MODEL_ABBR = { 'Element 2 5D': 'E2 5D', 'Element 2': 'E2' };
 
 // Build subject line immediately from available data (no AI needed)
 function flBuildSubject() {
   var el = document.getElementById('fl-out-subject');
   if (!el) return;
 
+  var reasonVal = (document.getElementById('in-reason') || {}).value || '';
+  if (REPLACEMENT_REASONS.indexOf(reasonVal) !== -1) { flBuildSubjectReplacement(el); return; }
+
+  var role = (document.getElementById('in-role') || {}).value || currentRole || '';
+  if (role === 'TS') { flBuildSubjectTS(el); return; }
+
   var sn       = (document.getElementById('in-serial')          || {}).value || '';
   var model    = (document.getElementById('in-model')           || {}).value || '';
   var reason   = (document.getElementById('in-reason')          || {}).value || '';
   var sub      = (document.getElementById('in-reason-sub')      || {}).value || '';
   var custom   = ((document.getElementById('fl-subject-override') || {}).value || '').trim();
-  var role     = (document.getElementById('in-role')            || {}).value || currentRole || '';
   var label    = reason && sub ? reason + ' — ' + sub : reason;
 
   var sep = '<span style="color:var(--border2);font-weight:300"> | </span>';
@@ -6763,6 +7484,65 @@ function flBuildSubject() {
     : '<span style="color:var(--text3);font-family:var(--mono);font-size:11px">—</span>';
 }
 
+// Tech Support subject format: Reason | Model | PPC SN: X / Wand SN: Y | Specific issue
+function flBuildSubjectTS(el) {
+  var sn      = (document.getElementById('in-serial')     || {}).value || '';
+  var wandSn  = (document.getElementById('in-wand-sn')    || {}).value || '';
+  var model   = (document.getElementById('in-model')      || {}).value || '';
+  var reason  = (document.getElementById('in-reason')     || {}).value || '';
+  var sub     = (document.getElementById('in-reason-sub') || {}).value || '';
+  var modelLabel = TS_MODEL_ABBR[model] || model;
+
+  var snParts = [];
+  if (sn)     snParts.push('PPC SN: ' + sn);
+  if (wandSn) snParts.push('Wand SN: ' + wandSn);
+  var snCombo = snParts.join(' / ');
+
+  var sep = '<span style="color:var(--border2);font-weight:300"> | </span>';
+  var htmlParts = [];
+  if (reason)     htmlParts.push('<span style="font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.01em;color:var(--amber)">' + hEsc(reason)     + '</span>');
+  if (modelLabel) htmlParts.push('<span style="font-family:var(--sans);font-size:12px;color:var(--text)">'                                        + hEsc(modelLabel) + '</span>');
+  if (snCombo)    htmlParts.push('<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue)">'                        + hEsc(snCombo)    + '</span>');
+  if (sub)        htmlParts.push('<span style="font-family:var(--sans);font-size:12px;color:var(--text2)">'                                       + hEsc(sub)        + '</span>');
+
+  el.innerHTML = htmlParts.length
+    ? htmlParts.join(sep)
+    : '<span style="color:var(--text3);font-family:var(--mono);font-size:11px">—</span>';
+}
+
+// Wand/PPC/Part Replacement subject format:
+// Reason | Model | PPC SN: X [/ Wand SN: Y] | Subject text | Warranty: Z
+// — Wand SN only appears for Wand Replacement (never PPC/Part Replacement),
+// and the free-text "Subject text" override sits between the S/N block and
+// the Warranty status (itself picked from the repurposed Specific Issue
+// dropdown — see reasonChanged's WARRANTY_OPTIONS branch).
+function flBuildSubjectReplacement(el) {
+  var reason  = (document.getElementById('in-reason')          || {}).value || '';
+  var sn      = (document.getElementById('in-serial')          || {}).value || '';
+  var wandSn  = (document.getElementById('in-wand-sn')         || {}).value || '';
+  var model   = (document.getElementById('in-model')           || {}).value || '';
+  var custom  = ((document.getElementById('fl-subject-override') || {}).value || '').trim();
+  var warranty = (document.getElementById('in-reason-sub')     || {}).value || '';
+  var modelLabel = model.replace(/\s*-\s*/g, ' ');
+
+  var snParts = [];
+  if (sn) snParts.push('PPC SN: ' + sn);
+  if (wandSn && reason === 'Wand Replacement') snParts.push('Wand SN: ' + wandSn);
+  var snCombo = snParts.join(' / ');
+
+  var sep = '<span style="color:var(--border2);font-weight:300"> | </span>';
+  var htmlParts = [];
+  if (reason)     htmlParts.push('<span style="font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.01em;color:var(--amber)">' + hEsc(reason)     + '</span>');
+  if (modelLabel) htmlParts.push('<span style="font-family:var(--sans);font-size:12px;color:var(--text)">'                                        + hEsc(modelLabel) + '</span>');
+  if (snCombo)    htmlParts.push('<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue)">'                        + hEsc(snCombo)    + '</span>');
+  if (custom)     htmlParts.push('<span style="font-family:var(--sans);font-size:12px;color:var(--text2)">'                                       + hEsc(custom)     + '</span>');
+  if (warranty)   htmlParts.push('<span style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--green)">'                       + hEsc('Warranty: ' + warranty) + '</span>');
+
+  el.innerHTML = htmlParts.length
+    ? htmlParts.join(sep)
+    : '<span style="color:var(--text3);font-family:var(--mono);font-size:11px">—</span>';
+}
+
 // Build outputs in real time (subject only — description needs AI)
 function flFollowupToggle() {
   var chk = document.getElementById('fl-followup-chk');
@@ -6776,7 +7556,7 @@ function flFollowupToggle() {
   flBuildOutputs();
 }
 
-function fillIssueFromSubject() {
+function flComputeIssueFromSubject() {
   var cat = (document.getElementById('in-reason') || {}).value || '';
   var sub = (document.getElementById('in-reason-sub') || {}).value || '';
   var catLabel = cat && sub ? cat + ' — ' + sub : cat;
@@ -6784,13 +7564,69 @@ function fillIssueFromSubject() {
   var parts = [];
   if (catLabel) parts.push(catLabel);
   if (custom)   parts.push(custom);
+  return parts.join(' - ');
+}
+
+function fillIssueFromSubject() {
   var el = document.getElementById('fl-issue-desc');
-  if (el) { el.value = parts.join('. '); flBuildOutputs(); }
+  if (!el) return;
+  var text = flComputeIssueFromSubject();
+  el.value = text;
+  _lastAutoIssueDesc = text;
+  flBuildOutputs();
+}
+
+// Keeps Issue Description synced with Reason / Specific Issue / Subject
+// text automatically, but the moment the field holds anything other than
+// what was last auto-filled here, it backs off and leaves it alone — that
+// "anything else" is the technician's own notes, never overwritten.
+var _lastAutoIssueDesc = '';
+function flAutoSyncIssueDesc() {
+  var el = document.getElementById('fl-issue-desc');
+  if (!el) return;
+  var current = el.value || '';
+  if (current !== '' && current !== _lastAutoIssueDesc) return;
+  var text = flComputeIssueFromSubject();
+  if (text === current) { _lastAutoIssueDesc = text; return; }
+  el.value = text;
+  _lastAutoIssueDesc = text;
+}
+
+// Tech Support's description format — bullet groups separated by a blank
+// line, matching their write-up convention exactly (name/phone together,
+// then S/N, then KB only if one was actually used, then call details and
+// actions taken each with their text on the following line).
+function flBuildDescriptionTS(o) {
+  var tm = typeof tmActive !== 'undefined' && tmActive;
+  var callerRole = tm ? 'TM' : 'Dental Office';
+  var kbAdded = !!(_flSelectedKb || _flKbManuallyAdded);
+
+  var groups = [];
+
+  groups.push(
+    '‣ Customer\'s phone number: ' + (o.phone || 'N/A') + '\n' +
+    '‣ Customer\'s name: ' + (o.caller || 'N/A') + '. Role: ' + callerRole + '.'
+  );
+
+  var snParts = [];
+  if (o.sn)     snParts.push('PPC SN: ' + o.sn);
+  if (o.wandSn) snParts.push('Wand SN: ' + o.wandSn);
+  groups.push('‣ ' + (snParts.length ? snParts.join(' / ') : 'PPC SN: N/A'));
+
+  if (kbAdded) groups.push('‣ KB: added.');
+
+  groups.push('‣ Call details: \n' + (o.issueText || 'N/A'));
+
+  var actionsFinal = o.actionsText ? o.actionsText.trim().replace(/\.?\s*$/, '.') : 'N/A';
+  groups.push('‣ Actions taken: \n' + actionsFinal);
+
+  return groups.join('\n\n');
 }
 
 function flBuildOutputs() {
   autoStartSession();
   flBuildSubject();
+  flAutoSyncIssueDesc();
   flRenderKbSuggestions();
 
   var sn       = (document.getElementById('in-serial')        || {}).value || '';
@@ -6831,6 +7667,19 @@ function flBuildOutputs() {
   if (allChipText) actionsParts.push(allChipText);
   if (extra)       actionsParts.push(extra.trim());
   var actionsText = actionsParts.join(' ');
+
+  var role = (document.getElementById('in-role') || {}).value || currentRole || '';
+  if (role === 'TS') {
+    var wandSn = (document.getElementById('in-wand-sn') || {}).value || '';
+    var descElTS = document.getElementById('fl-out-desc');
+    if (descElTS) {
+      descElTS.textContent = flBuildDescriptionTS({
+        caller: caller, phone: phone, sn: sn, wandSn: wandSn,
+        issueText: issueText, actionsText: actionsText
+      });
+    }
+    return;
+  }
 
   var textParts = [
     'CALLER\'S NAME: ' + (caller || 'N/A'),

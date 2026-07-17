@@ -199,6 +199,9 @@ class ToolboxAPI:
     def mat_set_enabled(self, enabled):
         return backend.mat_set_enabled(enabled)
 
+    def mat_save_show_browser(self, show_browser):
+        return backend.mat_save_show_browser(show_browser)
+
     def mat_scrape(self, serial=""):
         return backend.mat_scrape(serial)
 
@@ -229,6 +232,12 @@ class ToolboxAPI:
 
     def set_debug_mode(self, enabled=False):
         return backend.set_debug_mode(enabled)
+
+    def get_cmd_visible(self):
+        return backend.get_cmd_visible()
+
+    def set_cmd_visible(self, enabled=False):
+        return backend.set_cmd_visible(enabled)
 
     # ── KB data (Subject Constructor) ───────
     def get_kb_data(self):

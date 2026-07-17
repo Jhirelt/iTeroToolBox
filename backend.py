@@ -1184,6 +1184,24 @@ def set_debug_mode(enabled=False):
         return err(f"Could not save: {e}")
 
 
+def get_cmd_visible():
+    return ok({"cmd_visible": bool(_load_app_cfg().get("cmd_visible", False))})
+
+
+def set_cmd_visible(enabled=False):
+    """Unlike debug_mode, this applies live — the CMD panel is already in
+    the DOM, just hidden/shown by the frontend, no relaunch needed."""
+    try:
+        cfg = _load_app_cfg()
+        cfg["cmd_visible"] = bool(enabled)
+        os.makedirs(os.path.dirname(_APP_CFG_PATH), exist_ok=True)
+        with open(_APP_CFG_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg, f)
+        return ok(bool(enabled))
+    except Exception as e:
+        return err(f"Could not save: {e}")
+
+
 # ─────────────────────────────────────────────
 # MAT (myaligntech.com) SCRAPER
 # ─────────────────────────────────────────────
@@ -1194,7 +1212,11 @@ _MAT_CFG_PATH     = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroT
 _MAT_PROFILE_DIR  = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroToolBox", "mat_profile")
 _mat_driver = None  # kept alive between calls — same window/session reused
 
-_SCANNER_TAB_ID  = "ui-id-5"
+_SCANNER_PANEL_ID = "ctl00_body_tabsContainer_scannerTab"
+# aria-controls lives on the <li role="tab">, not the <a> inside it — the
+# anchor is what jQuery UI actually binds the click handler to, so select
+# through the stable li and click its child anchor.
+_SCANNER_TAB_CSS  = f"li[aria-controls='{_SCANNER_PANEL_ID}'] a"
 _SCANNER_SN_ID   = "ctl00_body_tabsContainer_scannerTab_txtScanner"
 _SCANNER_OK_ID   = "ctl00_body_tabsContainer_scannerTab_btnScanner"
 _WAND_SN_ID      = "ctl00_body_txtEmbeddedHeadSerialIdentifier"
@@ -1256,6 +1278,22 @@ def mat_set_enabled(enabled):
         with open(_MAT_CFG_PATH, "w", encoding="utf-8") as f:
             json.dump(cfg, f)
         return ok(bool(enabled))
+    except Exception as e:
+        return err(str(e))
+
+
+def mat_save_show_browser(show_browser):
+    """Toggle MAT's browser visibility without touching credentials."""
+    try:
+        cfg = {}
+        if os.path.exists(_MAT_CFG_PATH):
+            with open(_MAT_CFG_PATH, encoding="utf-8") as f:
+                cfg = json.load(f)
+        cfg["show_browser"] = bool(show_browser)
+        os.makedirs(os.path.dirname(_MAT_CFG_PATH), exist_ok=True)
+        with open(_MAT_CFG_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg, f)
+        return ok(bool(show_browser))
     except Exception as e:
         return err(str(e))
 
@@ -1459,10 +1497,15 @@ def mat_scrape(serial):
                 return ok({"status_text": "login_required"},
                           msg="Log in on the MAT window that opened, then try again.")
 
-        # ── Click Scanner tab via JS (jQuery UI anchor with tabindex=-1) ───
-        wait.until(EC.presence_of_element_located((By.ID, _SCANNER_TAB_ID)))
+        # ── Click Scanner tab via JS (jQuery UI anchor with tabindex=-1) ──
+        # Target by aria-controls (tied to the stable scannerTab panel id)
+        # rather than the tab anchor's own id — jQuery UI assigns those as
+        # "ui-id-N" in page order, which silently points at a different tab
+        # (e.g. Wand) if MAT ever adds/reorders a tab ahead of Scanner.
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, _SCANNER_TAB_CSS)))
         driver.execute_script(
-            "document.getElementById(arguments[0]).click();", _SCANNER_TAB_ID
+            "var a = document.querySelector(arguments[0]); if (a) a.click();",
+            _SCANNER_TAB_CSS
         )
         # Wait for the scanner SN input to become visible inside the tab panel
         wait.until(EC.visibility_of_element_located((By.ID, _SCANNER_SN_ID)))
@@ -1634,6 +1677,7 @@ _SF_HOME_URL    = "https://aligntech.lightning.force.com/lightning/page/home"
 _SF_PROFILE_DIR = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroToolBox", "sf_profile")
 _SF_CFG_PATH    = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroToolBox", "sf_config.json")
 _sf_driver      = None  # kept alive between calls — same window/session reused
+_sf_mail_sent   = False  # set by sf_open_ticket's mail check, read back by sf_read_ticket
 
 
 def sf_load_settings():
@@ -1735,6 +1779,102 @@ def sf_open_home():
         return ok(None, msg="Salesforce opened.")
     except Exception as e:
         return err(f"Error opening Salesforce: {e}")
+
+
+_MAIL_DEEP_TEXT_JS = r"""
+function deepText(el) {
+    var text = '';
+    function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) { text += node.textContent; return; }
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        if (node.tagName === 'BR') { text += '\n'; return; }
+        if (node.shadowRoot) {
+            var sc = node.shadowRoot.childNodes;
+            for (var i = 0; i < sc.length; i++) walk(sc[i]);
+        }
+        var kids = node.childNodes;
+        for (var j = 0; j < kids.length; j++) walk(kids[j]);
+    }
+    walk(document.body);
+    return text;
+}
+return deepText();
+"""
+
+
+def _sf_find_text_all_frames(driver, script, needle, max_depth=4):
+    """Best-effort: run `script` (returns page text) in the top document and
+    every iframe in turn until one contains `needle`. The email composer's
+    rich-text body commonly renders inside its own iframe, same as the
+    Case detail fields do for their own reasons (see _sf_search_all_frames)."""
+    from selenium.webdriver.common.by import By
+
+    def search(depth):
+        try:
+            text = driver.execute_script(script) or ""
+        except Exception:
+            text = ""
+        if needle in text:
+            return text
+        if depth >= max_depth:
+            return ""
+        try:
+            frames = driver.find_elements(By.TAG_NAME, "iframe") + driver.find_elements(By.TAG_NAME, "frame")
+        except Exception:
+            frames = []
+        for fr in frames:
+            try:
+                driver.switch_to.frame(fr)
+            except Exception:
+                continue
+            try:
+                sub = search(depth + 1)
+            except Exception:
+                sub = ""
+            driver.switch_to.parent_frame()
+            if sub:
+                return sub
+        return ""
+
+    driver.switch_to.default_content()
+    try:
+        return search(0)
+    finally:
+        driver.switch_to.default_content()
+
+
+def _sf_check_mail_sent(driver, ticket_number):
+    """Click into the case's "Send an Email" tab and check whether a prior
+    email about this ticket was actually sent to someone: the compose
+    Subject auto-fills from the last email in the thread, and the quoted
+    "Original Message" body underneath it shows that email's own To: line.
+    Best-effort and non-fatal — any failure here just means the Mail Check
+    comes back not-sent, it never blocks the rest of the ticket read."""
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+
+    try:
+        wait = WebDriverWait(driver, 10)
+        tab = wait.until(EC.element_to_be_clickable(
+            (By.CSS_SELECTOR, "a[data-target-selection-name='Case.Send_an_EmailTab']")))
+        driver.execute_script("arguments[0].click();", tab)
+        time.sleep(1.5)
+
+        subject_el = wait.until(EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "input[placeholder='Enter Subject...']")))
+        subject_val = subject_el.get_attribute("value") or ""
+        if ticket_number not in subject_val:
+            return False
+
+        body_text = _sf_find_text_all_frames(driver, _MAIL_DEEP_TEXT_JS, "Original Message")
+        if "Original Message" not in body_text:
+            return False
+
+        m = re.search(r"To:\s*([^\n]*)", body_text)
+        return bool(m and m.group(1).strip())
+    except Exception:
+        return False
 
 
 def sf_open_ticket(ticket_number=""):
@@ -1841,14 +1981,35 @@ def sf_open_ticket(ticket_number=""):
                     break
             except Exception:
                 continue
-        if record_handle is None and new_handles:
-            driver.switch_to.window(new_handles[-1])
-        elif record_handle is not None:
-            driver.switch_to.window(record_handle)
+
+        # Any other window that popped open alongside the ticket (most
+        # commonly that Twilio softphone tab) shares this same Salesforce
+        # identity — leaving it open can knock the technician's own,
+        # separate softphone session offline, since Twilio Client
+        # typically allows only one live connection per identity. Close
+        # everything except the one we're actually keeping.
+        keep_handle = record_handle or (new_handles[-1] if new_handles else None)
+        for h in new_handles:
+            if h == keep_handle:
+                continue
+            try:
+                driver.switch_to.window(h)
+                driver.close()
+            except Exception:
+                pass
+
+        if keep_handle is not None:
+            driver.switch_to.window(keep_handle)
 
         # Give the record page's LWCs a moment to finish rendering before
         # anything tries to read fields off it.
         time.sleep(3)
+
+        # First thing on landing on the ticket, before anything else reads
+        # a single field off it — click into "Send an Email" and check
+        # whether a prior email for this ticket actually went out.
+        global _sf_mail_sent
+        _sf_mail_sent = _sf_check_mail_sent(driver, ticket_number)
 
         return ok({"status_text": "opened"}, msg=f"Ticket {ticket_number} opened.")
 
@@ -1910,9 +2071,13 @@ function deepText(el) {
     return text.replace(/[ \t]*\n[ \t]*/g, '\n').trim();
 }
 
-function findValueElementIn(containers) {
+// Looks only inside each given container -- no climbing outside it. Used
+// for field-label hosts (see findValueElementByLabel below), where the
+// value is always nested directly inside the host itself, so reaching
+// outside it risks grabbing a neighboring field's value instead of
+// correctly reporting "empty".
+function findValueDirectlyIn(containers) {
     for (var i = 0; i < containers.length; i++) {
-        // Try inside the target container itself first.
         var valEls = deepQueryAll('.test-id__field-value', containers[i]);
         for (var j = 0; j < valEls.length; j++) {
             if (deepText(valEls[j])) return valEls[j];
@@ -1921,6 +2086,14 @@ function findValueElementIn(containers) {
         for (var d = 0; d < direct.length; d++) {
             if (deepText(direct[d])) return direct[d];
         }
+    }
+    return null;
+}
+
+function findValueElementIn(containers) {
+    var found = findValueDirectlyIn(containers);
+    if (found) return found;
+    for (var i = 0; i < containers.length; i++) {
         // The actual value is often NOT nested inside this div in the real
         // (unflattened) DOM -- it's a light-DOM child that lives one or more
         // levels up (on the records-record-layout-item host, or further if
@@ -1949,12 +2122,16 @@ function findValueElement(targetName) {
 // <records-record-layout-item> carries a field-label attribute holding the
 // exact label text shown on the page (confirmed live: field-label="Additional
 // Support" wraps the "Additional Support" field) -- so look it up by that
-// visible label instead of guessing the underlying API field name.
+// visible label instead of guessing the underlying API field name. Deliberately
+// uses findValueDirectlyIn (no ancestor climb) — the value already lives
+// inside this host, and climbing out of it is what caused Order Status and
+// SAP SO to falsely report a neighboring field's value when they were
+// actually empty.
 function findValueElementByLabel(labelText) {
     var hosts = deepQueryAll('records-record-layout-item[field-label]').filter(function(el) {
         return (el.getAttribute('field-label') || '').trim().toLowerCase() === labelText.toLowerCase();
     });
-    return findValueElementIn(hosts);
+    return findValueDirectlyIn(hosts);
 }
 
 function fieldValue(targetName) {
@@ -2007,6 +2184,9 @@ return {
     ticket_type: fieldValueByLabel("Ticket Type"),
     issue_type: fieldValueByLabel("Issue Type"),
     sub_issue_type: fieldValueByLabel("Sub-Issue Type"),
+    chargeable: fieldValueByLabel("Is It Chargeable?"),
+    order_status: fieldValueByLabel("Order Status"),
+    sap_so: fieldValueByLabel("Sales Order(iTero/Webstore/Event/Cntrct)"),
     debug_container_found: matContainers.length,
     debug_value_el_found: matValueEls.length,
     debug_raw_html: matAncestorHtml.slice(0, 4000)
@@ -2091,6 +2271,9 @@ def sf_read_ticket():
     ticket_type        = (data.get("ticket_type") or "").strip()
     issue_type         = (data.get("issue_type") or "").strip()
     sub_issue_type     = (data.get("sub_issue_type") or "").strip()
+    chargeable         = (data.get("chargeable") or "").strip()
+    order_status       = (data.get("order_status") or "").strip()
+    sap_so             = (data.get("sap_so") or "").strip()
 
     # Asset text carries an internal record prefix before the actual
     # scanner S/N (e.g. "Preview223167-YUC2022W18A103-SCANNER") — drop
@@ -2112,6 +2295,12 @@ def sf_read_ticket():
         "ticket_type":        ticket_type or "Empty",
         "issue_type":         issue_type or "Empty",
         "sub_issue_type":     sub_issue_type or "Empty",
+        "chargeable":         chargeable or "Empty",
+        # Left raw (not defaulted to "Empty") — the frontend hides these two
+        # entirely when blank instead of displaying a placeholder.
+        "order_status":       order_status,
+        "sap_so":             sap_so,
+        "mail_sent":          _sf_mail_sent,
     }
 
     if not mat_id:
