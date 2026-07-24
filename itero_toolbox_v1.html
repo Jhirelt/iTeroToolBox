@@ -63,6 +63,13 @@ html.roronoa #brand-square{display:none}
 html.roronoa #brand-mini-btn{display:inline-flex !important}
 html.roronoa #issue-mascot-roronoa{display:block !important}
 html.roronoa #fl-actions-extra{padding-right:230px !important}
+/* Keeps typed text from ever running under the corner mascot (#issue-mascot
+   is 100px wide in every theme that shows it) — text can get close to the
+   image, it just can't overlap it. */
+html.pompompurin #fl-actions-extra,
+html.melody #fl-actions-extra,
+html.itachi #fl-actions-extra,
+html.uzumaki #fl-actions-extra{padding-right:115px !important}
 html.melody{
   --bg:#fdf3f9;--bg2:#fff8fc;--bg3:#f3ddec;--bg4:#ecc9e3;
   --border:#ddb2ee;--border2:#c98fd4;
@@ -391,6 +398,23 @@ html.size-large #sidebar-icons{zoom:1.3}
   border-color: var(--blue);
   color: var(--blue);
 }
+/* Higher-contrast variant for small utility toggles (TM, CB, the 1/2/3
+   attempt chips, VM) — these are controls the technician has to spot and
+   read at a glance, not descriptive tags, so they get the full-strength
+   text/border colors instead of .fl-chip's deliberately muted look. Every
+   color here is a theme variable, so this reads clearly in every theme. */
+.fl-chip-strong {
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg4);
+  border-color: var(--border2);
+}
+.fl-chip-strong:hover { border-color: var(--blue); color: var(--blue); }
+.fl-chip-strong.fl-chip-active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
 
 /* ── Responsive ───────────────────────────────────────── */
 
@@ -594,6 +618,7 @@ html.size-large #sidebar-icons{zoom:1.3}
             </div>
             <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
               <button id="mat-toggle-btn" class="btn-sm" onclick="matToggleEnabled()" style="min-width:40px">OFF</button>
+              <button class="btn-sm r" onclick="matLogout()" style="flex:1" title="Wipes the saved MAT session — next search needs a one-time manual login">Log out</button>
             </div>
           </div>
         </div>
@@ -614,7 +639,7 @@ html.size-large #sidebar-icons{zoom:1.3}
           </div>
           <div style="display:flex;align-items:center;gap:6px">
             <button class="btn-sm p" onclick="sfOpenHome()">ON</button>
-            <button class="btn-sm r" onclick="sfCloseBrowser()">Close session</button>
+            <button class="btn-sm r" onclick="sfLogout()" title="Wipes the saved Salesforce SSO session — next search needs a one-time manual login">Log out</button>
           </div>
         </div>
       </div>
@@ -640,7 +665,7 @@ html.size-large #sidebar-icons{zoom:1.3}
 
 <!-- INTAKE BAR -->
 <div class="intake-bar" id="intake-bar">
- <div style="display:grid;grid-template-columns:241px 155px 1px 155px;column-gap:10px;align-items:center;width:100%;box-sizing:border-box;min-width:0">
+ <div id="intake-row1" style="display:grid;grid-template-columns:241px 155px 1px 155px;column-gap:10px;align-items:center;width:100%;box-sizing:border-box;min-width:0">
   <div id="sn-wrap" style="display:flex;flex-direction:row;gap:6px;align-items:center;min-width:0;overflow:hidden">
     <div style="position:relative;flex-shrink:0;width:155px;min-width:0">
       <input class="iinput serial" id="in-serial" placeholder="Scanner S/N" autocomplete="off"
@@ -657,7 +682,7 @@ html.size-large #sidebar-icons{zoom:1.3}
       style="width:80px;min-width:0;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px;font-family:var(--mono);flex-shrink:0">
   </div>
   <div id="in-model-wrap" style="min-width:0;overflow:hidden">
-  <select class="iinput" id="in-model" style="width:100%;min-width:0;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onchange="toggleSnField(this.value);updateSF();highlightNKeys(this.value);updateWandModelBanner(this.value);syncWandTabFromModel(this.value);checkSlfddModelCompat();if(document.getElementById('panel-partscatalog').classList.contains('active'))loadCatalog();flRefreshSoftwareSubs();flSyncFromIntake()">
+  <select class="iinput" id="in-model" style="width:100%;min-width:0;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onchange="toggleSnField(this.value);applyOfficePcMode(this.value);updateSF();highlightNKeys(this.value);updateWandModelBanner(this.value);syncWandTabFromModel(this.value);checkSlfddModelCompat();if(document.getElementById('panel-partscatalog').classList.contains('active'))loadCatalog();flRefreshSoftwareSubs();flSyncFromIntake()">
     <option value="">Model</option>
     <option value="Office PC">Office PC</option>
     <option value="Element 2">Element 2</option>
@@ -700,43 +725,46 @@ html.size-large #sidebar-icons{zoom:1.3}
   </button>
   </div>
  </div>
- <div id="intake-row2" style="display:grid;grid-template-columns:auto 1fr auto;column-gap:10px;align-items:center;width:100%;box-sizing:border-box;min-width:0;margin-top:8px">
+ <div id="intake-row2" style="display:grid;grid-template-columns:auto 1fr auto auto;column-gap:10px;align-items:center;width:100%;box-sizing:border-box;min-width:0;margin-top:8px">
   <div id="in-reason-sub-wrap" style="display:none;width:140px;min-width:0;overflow:hidden;position:relative">
   <select class="iinput" id="in-reason-sub" style="display:none" onchange="flSyncFromIntake()">
-    <option value="">None</option>
+    <option value="">Specific reason</option>
   </select>
   <button type="button" id="in-reason-sub-reorder-btn" class="iinput reorder-trigger" onclick="reorderToggle('in-reason-sub', event)" style="width:100%;min-width:0;box-sizing:border-box;font-size:12px">
-    <span>None</span>
+    <span>Specific reason</span>
     <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 3l2.5 2.5L6.5 3" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
   </div>
-  <input class="iinput" id="fl-subject-override" placeholder="+ Subject text..." autocomplete="off"
+  <input class="iinput" id="fl-subject-override" placeholder="+ Subject text..." autocomplete="off" spellcheck="true" lang="en"
     style="width:100%;min-width:0;box-sizing:border-box;height:26px;padding:2px 8px;font-size:11px;font-family:var(--mono)"
     oninput="flBuildSubject()" title="Appended to auto-generated subject">
+  <!-- Warranty status: only for Wand/PPC/Part Replacement — a separate tab
+       from Specific Reason now, so Specific Reason stays a normal sub-issue
+       list instead of being repurposed. -->
+  <div id="in-warranty-wrap" style="display:none;width:120px;min-width:0">
+    <select class="iinput" id="in-warranty" style="width:100%;min-width:0;box-sizing:border-box;font-size:12px" onchange="flBuildOutputs()">
+      <option value="">Warranty</option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+      <option value="Customer Satisfaction">Customer Satisfaction</option>
+      <option value="Physical Damage">Physical Damage</option>
+      <option value="DOA">DOA</option>
+    </select>
+  </div>
   <div id="conn-wrap" style="display:flex;align-items:center;gap:5px;min-width:0">
     <div id="check-btn-wrap" style="flex-shrink:0;position:relative">
-      <button id="check-btn" onclick="checkTogglePopup(event)" title="Check (MAT + Salesforce)"
-        style="height:26px;padding:0 10px;font-family:var(--mono);font-size:11px;font-weight:600;
+      <!-- MAT-only lookup for the Documentation Scanner S/N — no ticket
+           number here anymore, that's Ticket Checker's job now. Clicking
+           runs MAT against #in-serial and opens the shared MAT popup. -->
+      <button id="check-btn" onclick="checkMatSearch(event)" title="Search MAT info for this Scanner S/N"
+        style="height:26px;width:26px;padding:0;
                background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
-               color:var(--text3);cursor:pointer;transition:all .16s var(--ease-out);white-space:nowrap;display:flex;align-items:center;gap:5px">
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/></svg>Check</button>
+               color:var(--text3);cursor:pointer;transition:all .16s var(--ease-out);display:flex;align-items:center;justify-content:center">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/></svg>
+      </button>
     </div>
   </div>
  </div>
-</div>
-
-<!-- Check popup: MAT always runs, ticket # is optional (SF only runs if given) -->
-<div id="check-popup" style="display:none;position:fixed;z-index:9990;
-  background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);
-  padding:10px;width:220px;box-shadow:0 6px 28px rgba(0,0,0,.5)">
-  <div style="font-size:9px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:7px">Check</div>
-  <div style="display:flex;gap:6px">
-    <input id="check-popup-ticket" class="iinput" placeholder="Ticket # (optional)" autocomplete="off"
-      style="flex:1;min-width:0;height:28px;padding:2px 8px;font-size:11px;font-family:var(--mono)"
-      onkeydown="if(event.key==='Enter'){event.preventDefault();checkRun('check-popup-ticket','check-popup-status','check-popup-go');}">
-    <button id="check-popup-go" class="btn-sm p" onclick="checkRun('check-popup-ticket','check-popup-status','check-popup-go')">Go</button>
-  </div>
-  <div id="check-popup-status" style="display:none;font-size:10px;font-family:var(--mono);margin-top:7px"></div>
 </div>
 
 <!-- MAT floating popup (fixed, body-level so nothing clips it) -->
@@ -910,14 +938,34 @@ html.size-large #sidebar-icons{zoom:1.3}
   <!-- Row 1: Caller + IDs -->
   <div class="fl-doc-row1" style="display:grid;grid-template-columns:1fr 1.1fr 1.5fr 1.15fr 1.15fr;gap:6px;margin-bottom:8px">
     <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;height:14px;margin-bottom:2px">
+      <div style="display:flex;align-items:center;gap:6px;height:14px;margin-bottom:2px">
         <label style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:14px">NAME</label>
-        <button id="fl-tm-btn" class="fl-chip" onclick="toggleTM()" style="font-size:8px;padding:0 5px;height:14px;line-height:12px;border-radius:8px">TM</button>
+        <button id="fl-tm-btn" class="fl-chip fl-chip-strong" onclick="toggleTM()" style="font-size:8px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;white-space:nowrap">TM</button>
       </div>
       <input class="iinput" id="fl-caller-name" placeholder="Name" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="flBuildOutputs()">
     </div>
     <div>
-      <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">PHONE</label>
+      <div style="display:flex;align-items:center;gap:6px;height:14px;margin-bottom:2px">
+        <label style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:14px">PHONE</label>
+        <!-- CB (Callback/Follow-up): stays right next to the PHONE label;
+             the 1/2/3 attempt chips (then VM) expand out of a
+             position:absolute wrap anchored to CB's right edge, reading
+             left to right as CB → 1 2 3 → VM. position:absolute keeps the
+             reveal from ever reflowing/pushing the grid row itself. -->
+        <span style="position:relative;display:flex;align-items:center">
+          <button id="fl-cb-btn" class="fl-chip fl-chip-strong" onclick="toggleCB()" style="font-size:8px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;white-space:nowrap">CB</button>
+          <span id="fl-cb-reveal-wrap" style="position:absolute;top:0;left:100%;display:flex;align-items:center;max-width:0;opacity:0;overflow:hidden;white-space:nowrap;transition:max-width .25s var(--ease-out),opacity .2s var(--ease-out)">
+            <span id="fl-cb-attempt-wrap" style="display:flex;align-items:center;margin-left:3px">
+              <button class="fl-chip fl-chip-strong" data-n="1" onclick="cbClickAttempt(1)" style="font-size:8px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;white-space:nowrap;max-width:20px;margin-right:3px;overflow:hidden;box-sizing:content-box;transition:max-width .22s var(--ease-out),opacity .18s var(--ease-out),margin-right .22s var(--ease-out),padding .22s var(--ease-out),border-width .22s var(--ease-out)">1</button>
+              <button class="fl-chip fl-chip-strong" data-n="2" onclick="cbClickAttempt(2)" style="font-size:8px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;white-space:nowrap;max-width:20px;margin-right:3px;overflow:hidden;box-sizing:content-box;transition:max-width .22s var(--ease-out),opacity .18s var(--ease-out),margin-right .22s var(--ease-out),padding .22s var(--ease-out),border-width .22s var(--ease-out)">2</button>
+              <button class="fl-chip fl-chip-strong" data-n="3" onclick="cbClickAttempt(3)" style="font-size:8px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;white-space:nowrap;max-width:20px;margin-right:3px;overflow:hidden;box-sizing:content-box;transition:max-width .22s var(--ease-out),opacity .18s var(--ease-out),margin-right .22s var(--ease-out),padding .22s var(--ease-out),border-width .22s var(--ease-out)">3</button>
+            </span>
+            <span id="fl-cb-vm-wrap" style="display:flex;align-items:center;max-width:0;opacity:0;overflow:hidden;transition:max-width .2s var(--ease-out),opacity .15s var(--ease-out)">
+              <button id="fl-cb-vm-btn" class="fl-chip fl-chip-strong" onclick="cbClickVm()" style="font-size:8px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;white-space:nowrap">VM</button>
+            </span>
+          </span>
+        </span>
+      </div>
       <input class="iinput" id="fl-caller-phone" placeholder="Number" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="this.value=this.value.replace(/[^0-9+\-\s()]/g,'');flBuildOutputs()">
     </div>
     <div>
@@ -947,12 +995,11 @@ html.size-large #sidebar-icons{zoom:1.3}
         <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">TV PASS</label>
         <input class="iinput" id="fl-tvpass" placeholder="Password" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" type="text" oninput="flBuildOutputs()">
       </div>
-      <div id="fl-ts-slot-kb" style="display:none;height:24px;align-items:end"></div>
     </div>
   </div>
 
   <!-- Mat ID -->
-  <div style="display:flex;gap:6px;margin-bottom:8px">
+  <div style="display:flex;gap:6px;margin-bottom:8px;align-items:flex-end">
     <div style="width:160px">
       <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">MAT ID</label>
       <input class="iinput" id="fl-mat-id" placeholder="ID" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="flBuildOutputs()">
@@ -970,33 +1017,48 @@ html.size-large #sidebar-icons{zoom:1.3}
         <button onclick="flAddOrderExtraRow()" style="margin-top:6px;font-family:var(--mono);font-size:10px;padding:2px 8px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;width:100%">+ Add another</button>
       </div>
     </div>
+
+    <!-- TS-only: RMA contact details (Wand/PPC Replacement) -->
+    <div id="fl-rma-wrap" style="display:none;position:relative">
+      <div id="fl-rma-btn" onclick="rmaPopulate()" title="Copy RMA contact details to clipboard" style="position:relative;display:flex;align-items:center;height:24px;padding:0 28px 0 10px;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:20px;cursor:pointer;user-select:none;white-space:nowrap;font-family:var(--mono);font-size:10px;color:var(--text3);transition:all .15s" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">
+        <span id="fl-rma-label">RMA</span>
+        <button id="fl-rma-extra-btn" onclick="event.stopPropagation();rmaToggleManualPanel()" title="Enter RMA contact details manually" style="position:absolute;top:50%;right:5px;transform:translateY(-50%);font-size:9px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg4);color:var(--text3);cursor:pointer">+</button>
+      </div>
+      <div id="fl-rma-extra-panel" onclick="event.stopPropagation()" style="display:none;position:fixed;width:200px;box-sizing:border-box;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:8px;z-index:2000;box-shadow:0 4px 16px rgba(0,0,0,.3)">
+        <input class="iinput" id="fl-rma-name" placeholder="Name" autocomplete="off" style="width:100%;height:22px;padding:2px 6px;font-size:11px;margin-bottom:5px;box-sizing:border-box">
+        <input class="iinput" id="fl-rma-phone" placeholder="Phone" autocomplete="off" style="width:100%;height:22px;padding:2px 6px;font-size:11px;margin-bottom:5px;box-sizing:border-box">
+        <input class="iinput" id="fl-rma-email" placeholder="Email" autocomplete="off" style="width:100%;height:22px;padding:2px 6px;font-size:11px;box-sizing:border-box">
+      </div>
+    </div>
+
+    <!-- TS-only: KB indicator lives here instead of the Outcome row -->
+    <div id="fl-ts-slot-kb-order" style="display:none"></div>
   </div>
 
-  <!-- Issue Description: placeholder doubles as the label, button floats inside the box -->
+  <!-- Issue Description: placeholder doubles as the label, auto-fills from Subject -->
   <div style="margin-bottom:8px">
     <div id="fl-issue-box" style="position:relative;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);transition:border-color .15s">
-      <textarea class="iinput" id="fl-issue-desc" rows="1" placeholder="Issue description" style="width:100%;height:30px;min-height:30px;max-height:200px;resize:vertical;font-size:12px;display:block;padding:6px 96px 6px 10px;overflow:hidden;line-height:1.4;border:none;background:transparent" oninput="flBuildOutputs()" onfocus="document.getElementById('fl-issue-box').style.borderColor='var(--blue)'" onblur="document.getElementById('fl-issue-box').style.borderColor='var(--border)'"></textarea>
-      <button onclick="fillIssueFromSubject()" style="position:absolute;top:6px;right:8px;font-family:var(--mono);font-size:9px;padding:1px 8px;height:16px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">Same as Subject</button>
+      <textarea class="iinput" id="fl-issue-desc" rows="1" placeholder="Issue description" spellcheck="true" lang="en" style="width:100%;height:30px;min-height:30px;max-height:200px;resize:vertical;font-size:12px;display:block;padding:6px 10px;overflow:hidden;line-height:1.4;border:none;background:transparent" oninput="flBuildOutputs()" onfocus="document.getElementById('fl-issue-box').style.borderColor='var(--blue)'" onblur="document.getElementById('fl-issue-box').style.borderColor='var(--border)'"></textarea>
     </div>
   </div>
 
   <!-- Actions Taken: textarea then chips below -->
   <div style="margin-bottom:0">
-    <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px">ACTIONS TAKEN</label>
+    <label id="fl-actions-label" style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px">ACTIONS TAKEN</label>
     <div style="position:relative">
-      <textarea class="iinput" id="fl-actions-extra" rows="4" placeholder="Actions taken" style="width:100%;min-height:96px;max-height:240px;resize:vertical;font-size:12px;display:block" oninput="flBuildOutputs()"></textarea>
+      <textarea class="iinput" id="fl-actions-extra" rows="4" placeholder="Actions taken" spellcheck="true" lang="en" style="width:100%;min-height:96px;max-height:240px;resize:vertical;font-size:12px;display:block" oninput="flBuildOutputs()"></textarea>
       <img id="issue-mascot" src="" alt=""
         style="display:none;position:absolute;bottom:2px;right:8px;width:100px;height:auto;max-height:125px;object-fit:contain;opacity:var(--mascot-opacity);pointer-events:none;z-index:2">
       <img id="issue-mascot-roronoa" src="Reference/Mascot/mascot_roronoa.png" alt=""
         style="display:none;position:absolute;top:0;bottom:0;right:0;height:100%;width:auto;max-width:220px;opacity:var(--mascot-opacity);pointer-events:none;z-index:2">
     </div>
     <div id="fl-actions-chips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px">
-      <button class="fl-chip" onclick="flToggleChip(this)" data-val="Power Drain">🔋 Drain</button>
+      <button id="chip-drain" class="fl-chip" onclick="flToggleChip(this)" data-val="Power Drain">🔋 Drain</button>
       <button class="fl-chip" onclick="flToggleChip(this)" data-val="Pictures">📷 Pics</button>
       <button class="fl-chip" onclick="flToggleChip(this)" data-val="HWD">⚙ HWD</button>
-      <button class="fl-chip" onclick="flToggleChip(this)" data-val="Network diagnosis">🌐 Net Diag</button>
-      <button class="fl-chip" onclick="flToggleChip(this)" data-val="Battery Replacement">🔌 Bat Rep</button>
-      <button class="fl-chip" onclick="flToggleChip(this)" data-val="Transferred to TS">↗ To TS</button>
+      <button id="chip-net-diag" class="fl-chip" onclick="flToggleChip(this)" data-val="Network diagnosis">🌐 Net Diag</button>
+      <button id="chip-bat-rep" class="fl-chip" onclick="flToggleChip(this)" data-val="Battery Replacement">🔌 Bat Rep</button>
+      <button id="chip-transfer-ts" class="fl-chip" onclick="flToggleChip(this)" data-val="Transferred to TS">↗ To TS</button>
       <button id="wand-disc-btn" onclick="openWandFlow()" style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:var(--bg4);border:1px solid var(--border2);border-radius:20px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text2);transition:all .15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
         <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M3 21l6-6M14 4l6 6-9 9-3-3 9-9M17 4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Wand Disc.
@@ -1027,7 +1089,7 @@ html.size-large #sidebar-icons{zoom:1.3}
 
   <!-- Outcome + Follow Up -->
   <div id="fl-outcome-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:8px;align-items:end">
-    <div>
+    <div id="fl-outcome-wrap">
       <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px">OUTCOME</label>
       <select class="iinput" id="fl-outcome" style="width:155px;height:28px;padding:3px 8px" onchange="flBuildOutputs()">
         <option value="">Select...</option>
@@ -1072,12 +1134,14 @@ html.size-large #sidebar-icons{zoom:1.3}
         <span id="fl-notes-caret" style="font-family:var(--mono);font-size:10px;color:var(--text3)">▼</span>
         <span style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Agent notes</span>
       </div>
-      <textarea id="fl-agent-notes" class="notes" placeholder="Agent notes..." style="min-height:64px;height:64px"></textarea>
+      <textarea id="fl-agent-notes" class="notes" placeholder="Agent notes..." spellcheck="true" lang="en" style="min-height:64px;height:64px"></textarea>
     </div>
     <div style="flex:1;min-width:0">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
         <span style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em">Quick Actions</span>
-        <button id="qa-edit-toggle" onclick="qaToggleEdit()" style="font-family:var(--mono);font-size:9px;padding:1px 8px;height:16px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer">Customize</button>
+        <button id="qa-edit-toggle" onclick="qaToggleEdit()" title="Customize quick actions" style="display:flex;align-items:center;justify-content:center;width:18px;height:18px;padding:0;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer">
+          <svg id="qa-edit-icon" width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
       <div id="qa-row" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
@@ -1814,11 +1878,35 @@ html.size-large #sidebar-icons{zoom:1.3}
     <span class="sh-title">Ticket Checker</span>
     <button class="btn-sm" onclick="tcClear()" style="font-size:11px;padding:3px 10px;color:var(--red);border-color:var(--red)">Clear</button>
   </div>
-  <div style="display:flex;gap:8px;max-width:320px;margin-bottom:10px">
-    <input id="tc-ticket-input" class="iinput" placeholder="Ticket # (optional)" autocomplete="off"
-      style="flex:1;height:30px;padding:4px 10px;font-size:12px;font-family:var(--mono)"
-      onkeydown="if(event.key==='Enter'){event.preventDefault();checkRun('tc-ticket-input','tc-status','tc-go-btn');}">
-    <button id="tc-go-btn" class="btn-sm p" onclick="checkRun('tc-ticket-input','tc-status','tc-go-btn')">Check</button>
+  <!-- Ticket Checker's own Scanner S/N — completely separate from the
+       Documentation intake bar's, used only to validate against this
+       ticket's Subject/Asset and to look up its own independent MAT record.
+       Side by side with the SF ticket number, same height, sub-headers
+       instead of "(optional)" placeholder text. -->
+  <div style="display:flex;gap:8px;max-width:420px;margin-bottom:10px;align-items:flex-end">
+    <div style="flex:1;min-width:0">
+      <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px">SCANNER S/N</label>
+      <div style="position:relative">
+        <input id="tc-scanner-sn" class="iinput" placeholder="Scanner S/N" autocomplete="off"
+          style="width:100%;box-sizing:border-box;height:30px;padding:4px 26px 4px 10px;font-size:12px;font-family:var(--mono)"
+          oninput="tcParseScannerSn(this)"
+          onpaste="var _e=this;setTimeout(function(){tcParseScannerSn(_e);},30)">
+        <button id="tc-scanner-sn-mat-arrow" onclick="matOpenPopup('tc-scanner-sn-mat-arrow')" title="MAT info"
+          style="position:absolute;right:5px;top:1px;bottom:1px;width:19px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:var(--text3);padding:0">
+          <svg width="8" height="8" viewBox="0 0 8 8"><path d="M1.5 3l2.5 2.5L6.5 3" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0">
+      <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px">SF TICKET #</label>
+      <input id="tc-ticket-input" class="iinput" placeholder="Ticket #" autocomplete="off"
+        style="width:100%;box-sizing:border-box;height:30px;padding:4px 10px;font-size:12px;font-family:var(--mono)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();checkRun();}">
+    </div>
+    <div>
+      <label style="font-family:var(--mono);font-size:10px;display:block;margin-bottom:3px;visibility:hidden">·</label>
+      <button id="tc-go-btn" class="btn-sm p" onclick="checkRun()" style="height:30px">Check</button>
+    </div>
   </div>
   <div id="tc-status" style="display:none;font-size:11px;font-family:var(--mono);margin-bottom:8px"></div>
   <textarea id="tc-debug" readonly style="display:none;width:100%;max-width:420px;height:110px;font-family:var(--mono);font-size:10px;line-height:1.4;margin-bottom:14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px;resize:vertical"></textarea>
@@ -1906,8 +1994,6 @@ html.size-large #sidebar-icons{zoom:1.3}
 
   <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;gap:8px">
     <button class="btn-sm" id="tc-matinfo-btn" onclick="matOpenPopup('tc-matinfo-btn')">MAT Info</button>
-    <button class="btn-sm" onclick="sfOpenHome()">Open Salesforce</button>
-    <button class="btn-sm r" onclick="sfCloseBrowser()">Log out</button>
   </div>
 </div>
 
@@ -2640,28 +2726,44 @@ function applyTsLayout(isTs) {
 
   var tvIdContent   = document.getElementById('fl-tvid-content');
   var tvPassContent = document.getElementById('fl-tvpass-content');
-  var slotFu     = document.getElementById('fl-ts-slot-fu');
-  var slotKb     = document.getElementById('fl-ts-slot-kb');
+  var slotFu     = document.getElementById('fl-ts-slot-fu'); // unused now that FU is just hidden in TS, not relocated
+  var slotKbOrder = document.getElementById('fl-ts-slot-kb-order');
   var fuWrap     = document.getElementById('fl-followup-wrap');
   var kbWrap     = document.getElementById('fl-kb-ind-wrap');
   var outcomeRow = document.getElementById('fl-outcome-row');
+  var outcomeWrap   = document.getElementById('fl-outcome-wrap');
+  var wandDiscBtn   = document.getElementById('wand-disc-btn');
+  var netDiagChip   = document.getElementById('chip-net-diag');
+  var transferChip  = document.getElementById('chip-transfer-ts');
+
+  if (slotFu) slotFu.style.display = 'none';
 
   if (isTs) {
     if (tvIdContent)   tvIdContent.style.display   = 'none';
     if (tvPassContent) tvPassContent.style.display = 'none';
-    if (slotFu && fuWrap) { slotFu.appendChild(fuWrap); slotFu.style.display = 'flex'; }
-    if (slotKb && kbWrap) { slotKb.appendChild(kbWrap); slotKb.style.display = 'flex'; }
+    if (outcomeWrap) outcomeWrap.style.display = 'none'; // TS doesn't use Outcome
+    if (outcomeRow && fuWrap) outcomeRow.appendChild(fuWrap); // keep it put, just hidden below
+    if (fuWrap) fuWrap.style.display = 'none';
+    if (slotKbOrder && kbWrap) { slotKbOrder.appendChild(kbWrap); slotKbOrder.style.display = 'flex'; }
+    if (wandDiscBtn) wandDiscBtn.style.display = 'none';
+    if (netDiagChip)  netDiagChip.textContent  = '🌐 Net Rep';
+    if (transferChip) transferChip.textContent = '↗ T3';
   } else {
     if (tvIdContent)   tvIdContent.style.display   = '';
     if (tvPassContent) tvPassContent.style.display = '';
-    if (slotFu) slotFu.style.display = 'none';
-    if (slotKb) slotKb.style.display = 'none';
-    // Always re-append in this order — appendChild moves an existing node
-    // rather than duplicating it, so this is safe to call every time and
-    // always restores [Outcome, FU, KB] regardless of current position.
+    if (outcomeWrap) outcomeWrap.style.display = '';
+    if (fuWrap) fuWrap.style.display = '';
+    if (slotKbOrder) slotKbOrder.style.display = 'none';
+    if (wandDiscBtn) wandDiscBtn.style.display = '';
+    if (netDiagChip)  netDiagChip.textContent  = '🌐 Net Diag';
+    if (transferChip) transferChip.textContent = '↗ To TS';
+    // Always re-append — appendChild moves an existing node rather than
+    // duplicating it, so this is safe to call every time and always
+    // restores [Outcome, FU, KB] regardless of current position.
     if (outcomeRow && fuWrap) outcomeRow.appendChild(fuWrap);
     if (outcomeRow && kbWrap) outcomeRow.appendChild(kbWrap);
   }
+  rmaUpdateVisibility();
 }
 
 // FL = Front Line: hide advanced tools (registry, kill, clean install)
@@ -2700,11 +2802,13 @@ function applyRole(role){
   // Nav items hidden from FL (TS/ESC only)
   var flHide  = ['nav-kill','nav-cleaninstall','nav-registry','nav-eventviewer','nav-escalations',
                  'nav-networking','nav-devmanager','nav-logcollector','nav-swdownload','icon-networking',
-                 'nav-partscatalog','nav-battery','icon-battery'];
+                 'nav-partscatalog','nav-battery','icon-battery','chip-bat-rep'];
   // Nav items only for ESC (hidden from FL and TS)
   var escOnly = ['nav-escalations'];
   // UI elements only visible to TS / ESC
   var tsElems = ['wand-flow-toggle','wms-b','wms-done-a','wms-done-b'];
+  // UI elements only visible to FL (hidden from TS/ESC)
+  var flOnly = ['chip-drain'];
 
   // Reset every role-managed element to visible first, then re-hide per role below.
   // Without this reset, switching roles mid-session (no app restart) left items
@@ -2714,7 +2818,7 @@ function applyRole(role){
   // owns showing/hiding their inner content vs. the FU/KB slot; the wraps
   // themselves must stay visible in every role since TS repurposes them to
   // host the FU/KB buttons instead of hiding them outright.)
-  flHide.concat(tsElems).forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
+  flHide.concat(tsElems).concat(flOnly).forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
 
   if(role === 'FL'){
     flHide.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
@@ -2729,12 +2833,14 @@ function applyRole(role){
   } else if(role === 'TS'){
     // ESC-only items hidden for plain TS
     escOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+    flOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
     applyCmdVisibility(_cmdVisible); // hidden by default — technician opts in via Settings → Connections
     var banner=document.getElementById('lumina-fl-banner'); if(banner)banner.style.display='none';
     var slfddBtns=document.querySelectorAll('#slfdd-btn-driver,#slfdd-btn-util');
     slfddBtns.forEach(function(b){b.disabled=false;b.style.cursor='';});
   } else if(role === 'ESC'){
     // ESC = TS permissions + escalations nav
+    flOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
     applyCmdVisibility(_cmdVisible);
     var banner=document.getElementById('lumina-fl-banner'); if(banner)banner.style.display='none';
     var slfddBtns=document.querySelectorAll('#slfdd-btn-driver,#slfdd-btn-util');
@@ -3021,6 +3127,166 @@ function toggleTM(){
   flBuildOutputs();
 }
 
+// ── Callback / Follow-up (CB) ───────────────────────────────
+// A separate, self-contained write-up from the main Subject/Description —
+// CB repurposes the Actions Taken box as "Callback/Follow-up details" and
+// builds/copies its own templated text on demand (attempt number or VM
+// clicked), the same "just copies to clipboard" pattern as RMA.
+var _cbActive  = false;
+var _cbAttempt = null; // 1, 2, or 3 once an attempt chip is picked
+var CB_ATTEMPT_WORD = { 1: '1st', 2: '2nd', 3: '3rd' };
+var CB_VM_LINE = '‣ Received voice mail. Left a message with the ticket number and the 800 support number.';
+
+var _cbVmActive = false; // VM adds its line only to the copied text, never into the actual textarea
+
+// Shows/hides one attempt chip (1, 2 or 3) with a smooth collapse —
+// picking an attempt hides the other two, leaving just the chosen one
+// right next to VM either way. Border-width has to collapse to 0 too, not
+// just max-width/padding/margin — otherwise every hidden chip still leaves
+// its 2px of border behind, and since 1/2/3 collapse asymmetrically
+// depending on which one was picked (e.g. picking "1" leaves 2 and 3's
+// residual borders between it and VM, picking "3" leaves none), that
+// residual consistently made the selected chip look farther from VM than
+// from CB.
+function _cbSetChipCollapsed(btn, collapsed) {
+  if (!btn) return;
+  btn.style.maxWidth     = collapsed ? '0' : '20px';
+  btn.style.opacity      = collapsed ? '0' : '1';
+  btn.style.marginRight  = collapsed ? '0' : '3px';
+  btn.style.paddingLeft  = collapsed ? '0' : '5px';
+  btn.style.paddingRight = collapsed ? '0' : '5px';
+  btn.style.borderWidth  = collapsed ? '0' : '1px';
+  btn.style.pointerEvents = collapsed ? 'none' : '';
+}
+
+function cbReset() {
+  _cbActive   = false;
+  _cbAttempt  = null;
+  _cbVmActive = false;
+  var revealWrap  = document.getElementById('fl-cb-reveal-wrap');
+  var attemptWrap = document.getElementById('fl-cb-attempt-wrap');
+  var vmWrap      = document.getElementById('fl-cb-vm-wrap');
+  var vmBtn       = document.getElementById('fl-cb-vm-btn');
+  var label       = document.getElementById('fl-actions-label');
+  if (revealWrap) { revealWrap.style.maxWidth = '0'; revealWrap.style.opacity = '0'; }
+  if (attemptWrap) {
+    // Bring all three attempt chips back so the next time CB opens, all
+    // of them show again instead of just whichever was last picked.
+    Array.prototype.forEach.call(attemptWrap.querySelectorAll('.fl-chip'), function(b) {
+      b.classList.remove('fl-chip-active');
+      _cbSetChipCollapsed(b, false);
+    });
+  }
+  if (vmWrap) { vmWrap.style.maxWidth = '0'; vmWrap.style.opacity = '0'; }
+  if (vmBtn)  vmBtn.classList.remove('fl-chip-active');
+  if (label) label.textContent = 'ACTIONS TAKEN';
+}
+
+function toggleCB() {
+  _cbActive = !_cbActive;
+  var btn = document.getElementById('fl-cb-btn');
+  if (btn) btn.classList.toggle('fl-chip-active', _cbActive);
+
+  if (_cbActive) {
+    var revealWrap = document.getElementById('fl-cb-reveal-wrap');
+    var label      = document.getElementById('fl-actions-label');
+    if (revealWrap) { revealWrap.style.maxWidth = '130px'; revealWrap.style.opacity = '1'; }
+    if (label) label.textContent = 'Callback/Follow up details:';
+  } else {
+    cbReset();
+  }
+  flBuildOutputs();
+}
+
+function cbClickAttempt(n) {
+  _cbAttempt  = n;
+  _cbVmActive = false; // a newly picked attempt is a fresh call — start unanswered-until-told
+  var wrap = document.getElementById('fl-cb-attempt-wrap');
+  var clickedBtn = null;
+  if (wrap) {
+    // Picking one attempt hides the other two (smooth collapse) so only
+    // the chosen number stays visible next to VM.
+    Array.prototype.forEach.call(wrap.querySelectorAll('.fl-chip'), function(b) {
+      var active = Number(b.dataset.n) === n;
+      b.classList.toggle('fl-chip-active', active);
+      _cbSetChipCollapsed(b, !active);
+      if (active) clickedBtn = b;
+    });
+  }
+  var vmBtn = document.getElementById('fl-cb-vm-btn');
+  if (vmBtn) vmBtn.classList.remove('fl-chip-active');
+  var vmWrap = document.getElementById('fl-cb-vm-wrap');
+  if (vmWrap) { vmWrap.style.maxWidth = '30px'; vmWrap.style.opacity = '1'; }
+  // Picking an attempt (without VM) no longer copies straight to the
+  // clipboard — it just renders the CB template into the Description tile
+  // (flBuildOutputs below), same as any other reason's write-up, so the
+  // technician copies it from there whenever they're ready.
+  flBuildOutputs();
+}
+
+// VM is the only CB action that still copies immediately — an answered
+// call needs the agent to keep typing details, but a voicemail is done
+// the moment it's logged. It also refreshes the Description tile so a
+// later click on Description copies this same VM-augmented text.
+function cbClickVm() {
+  _cbVmActive = true;
+  var btn = document.getElementById('fl-cb-vm-btn');
+  if (btn) btn.classList.add('fl-chip-active');
+  flBuildOutputs();
+  cbCopy(btn);
+}
+
+function cbBuildText() {
+  var attemptWord = CB_ATTEMPT_WORD[_cbAttempt] || '1st';
+  var phone   = (document.getElementById('fl-caller-phone') || {}).value || '';
+  var name    = (document.getElementById('fl-caller-name')  || {}).value || '';
+  var sn      = (document.getElementById('in-serial')       || {}).value || '';
+  var model   = (document.getElementById('in-model')        || {}).value || '';
+  var details = ((document.getElementById('fl-actions-extra') || {}).value || '').trim();
+  var role    = (typeof tmActive !== 'undefined' && tmActive) ? 'TM' : 'Dental Office';
+
+  if (_cbVmActive) details = details ? details + '\n' + CB_VM_LINE : CB_VM_LINE;
+
+  var groups = [];
+  groups.push(
+    '‣ Callback/Follow-up: ' + attemptWord + ' Attempt.\n' +
+    '‣ Contacted via phone: ' + (phone || 'N/A') + '\n' +
+    '‣ Customer\'s name: ' + (name || 'N/A') + '. Role: ' + role + '.'
+  );
+  groups.push(model === 'Office PC' ? '‣ Office PC.' : '‣ PPC SN: ' + (sn || 'N/A') + '.');
+  groups.push('‣ Callback/Follow-up details:\n' + (details || 'N/A'));
+  return groups.join('\n\n');
+}
+
+// Copies the built text and, if a chip triggered this, flashes "Copied"
+// on it as feedback — same pattern the RMA button uses.
+function cbCopy(btn) {
+  navigator.clipboard.writeText(cbBuildText()).then(function() {
+    if (!btn) return;
+    // These chips are only ~20px wide (sized for a single digit or "VM")
+    // with overflow:hidden — "Copied" doesn't fit at that width and was
+    // getting clipped. Widen the button (and its wrap, if any) just while
+    // the feedback shows, then put both back exactly as they were.
+    var wrap = document.getElementById('fl-cb-vm-wrap');
+    var inVmWrap = !!(wrap && wrap.contains(btn));
+    var origBtnMaxWidth  = btn.style.maxWidth;
+    var origWrapMaxWidth = inVmWrap ? wrap.style.maxWidth : null;
+    var orig = btn.textContent;
+
+    btn.style.maxWidth = '52px';
+    if (inVmWrap) wrap.style.maxWidth = '60px';
+    btn.textContent = 'Copied';
+    btn.style.color = 'var(--green)';
+
+    setTimeout(function() {
+      btn.textContent = orig;
+      btn.style.color = '';
+      btn.style.maxWidth = origBtnMaxWidth;
+      if (inVmWrap) wrap.style.maxWidth = origWrapMaxWidth;
+    }, 1400);
+  });
+}
+
 // SN prefix map: prefix -> [wand, possible models label, option values to suggest]
 var SN_MAP = {
   'BLX': { wand: 'N4', models: ['Element 2','Element 2 5D'],
@@ -3040,6 +3306,42 @@ var SN_MAP = {
 var SN_PREFIX_ALT = Object.keys(SN_MAP).join('|');
 var SN_REGEX      = new RegExp('(?:' + SN_PREFIX_ALT + ')(?:20(?:1[7-9]|[2-9]\\d))[A-Z]\\d{2}[A-Z]\\d{3}');
 var SN_REGEX_FULL = new RegExp('^' + SN_REGEX.source + '$');
+var SN_PREFIXES   = Object.keys(SN_MAP);
+
+// True if `ch` could legally be the very next character after `built` on
+// the way to a real Scanner S/N (PREFIX(3) + YEAR(4) + LETTER + 2 DIGITS +
+// LETTER + 3 DIGITS) — checked position-by-position against the actual
+// format, not just "is it a letter or digit somewhere". The prefix
+// positions are checked against the real prefix list (BLX/YUC/NZK/WOA/
+// PLA), not "any 3 letters", so e.g. typing "B" only leaves room for BLX.
+function _snNextCharAllowed(built, ch) {
+  var i = built.length;
+  if (i < 3) {
+    return SN_PREFIXES.some(function(p) { return p.indexOf(built) === 0 && p.charAt(i) === ch; });
+  }
+  if (i === 3) return ch === '2';
+  if (i === 4) return ch === '0';
+  if (i === 5) return /[1-9]/.test(ch);
+  if (i === 6) return built.charAt(5) === '1' ? /[7-9]/.test(ch) : /[0-9]/.test(ch);
+  if (i === 7)  return /[A-Z]/.test(ch);
+  if (i === 8 || i === 9) return /[0-9]/.test(ch);
+  if (i === 10) return /[A-Z]/.test(ch);
+  if (i === 11 || i === 12 || i === 13) return /[0-9]/.test(ch);
+  return false;
+}
+
+// Builds a Scanner S/N up character-by-character, silently dropping any
+// character that could never be part of a valid one at that position,
+// instead of just masking to "any letter/digit" and capping at 14 chars.
+function _snMaskInput(raw) {
+  var upper = (raw || '').toUpperCase();
+  var out = '';
+  for (var k = 0; k < upper.length && out.length < 14; k++) {
+    var ch = upper.charAt(k);
+    if (/[A-Z0-9]/.test(ch) && _snNextCharAllowed(out, ch)) out += ch;
+  }
+  return out;
+}
 
 var SN_ALL_MODELS = [
   ['Element 2','Element 2'],
@@ -3067,6 +3369,47 @@ function toggleSnField(model) {
     var snEl = document.getElementById('in-serial');
     if (snEl) { snEl.value = ''; snEl.style.borderColor = ''; }
   }
+}
+
+// Office PC has no scanner, so Reason is its whole issue-selection bar
+// (no Specific Reason list, no MAT lookup) — everything below keeps the
+// native <select> as the source of truth, same as every other reason
+// list in the app.
+var NORMAL_REASONS = [
+  ['', 'None'], ['Account Management', 'Account Management'], ['Software', 'Software'],
+  ['Hardware', 'Hardware'], ['Third Party Software', 'Third Party Software'], ['Request', 'Request'],
+  ['Inquiry', 'Inquiry'], ['Networking', 'Networking'], ['Billing', 'Billing'], ['Demo', 'Demo'],
+  ['Wand Replacement', 'Wand Replacement'], ['PPC Replacement', 'PPC Replacement'], ['Part Replacement', 'Part Replacement']
+];
+var OFFICE_PC_REASONS = [
+  ['', 'None'], ['MyiTero.com', 'MyiTero.com'], ['MyAlignTech.com', 'MyAlignTech.com'],
+  ['Design suite', 'Design suite'], ['Exocad', 'Exocad'], ['Third Party SW', 'Third Party SW'],
+  ['Login issues', 'Login issues'], ['Align Oral Health Suite', 'Align Oral Health Suite'], ['Networking', 'Networking']
+];
+
+function applyOfficePcMode(model) {
+  var isPC = model === 'Office PC';
+
+  var row1 = document.getElementById('intake-row1');
+  if (row1) row1.style.gridTemplateColumns = isPC ? '155px 1px 1fr' : '241px 155px 1px 155px';
+
+  var connWrap = document.getElementById('conn-wrap');
+  if (connWrap) connWrap.style.display = isPC ? 'none' : 'flex';
+
+  var sel = document.getElementById('in-reason');
+  if (!sel) return;
+  var prevVal = sel.value;
+  var opts    = isPC ? OFFICE_PC_REASONS : NORMAL_REASONS;
+  var stillValid = opts.some(function(o) { return o[0] === prevVal; });
+
+  sel.innerHTML = '';
+  opts.forEach(function(o) {
+    var el = document.createElement('option');
+    el.value = o[0]; el.textContent = o[1];
+    sel.appendChild(el);
+  });
+  sel.value = stillValid ? prevVal : '';
+  reasonChanged();
 }
 
 function snResetModelDropdown(modelSel) {
@@ -3131,11 +3474,11 @@ function parseSN(raw) {
     return;
   }
 
-  // 2) No complete match yet. Enforce an input mask: only letters/digits
-  //    are ever allowed in this field, capped at 14 characters (the full
-  //    length of a Scanner S/N) — nothing else can be typed or land here
-  //    from a paste.
-  var cleaned = upperRaw.replace(/[^A-Z0-9]/g, '').slice(0, 14);
+  // 2) No complete match yet. Enforce the real Scanner S/N mask
+  //    position-by-position (prefix must be a real prefix, year digits
+  //    must actually form a valid year, etc.) — nothing that could never
+  //    become a valid S/N is ever allowed to land in this field.
+  var cleaned = _snMaskInput(upperRaw);
   if (snField.value !== cleaned) snField.value = cleaned;
 
   var foundPrefix = null;
@@ -3246,6 +3589,17 @@ window.addEventListener('DOMContentLoaded', function() {
     var wrap  = document.getElementById('fl-orderid-wrap');
     var panel = document.getElementById('fl-order-extra-panel');
     if (wrap && panel && !wrap.contains(e.target)) panel.style.display = 'none';
+  });
+
+  // Close RMA manual-entry panel on outside click — saves whatever was
+  // typed as the override the moment it closes (no separate Save button).
+  document.addEventListener('click', function(e) {
+    var wrap  = document.getElementById('fl-rma-wrap');
+    var panel = document.getElementById('fl-rma-extra-panel');
+    if (wrap && panel && panel.style.display !== 'none' && !wrap.contains(e.target)) {
+      rmaSaveManualPanel();
+      panel.style.display = 'none';
+    }
   });
 
   // Capture the sidebar's natural (expanded) width before we collapse it
@@ -3427,6 +3781,17 @@ async function pyApiLong(method, ...args) {
 var _matEnabled   = false;
 var _matData      = null;
 var _matScraping  = false;
+// Whichever record matRenderPopup last rendered — lets matCopyField copy
+// from whatever's actually on screen, regardless of which cache it came
+// from (Documentation's _matData or Ticket Checker's own _tcMatData).
+var _matPopupCurrent = null;
+
+// Both of Ticket Checker's own arrows (its Scanner S/N field's arrow and
+// the "MAT Info" button) show _tcMatData — Ticket Checker's independent
+// MAT cache. Every other trigger (Documentation's #in-serial arrow, the
+// intake bar's magnifying glass) shows _matData. This is what keeps the
+// two contexts from ever bleeding into the same shared popup.
+var TC_MAT_ANCHORS = ['tc-scanner-sn-mat-arrow', 'tc-matinfo-btn'];
 
 function matOpenPopup(anchorId) {
   var pop = document.getElementById('mat-popup');
@@ -3441,6 +3806,7 @@ function matOpenPopup(anchorId) {
     return;
   }
   pop._openedBy = anchorId || 'check-btn';
+  matRenderPopup(TC_MAT_ANCHORS.indexOf(anchorId) !== -1 ? _tcMatData : _matData);
 
   var r = btn.getBoundingClientRect();
   pop.style.top     = (r.bottom + 5) + 'px';
@@ -3463,14 +3829,19 @@ function matOpenPopup(anchorId) {
 }
 
 function matCopyField(field, rowEl) {
-  if (!_matData) return;
-  var val = field === 'scanner_sn'      ? (_matData.scanner_sn       || '')
-          : field === 'wand'            ? (_matData.wand_sn          || '')
-          : field === 'reg'             ? (_matData.reg_to           || '')
-          : field === 'scanner_model'   ? (_matData.scanner_model    || '')
-          : field === 'company_id'      ? (_matData.company_id       || '')
-          : field === 'company_name'    ? (_matData.company_name     || '')
-          : field === 'company_address' ? (_matData.company_address  || '')
+  // Reads whichever record is actually on screen right now (_matPopupCurrent,
+  // set by matRenderPopup) rather than always _matData — the shared popup
+  // can be showing Documentation's or Ticket Checker's independent MAT
+  // record depending on which arrow opened it.
+  var d = _matPopupCurrent;
+  if (!d) return;
+  var val = field === 'scanner_sn'      ? (d.scanner_sn       || '')
+          : field === 'wand'            ? (d.wand_sn          || '')
+          : field === 'reg'             ? (d.reg_to           || '')
+          : field === 'scanner_model'   ? (d.scanner_model    || '')
+          : field === 'company_id'      ? (d.company_id       || '')
+          : field === 'company_name'    ? (d.company_name     || '')
+          : field === 'company_address' ? (d.company_address  || '')
           : '';
   if (!val) return;
   var spanId = field === 'scanner_sn'      ? 'mat-popup-scanner-sn'
@@ -3534,7 +3905,7 @@ function matSetLoading(on) {
 document.addEventListener('click', function(e) {
   var pop = document.getElementById('mat-popup');
   if (pop && pop.style.display !== 'none') {
-    var triggers = ['check-btn', 'in-serial-mat-arrow', 'tc-matinfo-btn'];
+    var triggers = ['check-btn', 'in-serial-mat-arrow', 'tc-matinfo-btn', 'tc-scanner-sn-mat-arrow'];
     var onTrigger = triggers.some(function(id) {
       var el = document.getElementById(id);
       return el && (e.target === el || el.contains(e.target));
@@ -3543,6 +3914,25 @@ document.addEventListener('click', function(e) {
       pop.style.display = 'none';
     }
   }
+});
+
+// Double-clicking any text field/textarea copies its whole value to the
+// clipboard — quicker than select-all + copy. Excludes non-text inputs
+// (checkboxes, buttons, etc.) and read-only/disabled fields, and does
+// nothing on an empty field.
+document.addEventListener('dblclick', function(e) {
+  var el = e.target;
+  if (!el || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA')) return;
+  if (el.disabled || el.readOnly) return;
+  var textTypes = ['text', 'search', 'tel', 'email', 'url', 'password', undefined, ''];
+  if (el.tagName === 'INPUT' && textTypes.indexOf(el.type) === -1) return;
+  var val = (el.value || '').trim();
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(function() {
+    var prevBorder = el.style.borderColor;
+    el.style.borderColor = 'var(--green)';
+    setTimeout(function() { el.style.borderColor = prevBorder; }, 500);
+  });
 });
 
 // MAT's own model text rarely matches our option values character-for-
@@ -3618,11 +4008,75 @@ function matScrape(sn) {
   });
 }
 
-// Populates every MAT-derived field (popup, Wand S/N, model auto-select,
-// Warranty auto-Active, company info, notes, status line) from a MAT
-// result — shared by a fresh scrape and by re-displaying already-cached
-// data when the same scanner is searched again.
+// Pure rendering of a MAT record into the shared MAT popup's fields —
+// no side effects on Documentation or anything else. Shared by
+// Documentation's own scrape (matApplyData, below) and Ticket Checker's
+// completely independent one (tcMatScrape), so the two never write into
+// each other's fields — only ever into this one shared popup, and only
+// whichever record matOpenPopup decides belongs to the arrow that was
+// clicked.
+function matRenderPopup(d) {
+  d = d || {};
+  _matPopupCurrent = d;
+  var wand = d.wand_sn || '';
+  var reg  = d.reg_to  || '';
+
+  var elScanSn = document.getElementById('mat-popup-scanner-sn');
+  var elWand   = document.getElementById('mat-popup-wand');
+  var elReg    = document.getElementById('mat-popup-reg');
+  var elModel  = document.getElementById('mat-popup-model');
+  var elStatus = document.getElementById('mat-popup-status');
+  var elPkg    = document.getElementById('mat-popup-pkg');
+  var elExpiry = document.getElementById('mat-popup-expiry');
+  var elNotes  = document.getElementById('mat-popup-notes');
+  var elNotesR = document.getElementById('mat-popup-notes-row');
+
+  if (elScanSn) elScanSn.textContent = d.scanner_sn || '—';
+  if (elWand)  elWand.textContent  = wand || '—';
+  if (elReg)   elReg.textContent   = reg  || '—';
+  if (elModel) elModel.textContent = d.scanner_model || '—';
+  if (elStatus) {
+    var st = d.status || '';
+    elStatus.textContent = st || '—';
+    elStatus.style.color = st === 'Active' ? 'var(--green)' : st === 'Inactive' ? 'var(--red)' : 'var(--text3)';
+  }
+  if (elPkg)    elPkg.textContent    = d.sw_package || 'empty';
+  if (elExpiry) elExpiry.textContent = d.sw_expiry  || '—';
+
+  var elCoId    = document.getElementById('mat-popup-company-id');
+  var elCoName  = document.getElementById('mat-popup-company-name');
+  var elCoAddr  = document.getElementById('mat-popup-company-address');
+  var elCoBlock = document.getElementById('mat-popup-company-block');
+  if (elCoBlock) {
+    if (d.company_id || d.company_name || d.company_address) {
+      if (elCoId)   elCoId.textContent   = d.company_id      || '—';
+      if (elCoName) elCoName.textContent = d.company_name    || '—';
+      if (elCoAddr) elCoAddr.textContent = d.company_address || '—';
+      elCoBlock.style.display = '';
+    } else {
+      elCoBlock.style.display = 'none';
+    }
+  }
+
+  if (elNotes && elNotesR) {
+    if (d.notes) {
+      elNotes.textContent = d.notes;
+      elNotesR.style.display = '';
+    } else {
+      elNotesR.style.display = 'none';
+    }
+  }
+}
+
+// Populates the popup plus every Documentation-only side effect (Wand
+// S/N, model auto-select, Warranty auto-Active, the intake bar's own
+// status line) from a MAT result — only ever called from Documentation's
+// own scrape (matScrape, keyed off #in-serial). Ticket Checker's scrape
+// (tcMatScrape) calls matRenderPopup directly instead, precisely so it
+// never touches any of this.
 function matApplyData(d) {
+    matRenderPopup(d);
+
     var wand = d.wand_sn || '';
     var reg  = d.reg_to  || '';
 
@@ -3630,21 +4084,6 @@ function matApplyData(d) {
       var wandEl = document.getElementById('in-wand-sn');
       if (wandEl) wandEl.value = wand;
     }
-
-    var elScanSn = document.getElementById('mat-popup-scanner-sn');
-    var elWand   = document.getElementById('mat-popup-wand');
-    var elReg    = document.getElementById('mat-popup-reg');
-    var elModel  = document.getElementById('mat-popup-model');
-    var elStatus = document.getElementById('mat-popup-status');
-    var elPkg    = document.getElementById('mat-popup-pkg');
-    var elExpiry = document.getElementById('mat-popup-expiry');
-    var elNotes  = document.getElementById('mat-popup-notes');
-    var elNotesR = document.getElementById('mat-popup-notes-row');
-
-    if (elScanSn) elScanSn.textContent = d.scanner_sn || '—';
-    if (elWand)  elWand.textContent  = wand || '—';
-    if (elReg)   elReg.textContent   = reg  || '—';
-    if (elModel) elModel.textContent = d.scanner_model || '—';
 
     if (d.scanner_model) {
       var modelSel = document.getElementById('in-model');
@@ -3661,14 +4100,6 @@ function matApplyData(d) {
       }
     }
 
-    if (elStatus) {
-      var st = d.status || '';
-      elStatus.textContent = st || '—';
-      elStatus.style.color = st === 'Active' ? 'var(--green)' : st === 'Inactive' ? 'var(--red)' : 'var(--text3)';
-    }
-    if (elPkg)    elPkg.textContent    = d.sw_package || 'empty';
-    if (elExpiry) elExpiry.textContent = d.sw_expiry  || '—';
-
     // Package still valid (expiry date is in the future)? Auto-mark the
     // Warranty status as Active on a replacement ticket — but never
     // overwrite a status the agent already picked themselves.
@@ -3677,36 +4108,11 @@ function matApplyData(d) {
       var reasonNow  = (document.getElementById('in-reason') || {}).value || '';
       if (!isNaN(expiryDate.getTime()) && expiryDate > new Date() &&
           REPLACEMENT_REASONS.indexOf(reasonNow) !== -1) {
-        var warrantySel = document.getElementById('in-reason-sub');
+        var warrantySel = document.getElementById('in-warranty');
         if (warrantySel && !warrantySel.value) {
           warrantySel.value = 'Active';
-          reorderRefreshTrigger('in-reason-sub');
           flBuildOutputs();
         }
-      }
-    }
-
-    var elCoId    = document.getElementById('mat-popup-company-id');
-    var elCoName  = document.getElementById('mat-popup-company-name');
-    var elCoAddr  = document.getElementById('mat-popup-company-address');
-    var elCoBlock = document.getElementById('mat-popup-company-block');
-    if (elCoBlock) {
-      if (d.company_id || d.company_name || d.company_address) {
-        if (elCoId)   elCoId.textContent   = d.company_id      || '—';
-        if (elCoName) elCoName.textContent = d.company_name    || '—';
-        if (elCoAddr) elCoAddr.textContent = d.company_address || '—';
-        elCoBlock.style.display = '';
-      } else {
-        elCoBlock.style.display = 'none';
-      }
-    }
-
-    if (elNotes && elNotesR) {
-      if (d.notes) {
-        elNotes.textContent = d.notes;
-        elNotesR.style.display = '';
-      } else {
-        elNotesR.style.display = 'none';
       }
     }
 
@@ -3719,6 +4125,27 @@ function matApplyData(d) {
     );
 
     matSetBtnReady(!!(wand || reg));
+}
+
+// Ticket Checker's own MAT lookup — a completely independent cache
+// (_tcMatData) and fetch path from Documentation's matScrape/_matData.
+// Only ever renders the shared popup (matRenderPopup); never calls
+// matApplyData, so it can't touch Wand S/N, Model, Warranty, or any
+// other Documentation field.
+var _tcMatData = null;
+
+function tcMatScrape(sn) {
+  if (_tcMatData && _tcMatData.serial === sn) {
+    matRenderPopup(_tcMatData);
+    return Promise.resolve(_tcMatData);
+  }
+  return pyApiLong('mat_scrape', sn).then(function(r) {
+    if (!r || r.status !== 'ok' || (r.data || {}).status_text === 'login_required') return null;
+    var d = r.data || {};
+    _tcMatData = d;
+    matRenderPopup(d);
+    return d;
+  });
 }
 
 function matUpdateStatus(msg, state) {
@@ -3746,6 +4173,14 @@ function matToggleEnabled() {
 function matSaveShowBrowser() {
   var show = !!(document.getElementById('mat-show-browser-chk') || {}).checked;
   pyApi('mat_save_show_browser', show);
+}
+
+// Wipes the saved MAT session (not just closing the window) — the next
+// MAT search needs a one-time manual login, then goes back to running
+// headless (or however "Visible" is set) like normal.
+function matLogout() {
+  if (!confirm('Log out of MAT? You\'ll need to log in again (once) the next time a Scanner S/N is searched.')) return;
+  pyApiLong('mat_logout');
 }
 
 // Deliberately doesn't prefill email/password — the settings panel never
@@ -3836,17 +4271,22 @@ function sfOpenHome() {
   pyApiLong('sf_open_home');
 }
 
-function sfCloseBrowser() {
-  pyApiLong('sf_close_browser');
+// Wipes the saved Salesforce SSO session (not just closing the window) —
+// the next Salesforce call needs a one-time manual login, then goes back
+// to running headless (or however "Visible" is set) like normal.
+function sfLogout() {
+  if (!confirm('Log out of Salesforce? You\'ll need to log in again (once) the next time Ticket Checker runs a search.')) return;
+  pyApiLong('sf_logout');
 }
 
-// Resets only the Ticket Checker panel's own state (ticket inputs, status,
-// fields, comparisons, debug box) — doesn't touch MAT data, the intake bar,
-// or anything outside this panel.
+// Resets only the Ticket Checker panel's own state (Scanner S/N, ticket
+// input, status, fields, comparisons, debug box, its own independent MAT
+// cache) — doesn't touch Documentation's intake bar or its MAT data at all.
 function tcClear() {
   var g = function(id) { return document.getElementById(id); };
   if (g('tc-ticket-input')) g('tc-ticket-input').value = '';
-  if (g('check-popup-ticket')) g('check-popup-ticket').value = '';
+  if (g('tc-scanner-sn')) g('tc-scanner-sn').value = '';
+  _tcMatData = null;
 
   var status = g('tc-status');
   if (status) { status.textContent = ''; status.style.display = 'none'; }
@@ -3908,38 +4348,47 @@ function sfSetFieldsLoading() {
   if (fields) fields.style.display = 'flex';
 }
 
-// Shared by the intake-bar Check popup and the sidebar Ticket Checker panel
-// — same underlying process either way, just two entry points into it.
-// Salesforce only runs if a ticket number was given. Whichever ticket-number
-// input wasn't used to trigger this stays in sync with the one that was.
+// Ticket Checker's Scanner S/N field only ever accepts a real Scanner
+// S/N — same extraction rule as Documentation's own field (parseSN): a
+// complete, valid S/N found anywhere in typed/pasted text wins outright
+// (pasting "please check YUC2022W18A069 asap" still ends up with just the
+// serial); short of that, it's masked to letters/digits only, capped at
+// 14 characters. No model dropdown here, so none of parseSN's model
+// auto-select side effects apply.
+function tcParseScannerSn(el) {
+  var upperRaw = (el.value || '').toUpperCase();
+  var m = upperRaw.match(SN_REGEX);
+  el.value = m ? m[0] : _snMaskInput(upperRaw);
+}
+
+// Ticket Checker's own search — fully independent from the Documentation
+// intake bar now: reads its own Scanner S/N field (#tc-scanner-sn) and its
+// own ticket number (#tc-ticket-input), and only ever touches Ticket
+// Checker's own MAT cache (tcMatScrape / _tcMatData). Salesforce only runs
+// if a ticket number was given.
 //
 // MAT needs a Scanner S/N to run against. If one's already sitting in the
-// intake bar, MAT runs in parallel with Salesforce like before. If not (the
-// user gave only a ticket number), Salesforce has to be read first so the
-// S/N can be pulled out of the ticket's Subject — MAT then runs against
-// that discovered S/N before the fields/comparisons are shown.
-function checkRun(inputId, statusId, btnId) {
-  var snEl       = document.getElementById('in-serial');
-  var sn         = ((snEl || {}).value || '').trim();
+// field, MAT runs in parallel with Salesforce. If not (only a ticket number
+// was given), Salesforce has to be read first so the S/N can be pulled out
+// of the ticket's Subject — MAT then runs against that discovered S/N
+// before the fields/comparisons are shown.
+function checkRun() {
+  var statusId = 'tc-status';
+  var sn         = ((document.getElementById('tc-scanner-sn') || {}).value || '').trim();
   var snProvided = !!sn;
   if (snProvided && !SN_REGEX_FULL.test(sn)) { sfSetStatus('Invalid/incomplete Scanner S/N.', 'var(--amber)', statusId); return; }
 
-  var input  = document.getElementById(inputId);
-  var ticket = ((input || {}).value || '').trim();
-  ['check-popup-ticket', 'tc-ticket-input'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el && el !== input) el.value = ticket;
-  });
+  var ticket = ((document.getElementById('tc-ticket-input') || {}).value || '').trim();
 
   if (!snProvided && !ticket) {
     sfSetStatus('Enter a Scanner S/N or a ticket number.', 'var(--amber)', statusId);
     return;
   }
 
-  var btn = document.getElementById(btnId);
+  var btn = document.getElementById('tc-go-btn');
   if (!ticket) {
     // MAT-only path — S/N given, no ticket number.
-    if (_matEnabled) matScrape(sn);
+    if (_matEnabled) tcMatScrape(sn);
     var fields = document.getElementById('tc-fields');
     if (fields) fields.style.display = 'none';
     var row = document.getElementById('tc-compare-row');
@@ -3953,7 +4402,7 @@ function checkRun(inputId, statusId, btnId) {
 
   // A Scanner S/N already known lets MAT run in parallel with Salesforce;
   // otherwise it has to wait until the Subject gives us one.
-  var matPromise = snProvided && _matEnabled ? matScrape(sn) : null;
+  var matPromise = snProvided && _matEnabled ? tcMatScrape(sn) : null;
 
   sfSetStatus(snProvided ? 'Running MAT + Salesforce…' : 'Running Salesforce…', 'var(--text3)', statusId);
   pyApiLong('sf_open_ticket', ticket).then(function(r) {
@@ -3968,7 +4417,7 @@ function checkRun(inputId, statusId, btnId) {
     if (matPromise) {
       // Wait for MAT to finish too before reading + comparing — otherwise
       // the S/N cross-check races against a still-in-flight MAT scrape and
-      // reads _matData before it's populated, always showing a mismatch.
+      // reads _tcMatData before it's populated, always showing a mismatch.
       matPromise.then(function() { sfReadTicketFields(statusId); });
     } else {
       sfDiscoverSnThenReadFields(statusId);
@@ -3988,10 +4437,11 @@ function sfReadTicketFields(statusId) {
 
 // No Scanner S/N was given up front — read the ticket once to get the
 // Subject, pull the S/N out of it (same SN_REGEX every other S/N field on
-// the page is matched against), mirror it into the intake bar, and only
-// then run MAT against it before showing fields/comparisons. If the
-// Subject doesn't have one, fall back to whatever S/N is embedded in the
-// Asset text (e.g. "172923-YUC2021W13A183-SCANNER") before giving up.
+// the page is matched against), mirror it into Ticket Checker's own
+// Scanner S/N field (never Documentation's), and only then run MAT
+// against it before showing fields/comparisons. If the Subject doesn't
+// have one, fall back to whatever S/N is embedded in the Asset text
+// (e.g. "172923-YUC2021W13A183-SCANNER") before giving up.
 function sfDiscoverSnThenReadFields(statusId) {
   pyApiLong('sf_read_ticket').then(function(r) {
     if (!r || r.status !== 'ok') return;
@@ -4002,7 +4452,7 @@ function sfDiscoverSnThenReadFields(statusId) {
     var foundIn  = subjectM ? 'Subject' : (assetM ? 'Asset' : '');
 
     if (foundSn) {
-      var snEl = document.getElementById('in-serial');
+      var snEl = document.getElementById('tc-scanner-sn');
       if (snEl) snEl.value = foundSn;
     }
 
@@ -4015,7 +4465,7 @@ function sfDiscoverSnThenReadFields(statusId) {
     }
 
     sfSetStatus('Scanner S/N found in ' + foundIn + ' (' + foundSn + ') — running MAT…', 'var(--text3)', statusId);
-    matScrape(foundSn).then(function() {
+    tcMatScrape(foundSn).then(function() {
       sfPopulateFieldsAndCompare(d, statusId);
     });
   });
@@ -4097,29 +4547,49 @@ function sfPopulateFieldsAndCompare(d, statusId) {
       debugBox.select();
     }
     console.log('sf_read_ticket debug:', d);
+  } else if (d.mail_debug) {
+    // Mail Check came back red — mail_debug records which stage it
+    // stopped at (tab_not_found, original_message_not_found,
+    // from_to_subject_lines_not_found, from_email_invalid, to_email_invalid,
+    // subject_missing_part_request, ticket_number_mismatch, or an
+    // exception), so this is diagnosable without watching the headless
+    // browser live.
+    if (debugBox) {
+      var md = d.mail_debug;
+      var lines = ['mail_check_stage: ' + (md.stage || '')];
+      Object.keys(md).forEach(function(k) {
+        if (k === 'stage') return;
+        lines.push(k + ': ' + JSON.stringify(md[k]));
+      });
+      debugBox.value = lines.join('\n');
+      debugBox.style.display = 'block';
+    }
+    console.log('mail check debug:', d.mail_debug);
   } else if (debugBox) {
     debugBox.style.display = 'none';
   }
 }
 
-// Cross-checks the Scanner S/N across its four sources: the intake bar
-// (this ticket), MAT (the record we just scraped), whatever S/N is written
-// in the Salesforce ticket's Subject, and the S/N embedded in the Asset
-// field's text (Asset values look like "172923-YUC2021W13A183-SCANNER" —
-// the middle segment is always a real scanner S/N).
+// Cross-checks the Scanner S/N across its four sources: Ticket Checker's
+// own Scanner S/N field, MAT (Ticket Checker's own independent scrape),
+// whatever S/N is written in the Salesforce ticket's Subject, and the S/N
+// embedded in the Asset field's text (Asset values look like
+// "172923-YUC2021W13A183-SCANNER" — the middle segment is always a real
+// scanner S/N). Documentation's own Scanner S/N (#in-serial) never
+// factors in here — Ticket Checker validates entirely on its own fields.
 function checkCompareSN(sfData) {
   var row  = document.getElementById('tc-compare-row');
   var text = document.getElementById('tc-compare-text');
   if (!row || !text) return;
 
-  var ticketSn = ((document.getElementById('in-serial') || {}).value || '').trim().toUpperCase();
-  var matSn    = ((_matData && (_matData.scanner_sn || _matData.serial)) || '').trim().toUpperCase();
+  var tcSn     = ((document.getElementById('tc-scanner-sn') || {}).value || '').trim().toUpperCase();
+  var matSn    = ((_tcMatData && (_tcMatData.scanner_sn || _tcMatData.serial)) || '').trim().toUpperCase();
   var subjM    = (sfData.subject || '').toUpperCase().match(SN_REGEX);
   var subjectSn = subjM ? subjM[0] : '';
   var assetM   = (sfData.asset || '').toUpperCase().match(SN_REGEX);
   var assetSn  = assetM ? assetM[0] : '';
 
-  var values = { ticket: ticketSn, MAT: matSn, Subject: subjectSn, Asset: assetSn };
+  var values = { 'Ticket Checker': tcSn, MAT: matSn, Subject: subjectSn, Asset: assetSn };
   var present = Object.keys(values).filter(function(k) { return values[k]; });
 
   if (!present.length) { row.style.display = 'none'; return; }
@@ -4136,7 +4606,7 @@ function checkCompareSN(sfData) {
     text.textContent = 'Match: ' + values[present[0]];
     text.style.color = 'var(--green)';
   } else {
-    text.textContent = 'Mismatch — ticket: ' + (ticketSn || '—') + ' | MAT: ' + (matSn || '—') +
+    text.textContent = 'Mismatch — Ticket Checker: ' + (tcSn || '—') + ' | MAT: ' + (matSn || '—') +
                         ' | Subject: ' + (subjectSn || '—') + ' | Asset: ' + (assetSn || '—');
     text.style.color = 'var(--red)';
   }
@@ -4148,7 +4618,7 @@ function checkCompareMatId(sfData) {
   if (!row || !text) return;
 
   var sfMatId  = (sfData.mat_id || '').replace(/\D/g, '');
-  var matMatId = ((_matData && _matData.company_id) || '').replace(/\D/g, '');
+  var matMatId = ((_tcMatData && _tcMatData.company_id) || '').replace(/\D/g, '');
 
   if (!sfMatId && !matMatId) { row.style.display = 'none'; return; }
   row.style.display = 'flex';
@@ -4266,7 +4736,7 @@ function checkCompareAddress(sfData) {
   var text = document.getElementById('tc-compare-address-text');
   if (!row || !text) return;
 
-  var matAddr = (_matData && _matData.company_address) || '';
+  var matAddr = (_tcMatData && _tcMatData.company_address) || '';
   var sfAddr  = sfData.address || '';
 
   if (!matAddr && !sfAddr) { row.style.display = 'none'; return; }
@@ -4377,7 +4847,7 @@ function checkCompareAsset(sfData) {
   var rightPart = asset.slice(dashIdx + 1);
   var numMatch = rightPart.match(/\d+/);
   var assetWandNum = numMatch ? numMatch[0] : '';
-  var matWandNum = ((_matData && _matData.wand_sn) || '').replace(/\D/g, '');
+  var matWandNum = ((_tcMatData && _tcMatData.wand_sn) || '').replace(/\D/g, '');
 
   if (!assetWandNum || !matWandNum) {
     text.textContent = 'Missing Wand S/N on the ' + (!assetWandNum ? 'Asset' : 'MAT') + ' side.';
@@ -4435,38 +4905,19 @@ function checkCompareReturnType(sfData) {
   }
 }
 
-function checkTogglePopup(e) {
+// Documentation's magnifying-glass button — MAT only, no Salesforce/ticket
+// number here anymore (that's Ticket Checker's job now). Only ever runs
+// the search; it never shows the result itself — that's what the Scanner
+// S/N field's own dropdown arrow (#in-serial-mat-arrow) is for, and only
+// when it's actually clicked.
+function checkMatSearch(e) {
   if (e) e.stopPropagation();
-  var pop = document.getElementById('check-popup');
-  var btn = document.getElementById('check-btn');
-  if (!pop || !btn) return;
-  if (pop.style.display !== 'none') { pop.style.display = 'none'; return; }
-  var r = btn.getBoundingClientRect();
-  pop.style.top     = (r.bottom + 5) + 'px';
-  pop.style.left    = r.right + 'px';
-  pop.style.display = '';
-  requestAnimationFrame(function() {
-    var pw   = pop.getBoundingClientRect().width;
-    var left = r.right - pw;
-    if (left < 8) left = 8;
-    pop.style.left = left + 'px';
-  });
-  var input  = document.getElementById('check-popup-ticket');
-  var status = document.getElementById('check-popup-status');
-  if (input)  { input.value = document.getElementById('tc-ticket-input') ? document.getElementById('tc-ticket-input').value : ''; input.focus(); }
-  if (status) { status.style.display = 'none'; }
+  var sn = ((document.getElementById('in-serial') || {}).value || '').trim();
+  if (!sn) { matUpdateStatus('Enter a Scanner S/N first.', 'warn'); return; }
+  if (!SN_REGEX_FULL.test(sn)) { matUpdateStatus('Invalid/incomplete Scanner S/N.', 'warn'); return; }
+  if (!_matEnabled) { matUpdateStatus('MAT is disabled in Settings.', 'warn'); return; }
+  matScrape(sn);
 }
-
-// Close the Check popup when clicking anywhere outside it
-document.addEventListener('click', function(e) {
-  var pop = document.getElementById('check-popup');
-  var btn = document.getElementById('check-btn');
-  if (pop && pop.style.display !== 'none') {
-    if (!pop.contains(e.target) && e.target !== btn && !(btn && btn.contains(e.target))) {
-      pop.style.display = 'none';
-    }
-  }
-});
 
 // ── Settings menu ────────────────────────────────────────────
 // Sections stay expanded across a quick reopen (picking up a forgotten
@@ -4994,12 +5445,18 @@ function saveSessionHistory(){
 function resetDocFields(){
   var ids=['fl-caller-name','fl-caller-phone','fl-caller-email','fl-mat-id','fl-tvid','fl-tvpass','fl-issue-desc','fl-actions-extra','fl-subject-override'];
   ids.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  // Dragging the resize handle sets an inline height on the textarea — clear
+  // it so the box goes back to its original min-height instead of staying
+  // stretched from whatever size it was left at.
+  var actionsEl = document.getElementById('fl-actions-extra');
+  if (actionsEl) actionsEl.style.height = '';
   _lastAutoIssueDesc = '';
   var selects=['fl-outcome'];
   selects.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';})
   var chk=document.getElementById('fl-followup-chk');if(chk)chk.checked=false;
   flFollowupToggle();
   tmActive=false;
+  cbReset();
   document.querySelectorAll('.fl-chip-active').forEach(function(c){c.classList.remove('fl-chip-active');});
   _orderExtra = [];
   var orderExtraPanel = document.getElementById('fl-order-extra-panel'); if (orderExtraPanel) orderExtraPanel.style.display = 'none';
@@ -5012,10 +5469,14 @@ function resetDocFields(){
   var subj=document.getElementById('fl-out-subject');if(subj)subj.textContent='—';
   var desc=document.getElementById('fl-out-desc');if(desc){desc.textContent='—';desc.style.display='none';}
   var caret=document.getElementById('fl-desc-caret');if(caret)caret.textContent='▶';
+  _rmaManual = null;
+  var rmaPanel=document.getElementById('fl-rma-extra-panel');if(rmaPanel)rmaPanel.style.display='none';
   // also reset intake bar fields (keep agent, clear case/serial/model/reason)
   var iids=['in-serial','in-reason','in-wand-sn'];
   iids.forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
   var ms=document.getElementById('in-model');if(ms)ms.value='';
+  toggleSnField('');
+  applyOfficePcMode(''); // undoes Office PC's row1/conn-wrap layout and restores the normal Reason list
   matReset();
   _wandDone=false;
   var wp=document.getElementById('wand-flow-panel');if(wp)wp.style.display='none';
@@ -5142,7 +5603,7 @@ function hCopyAll(idx){
   ].filter(function(l){var v=l.split(': ').slice(1).join(': ').trim();return v&&v!=='—'&&v!=='undefined';});
   navigator.clipboard.writeText(lines.join('\n')).then(function(){
     var btn=document.getElementById('hcopyall_'+idx);
-    if(btn){var old=btn.textContent;btn.textContent='✓ Copied';btn.style.color='var(--green)';
+    if(btn){var old=btn.textContent;btn.textContent='Copied';btn.style.color='var(--green)';
       setTimeout(function(){btn.textContent=old;btn.style.color='';},1500);}
   }).catch(function(){});
 }
@@ -6669,6 +7130,103 @@ function flClearSelectedKb() {
   flBuildOutputs();
 }
 
+// ── RMA contact details (TS only, Wand/PPC Replacement) ────────
+// _rmaManual holds a {name,phone,email} override entered via the "+" panel;
+// null means "pull live from the caller name/phone/email fields instead".
+var _rmaManual = null;
+
+function rmaReasonActive() {
+  var role   = (document.getElementById('in-role')   || {}).value || currentRole || '';
+  var reason = (document.getElementById('in-reason') || {}).value || '';
+  return role === 'TS' && (reason === 'Wand Replacement' || reason === 'PPC Replacement');
+}
+
+function rmaUpdateVisibility() {
+  var active = rmaReasonActive();
+  var rmaWrap = document.getElementById('fl-rma-wrap');
+  if (rmaWrap) rmaWrap.style.display = active ? 'block' : 'none';
+  if (!active) {
+    var panel = document.getElementById('fl-rma-extra-panel');
+    if (panel) panel.style.display = 'none';
+  }
+}
+
+function rmaBuildText() {
+  var name, phone, email;
+  if (_rmaManual) {
+    name  = _rmaManual.name;
+    phone = _rmaManual.phone;
+    email = _rmaManual.email;
+  } else {
+    name  = (document.getElementById('fl-caller-name')  || {}).value || '';
+    phone = (document.getElementById('fl-caller-phone') || {}).value || '';
+    email = (document.getElementById('fl-caller-email') || {}).value || '';
+  }
+  return 'RMA Contact Details:\nName: ' + (name || 'N/A') + '\nPhone: ' + (phone || 'N/A') + '\nEmail: ' + (email || 'N/A');
+}
+
+// Clicking the RMA button itself (not the "+") just copies the contact
+// block straight to the clipboard — manual override always wins over the
+// ticket's caller info when one is set.
+function rmaPopulate() {
+  var lbl = document.getElementById('fl-rma-label');
+  navigator.clipboard.writeText(rmaBuildText()).then(function() {
+    if (!lbl) return;
+    lbl.textContent = 'Copied';
+    setTimeout(function() { lbl.textContent = 'RMA'; }, 1600);
+  });
+}
+
+// Keeps the manual-entry panel on-screen — it's position:fixed so it can't
+// get clipped by the row's overflow, and its left edge is clamped so it
+// never runs off the right side of the window.
+// Anchors the panel's right edge to the RMA button's right edge (it visibly
+// drops out of the button itself), then clamps both edges to the window so
+// it can never render partly off-screen / clipped by the main frame.
+function rmaPositionPanel() {
+  var btn   = document.getElementById('fl-rma-btn');
+  var panel = document.getElementById('fl-rma-extra-panel');
+  if (!btn || !panel) return;
+  // Reparented into <body> the first time it opens so no ancestor's
+  // overflow/stacking context can ever clip it, regardless of where the
+  // button sits in the layout.
+  if (panel.parentElement !== document.body) document.body.appendChild(panel);
+  var r = btn.getBoundingClientRect();
+  var width = panel.offsetWidth || 200;
+  var left = r.right - width;
+  if (left + width > window.innerWidth - 8) left = window.innerWidth - width - 8;
+  if (left < 8) left = 8;
+  panel.style.left = left + 'px';
+  panel.style.top  = (r.bottom + 6) + 'px';
+}
+
+function rmaToggleManualPanel() {
+  var panel = document.getElementById('fl-rma-extra-panel');
+  if (!panel) return;
+  var opening = panel.style.display === 'none';
+  if (opening) {
+    var n = document.getElementById('fl-rma-name');
+    var p = document.getElementById('fl-rma-phone');
+    var e = document.getElementById('fl-rma-email');
+    if (n) n.value = _rmaManual ? _rmaManual.name  : '';
+    if (p) p.value = _rmaManual ? _rmaManual.phone : '';
+    if (e) e.value = _rmaManual ? _rmaManual.email : '';
+  }
+  panel.style.display = opening ? 'block' : 'none';
+  if (opening) rmaPositionPanel();
+}
+
+// Saves whatever is in the manual-entry panel as the override the moment
+// it closes (clicking outside it) — no separate Save button, per spec.
+// Clearing all three fields drops the override entirely, so RMA falls
+// back to the ticket's caller info again.
+function rmaSaveManualPanel() {
+  var n = (document.getElementById('fl-rma-name')  || {}).value || '';
+  var p = (document.getElementById('fl-rma-phone') || {}).value || '';
+  var e = (document.getElementById('fl-rma-email') || {}).value || '';
+  _rmaManual = (n || p || e) ? { name: n, phone: p, email: e } : null;
+}
+
 // The KB indicator button doubles as: (1) for Tech Support's simpler
 // description (just "KB: added.", no specific article named), a manual
 // "KB used" toggle; (2) for every other role, the trigger for a popup
@@ -6871,14 +7429,19 @@ function qaSave() {
   localStorage.setItem(QA_STORAGE_KEY, JSON.stringify(_qaList));
 }
 
+var QA_EDIT_PENCIL_PATH = 'M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z';
+var QA_EDIT_CHECK_PATH  = 'M20 6L9 17l-5-5';
+
 function qaToggleEdit() {
   _qaEditMode = !_qaEditMode;
-  var btn = document.getElementById('qa-edit-toggle');
+  var btn  = document.getElementById('qa-edit-toggle');
+  var icon = document.getElementById('qa-edit-icon');
   if (btn) {
-    btn.textContent = _qaEditMode ? 'Done' : 'Customize';
+    btn.title = _qaEditMode ? 'Done customizing' : 'Customize quick actions';
     btn.style.borderColor = _qaEditMode ? 'var(--blue)' : 'var(--border2)';
     btn.style.color = _qaEditMode ? 'var(--blue)' : 'var(--text3)';
   }
+  if (icon) icon.setAttribute('d', _qaEditMode ? QA_EDIT_CHECK_PATH : QA_EDIT_PENCIL_PATH);
   qaRender();
 }
 
@@ -7246,13 +7809,11 @@ function _reorderPositionPanel(nativeId) {
   panel.style.maxHeight = Math.min(320, window.innerHeight - r.bottom - 12) + 'px';
 }
 
-// Reason and normal Specific Issue lists are user-orderable, but Warranty
-// (Specific Issue repurposed for Wand/PPC/Part Replacement) has a fixed,
-// meaningful order (Active, Inactive, ...) that shouldn't be shuffled.
+// Reason and Specific Issue lists are always user-orderable — the fixed,
+// meaningful order (Active, Inactive, ...) now lives entirely in the
+// dedicated Warranty tab (a plain <select>, not part of this engine).
 function _reorderIsDraggable(nativeId) {
-  if (nativeId !== 'in-reason-sub') return true;
-  var reason = (document.getElementById('in-reason') || {}).value || '';
-  return REPLACEMENT_REASONS.indexOf(reason) === -1;
+  return true;
 }
 
 function _reorderRenderPanelRows(nativeId) {
@@ -7261,8 +7822,13 @@ function _reorderRenderPanelRows(nativeId) {
   if (!sel || !panel) return;
   panel.innerHTML = '';
   var draggable = _reorderIsDraggable(nativeId);
+  // Specific Issue's blank option is just the closed-state placeholder
+  // label ("Specific reason") now — it's not a real choice, so it never
+  // shows up as a selectable row once the panel is open.
+  var skipBlank = nativeId === 'in-reason-sub';
 
   Array.prototype.forEach.call(sel.options, function(opt) {
+    if (skipBlank && opt.value === '') return;
     var row = document.createElement('div');
     row.className = 'reorder-row' + (opt.value === sel.value ? ' selected' : '');
     row.dataset.value = opt.value;
@@ -7384,23 +7950,61 @@ function flSoftwareSubIssues() {
 }
 
 // Wand/PPC/Part Replacement build their subject in their own special
-// format (see flBuildSubjectReplacement) and repurpose the Specific Issue
-// dropdown into a Warranty status picker instead of a normal sub-issue list.
+// format (see flBuildSubjectReplacement). Specific Reason stays a normal
+// sub-issue list for these reasons too (flWandReplacementSubs / PPC's own
+// static list below); Warranty status is picked from its own dedicated
+// tab (#in-warranty-wrap), shown only for these three reasons.
 var REPLACEMENT_REASONS = ['Wand Replacement', 'PPC Replacement', 'Part Replacement'];
 var WARRANTY_OPTIONS = ['Active', 'Inactive', 'Customer Satisfaction', 'Physical Damage', 'DOA'];
+
+var PPC_REPLACEMENT_SUBS = [
+  'Broken screen', 'Slowness', 'Touchscreen issues', 'SW Crash', 'Failed EFRA',
+  'Blackscreen/BIOS', 'Power Issues', 'Broken hinge/holder', 'iTero logo off'
+];
+
+// HW Diagnosis error only applies to WOA/BLX scanners, or the 5D variants
+// of YUC/NZK (not their Lumina variants).
+function _wandHwDiagVisible(model) {
+  var woaBlx = (SN_MAP['WOA'].models || []).concat(SN_MAP['BLX'].models || []);
+  if (woaBlx.indexOf(model) !== -1) return true;
+  var yucNzk5d = ['5D Plus - Cart', '5D Plus Lite - Cart', '5D Plus - Mobile', '5D Plus Lite - Mobile'];
+  return yucNzk5d.indexOf(model) !== -1;
+}
+
+// BITS errors only applies to Lumina variants (YUC/NZK/PLA groups).
+function _wandBitsVisible(model) {
+  var candidates = (SN_MAP['YUC'].models || []).concat(SN_MAP['NZK'].models || [], SN_MAP['PLA'].models || []);
+  return candidates.indexOf(model) !== -1 && model.indexOf('Lumina') !== -1;
+}
+
+function flWandReplacementSubs() {
+  var model = (document.getElementById('in-model') || {}).value || '';
+  var subs = ['Wand disconnections'];
+  if (_wandHwDiagVisible(model)) subs.push('HW Diagnosis error');
+  if (_wandBitsVisible(model))   subs.push('BITS errors');
+  subs.push('Broken Wand', 'Broken USB Port', 'Broken Tip', 'Faulty Noises - VCM', 'Faulty Noises - Fan', 'Overheating', 'Decoloration', 'Proactive RMA');
+  return subs;
+}
 
 function reasonChanged() {
   reorderRefreshTrigger('in-reason');
 
+  var model  = (document.getElementById('in-model')  || {}).value || '';
+  var isPC   = model === 'Office PC';
   var reason = (document.getElementById('in-reason') || {}).value || '';
   var subSel = document.getElementById('in-reason-sub');
-  var isWarranty = REPLACEMENT_REASONS.indexOf(reason) !== -1;
-  var subs   = reason === 'Software' ? flSoftwareSubIssues()
-             : isWarranty ? WARRANTY_OPTIONS
+  // Office PC has no scanner and no Specific Reason list of its own —
+  // Reason alone is the whole issue selector, even for a value like
+  // "Networking" that happens to have subs defined for the normal (has a
+  // scanner) reason list.
+  var subs   = isPC                          ? []
+             : reason === 'Software'         ? flSoftwareSubIssues()
+             : reason === 'Wand Replacement' ? flWandReplacementSubs()
+             : reason === 'PPC Replacement'  ? PPC_REPLACEMENT_SUBS.slice()
              : (REASON_SUB_CATS[reason] || []);
 
   if (subSel) {
-    subSel.innerHTML = isWarranty ? '<option value="">Warranty</option>' : '<option value="">None</option>';
+    subSel.innerHTML = '<option value="">Specific reason</option>';
     subs.forEach(function(s) {
       var o = document.createElement('option');
       o.value = s; o.textContent = s;
@@ -7411,25 +8015,34 @@ function reasonChanged() {
     if (subWrap) subWrap.style.display = subs.length ? '' : 'none';
     reorderRefreshTrigger('in-reason-sub');
   }
+
+  var isReplacement  = REPLACEMENT_REASONS.indexOf(reason) !== -1;
+  var warrantyWrap = document.getElementById('in-warranty-wrap');
+  var warrantySel  = document.getElementById('in-warranty');
+  if (warrantyWrap) warrantyWrap.style.display = isReplacement ? '' : 'none';
+  if (warrantySel && !isReplacement) warrantySel.value = '';
+
   _flSelectedKb = null;
   _flKbManuallyAdded = false;
+  rmaUpdateVisibility();
   flSyncFromIntake();
 }
 
-// Keeps "FTI Reinstallation" in sync with the model without wiping an
-// already-picked specific issue — called whenever the model changes while
-// Software is the selected reason (reasonChanged() itself always resets
-// the selection, which would be disruptive to call on every model change).
+// Keeps model-dependent Specific Reason lists ("FTI Reinstallation" for
+// Software; "HW Diagnosis error" / "BITS errors" for Wand Replacement) in
+// sync with the model without wiping an already-picked value — called
+// whenever the model changes (reasonChanged() itself always resets the
+// selection, which would be disruptive to call on every model change).
 function flRefreshSoftwareSubs() {
   var reason = (document.getElementById('in-reason') || {}).value || '';
-  if (reason !== 'Software') return;
+  if (reason !== 'Software' && reason !== 'Wand Replacement') return;
   var subSel = document.getElementById('in-reason-sub');
   if (!subSel) return;
 
   var prevVal = subSel.value;
-  var subs = flSoftwareSubIssues();
+  var subs = reason === 'Software' ? flSoftwareSubIssues() : flWandReplacementSubs();
 
-  subSel.innerHTML = '<option value="">None</option>';
+  subSel.innerHTML = '<option value="">Specific reason</option>';
   subs.forEach(function(s) {
     var o = document.createElement('option');
     o.value = s; o.textContent = s;
@@ -7484,13 +8097,14 @@ function flBuildSubject() {
     : '<span style="color:var(--text3);font-family:var(--mono);font-size:11px">—</span>';
 }
 
-// Tech Support subject format: Reason | Model | PPC SN: X / Wand SN: Y | Specific issue
+// Tech Support subject format: Reason | Model | PPC SN: X / Wand SN: Y | Specific issue | Subject text
 function flBuildSubjectTS(el) {
   var sn      = (document.getElementById('in-serial')     || {}).value || '';
   var wandSn  = (document.getElementById('in-wand-sn')    || {}).value || '';
   var model   = (document.getElementById('in-model')      || {}).value || '';
   var reason  = (document.getElementById('in-reason')     || {}).value || '';
   var sub     = (document.getElementById('in-reason-sub') || {}).value || '';
+  var custom  = ((document.getElementById('fl-subject-override') || {}).value || '').trim();
   var modelLabel = TS_MODEL_ABBR[model] || model;
 
   var snParts = [];
@@ -7504,6 +8118,7 @@ function flBuildSubjectTS(el) {
   if (modelLabel) htmlParts.push('<span style="font-family:var(--sans);font-size:12px;color:var(--text)">'                                        + hEsc(modelLabel) + '</span>');
   if (snCombo)    htmlParts.push('<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue)">'                        + hEsc(snCombo)    + '</span>');
   if (sub)        htmlParts.push('<span style="font-family:var(--sans);font-size:12px;color:var(--text2)">'                                       + hEsc(sub)        + '</span>');
+  if (custom)     htmlParts.push('<span style="font-family:var(--mono);font-size:11px;font-style:italic;color:var(--text2)">'                     + hEsc(custom)     + '</span>');
 
   el.innerHTML = htmlParts.length
     ? htmlParts.join(sep)
@@ -7514,15 +8129,15 @@ function flBuildSubjectTS(el) {
 // Reason | Model | PPC SN: X [/ Wand SN: Y] | Subject text | Warranty: Z
 // — Wand SN only appears for Wand Replacement (never PPC/Part Replacement),
 // and the free-text "Subject text" override sits between the S/N block and
-// the Warranty status (itself picked from the repurposed Specific Issue
-// dropdown — see reasonChanged's WARRANTY_OPTIONS branch).
+// the Warranty status (picked from its own dedicated tab, #in-warranty).
 function flBuildSubjectReplacement(el) {
   var reason  = (document.getElementById('in-reason')          || {}).value || '';
   var sn      = (document.getElementById('in-serial')          || {}).value || '';
   var wandSn  = (document.getElementById('in-wand-sn')         || {}).value || '';
   var model   = (document.getElementById('in-model')           || {}).value || '';
+  var subIssue = (document.getElementById('in-reason-sub')     || {}).value || '';
   var custom  = ((document.getElementById('fl-subject-override') || {}).value || '').trim();
-  var warranty = (document.getElementById('in-reason-sub')     || {}).value || '';
+  var warranty = (document.getElementById('in-warranty')       || {}).value || '';
   var modelLabel = model.replace(/\s*-\s*/g, ' ');
 
   var snParts = [];
@@ -7530,12 +8145,17 @@ function flBuildSubjectReplacement(el) {
   if (wandSn && reason === 'Wand Replacement') snParts.push('Wand SN: ' + wandSn);
   var snCombo = snParts.join(' / ');
 
+  // Specific Reason goes right after the S/N and before Warranty — but
+  // custom subject text takes that same slot instead when there is one,
+  // rather than showing both.
+  var afterSn = custom || subIssue;
+
   var sep = '<span style="color:var(--border2);font-weight:300"> | </span>';
   var htmlParts = [];
   if (reason)     htmlParts.push('<span style="font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.01em;color:var(--amber)">' + hEsc(reason)     + '</span>');
   if (modelLabel) htmlParts.push('<span style="font-family:var(--sans);font-size:12px;color:var(--text)">'                                        + hEsc(modelLabel) + '</span>');
   if (snCombo)    htmlParts.push('<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue)">'                        + hEsc(snCombo)    + '</span>');
-  if (custom)     htmlParts.push('<span style="font-family:var(--sans);font-size:12px;color:var(--text2)">'                                       + hEsc(custom)     + '</span>');
+  if (afterSn)    htmlParts.push('<span style="font-family:var(--sans);font-size:12px;color:var(--text2)">'                                       + hEsc(afterSn)    + '</span>');
   if (warranty)   htmlParts.push('<span style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--green)">'                       + hEsc('Warranty: ' + warranty) + '</span>');
 
   el.innerHTML = htmlParts.length
@@ -7567,15 +8187,6 @@ function flComputeIssueFromSubject() {
   return parts.join(' - ');
 }
 
-function fillIssueFromSubject() {
-  var el = document.getElementById('fl-issue-desc');
-  if (!el) return;
-  var text = flComputeIssueFromSubject();
-  el.value = text;
-  _lastAutoIssueDesc = text;
-  flBuildOutputs();
-}
-
 // Keeps Issue Description synced with Reason / Specific Issue / Subject
 // text automatically, but the moment the field holds anything other than
 // what was last auto-filled here, it backs off and leaves it alone — that
@@ -7605,7 +8216,7 @@ function flBuildDescriptionTS(o) {
 
   groups.push(
     '‣ Customer\'s phone number: ' + (o.phone || 'N/A') + '\n' +
-    '‣ Customer\'s name: ' + (o.caller || 'N/A') + '. Role: ' + callerRole + '.'
+    '‣ Customer\'s name: ' + (o.caller || 'N/A') + ' — Role: ' + callerRole
   );
 
   var snParts = [];
@@ -7613,11 +8224,11 @@ function flBuildDescriptionTS(o) {
   if (o.wandSn) snParts.push('Wand SN: ' + o.wandSn);
   groups.push('‣ ' + (snParts.length ? snParts.join(' / ') : 'PPC SN: N/A'));
 
-  if (kbAdded) groups.push('‣ KB: added.');
+  if (kbAdded) groups.push('‣ KB: added');
 
   groups.push('‣ Call details: \n' + (o.issueText || 'N/A'));
 
-  var actionsFinal = o.actionsText ? o.actionsText.trim().replace(/\.?\s*$/, '.') : 'N/A';
+  var actionsFinal = o.actionsText ? o.actionsText.trim() : 'N/A';
   groups.push('‣ Actions taken: \n' + actionsFinal);
 
   return groups.join('\n\n');
@@ -7628,6 +8239,17 @@ function flBuildOutputs() {
   flBuildSubject();
   flAutoSyncIssueDesc();
   flRenderKbSuggestions();
+
+  // While CB is active with an attempt picked, the Description tile shows
+  // the Callback/Follow-up template instead of the normal write-up — the
+  // "Actions Taken" box doubles as Callback/Follow-up details in this mode
+  // (see cbBuildText), so its content belongs in Description, not folded
+  // into a call write-up that doesn't apply to a callback.
+  if (_cbActive && _cbAttempt) {
+    var descElCb = document.getElementById('fl-out-desc');
+    if (descElCb) descElCb.textContent = cbBuildText();
+    return;
+  }
 
   var sn       = (document.getElementById('in-serial')        || {}).value || '';
   var model    = (document.getElementById('in-model')         || {}).value || '';
@@ -7646,8 +8268,18 @@ function flBuildOutputs() {
   var fuChk    = document.getElementById('fl-followup-chk');
   var followup = fuChk && fuChk.checked ? 'Yes' : 'No';
   var chips    = flGetChips();
+  var role     = (document.getElementById('in-role') || {}).value || currentRole || '';
 
-  var CHIP_TEXT = {
+  // Tech Support writes these two up as full remote-session notes instead
+  // of one-line confirmations — same chips, different wording, so nothing
+  // downstream needs to know or care which one is showing.
+  var CHIP_TEXT = role === 'TS' ? {
+    'Pictures':            'Pictures requested and attached',
+    'Power Drain':         'Power drain performed',
+    'Network diagnosis':   'Remote in\nGot and attached the network report\nFindings: ',
+    'HWD':                 'Hardware diagnostic performed',
+    'Battery Replacement': 'Remote in\nGot and attached the battery report\nFindings: '
+  } : {
     'Pictures':            'Pictures requested and attached',
     'Power Drain':         'Power drain performed',
     'Network diagnosis':   'Network diagnosis done',
@@ -7655,21 +8287,26 @@ function flBuildOutputs() {
     'Battery Replacement': 'Battery replacement performed'
   };
   var transferredTS = chips.indexOf('Transferred to TS') !== -1;
-  // "Transferred to TS" always goes at the very end of the description instead
-  // of inline with the other action chips — excluded from allChipText on purpose.
+  // "Transferred to TS" always goes at the very end instead of inline with
+  // the other action chips — excluded from allChipText on purpose, added
+  // back in below (FL: end of the whole description; TS: end of Actions
+  // Taken specifically, as "Escalated to business support"). No periods
+  // anywhere in here — the system never punctuates its own generated text,
+  // only whatever the agent types by hand stays exactly as typed.
   var allChipText = chips.filter(function(c){ return c !== 'Transferred to TS'; })
-    .map(function(c){ return CHIP_TEXT[c] || c; }).join('. ');
-  if (allChipText) allChipText += '.';
+    .map(function(c){ return CHIP_TEXT[c] || c; }).join(' — ');
 
-  var issueText = desc ? desc.trim().replace(/\.?\s*$/, '.') : 'N/A';
+  var issueText = desc ? desc.trim() : 'N/A';
 
   var actionsParts = [];
   if (allChipText) actionsParts.push(allChipText);
   if (extra)       actionsParts.push(extra.trim());
   var actionsText = actionsParts.join(' ');
 
-  var role = (document.getElementById('in-role') || {}).value || currentRole || '';
   if (role === 'TS') {
+    if (transferredTS) {
+      actionsText = (actionsText.trim() ? actionsText.trim() + ' — ' : '') + 'Escalated to business support';
+    }
     var wandSn = (document.getElementById('in-wand-sn') || {}).value || '';
     var descElTS = document.getElementById('fl-out-desc');
     if (descElTS) {
@@ -7690,7 +8327,7 @@ function flBuildOutputs() {
     'ISSUE: '          + issueText,
     actionsText ? 'ACTIONS: ' + actionsText : null,
     'FOLLOW UP TO CUSTOMER: ' + (followup || 'No'),
-    outcome ? 'OUTCOME: ' + outcome.trim().replace(/\.?\s*$/, '.') : null,
+    outcome ? 'OUTCOME: ' + outcome.trim() : null,
   ].filter(Boolean);
 
   var allOrderIds = [(document.getElementById('fl-order-id-input') || {}).value || ''].concat(_orderExtra).map(function(s){return s.trim();}).filter(Boolean);
@@ -7724,7 +8361,7 @@ function flCopySubjectBar() {
   var bar  = document.getElementById('fl-context-bar');
   if (!el || el.textContent === '—') return;
   navigator.clipboard.writeText(el.textContent).then(function() {
-    if (hint) { hint.textContent = '✓ Copied!'; hint.style.color = 'var(--green)'; }
+    if (hint) { hint.textContent = 'Copied'; hint.style.color = 'var(--green)'; }
     if (bar)  { bar.style.borderColor = 'var(--green)'; }
     setTimeout(function() {
       if (hint) { hint.textContent = 'Copy'; hint.style.color = ''; }
@@ -7738,7 +8375,7 @@ function flCopy(id, btn) {
   if (!el || el.textContent === '—') return;
   navigator.clipboard.writeText(el.textContent).then(function(){
     var orig = btn.textContent;
-    btn.textContent = '✓ Copied!';
+    btn.textContent = 'Copied';
     btn.style.color = 'var(--green)';
     setTimeout(function(){ btn.textContent = orig; btn.style.color = ''; }, 1800);
   });
@@ -7760,7 +8397,7 @@ function flCopyDescBar() {
   if (!el || el.textContent === '—') return;
   flDescToggle(true);
   navigator.clipboard.writeText(el.textContent).then(function() {
-    if (hint) { hint.textContent = '✓ Copied!'; hint.style.color = 'var(--green)'; }
+    if (hint) { hint.textContent = 'Copied'; hint.style.color = 'var(--green)'; }
     if (bar)  { bar.style.borderColor = 'var(--green)'; }
     setTimeout(function() {
       if (hint) { hint.textContent = 'Copy'; hint.style.color = ''; }
@@ -8070,7 +8707,7 @@ function snipCopy(id, btnEl) {
   copyText(s.cmd);
   if (!btnEl) return;
   var prevText = btnEl.textContent, prevColor = btnEl.style.color, prevBorder = btnEl.style.borderColor;
-  btnEl.textContent = '✓ Copied';
+  btnEl.textContent = 'Copied';
   btnEl.style.color = 'var(--green)';
   btnEl.style.borderColor = 'var(--green)';
   setTimeout(function() {

@@ -1432,6 +1432,17 @@ def mat_scrape(serial):
         show     = cfg.get("show_browser", False)
         if not email or not password:
             return err("MAT credentials incomplete. Configure in Settings → MAT.")
+        # One-shot override left behind by mat_logout() — the freshly wiped
+        # profile needs a human to see the login page once; every call
+        # after this one goes back to the normal show_browser setting.
+        if cfg.get("force_visible_once"):
+            show = True
+            cfg["force_visible_once"] = False
+            try:
+                with open(_MAT_CFG_PATH, "w", encoding="utf-8") as f:
+                    json.dump(cfg, f)
+            except Exception:
+                pass
     except Exception as e:
         return err(f"Config read error: {e}")
 
@@ -1664,6 +1675,43 @@ def mat_close_browser():
     return ok("Browser closed.")
 
 
+def mat_logout():
+    """A real logout, unlike mat_close_browser() (which only closes the
+    window and leaves the session cookie on disk for next time): quits the
+    driver, wipes the persisted profile so the saved session is actually
+    gone, and flags the next mat_scrape() call to launch visibly — the
+    freshly logged-out account needs a human to log back in (local form or
+    SSO) once; every call after that reuses the newly saved session and
+    goes back to the normal show_browser setting, headless or not."""
+    global _mat_driver
+    if _mat_driver is not None:
+        try:
+            _mat_driver.quit()
+        except Exception:
+            pass
+        _mat_driver = None
+
+    import shutil
+    try:
+        shutil.rmtree(_MAT_PROFILE_DIR, ignore_errors=True)
+    except Exception:
+        pass
+
+    try:
+        cfg = {}
+        if os.path.exists(_MAT_CFG_PATH):
+            with open(_MAT_CFG_PATH, encoding="utf-8") as f:
+                cfg = json.load(f)
+        cfg["force_visible_once"] = True
+        os.makedirs(os.path.dirname(_MAT_CFG_PATH), exist_ok=True)
+        with open(_MAT_CFG_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg, f)
+    except Exception:
+        pass
+
+    return ok("Logged out of MAT.")
+
+
 # ─────────────────────────────────────────────
 # SALESFORCE (SF) — TICKET CHECKER
 # ─────────────────────────────────────────────
@@ -1717,7 +1765,20 @@ def _sf_get_driver():
     try:
         if os.path.exists(_SF_CFG_PATH):
             with open(_SF_CFG_PATH, encoding="utf-8") as f:
-                show_browser = bool(json.load(f).get("show_browser", False))
+                sf_cfg = json.load(f)
+            show_browser = bool(sf_cfg.get("show_browser", False))
+            # One-shot override left behind by sf_logout() — the freshly
+            # wiped profile needs a human to see the SSO login page once;
+            # every call after this one goes back to the normal
+            # show_browser setting.
+            if sf_cfg.get("force_visible_once"):
+                show_browser = True
+                sf_cfg["force_visible_once"] = False
+                try:
+                    with open(_SF_CFG_PATH, "w", encoding="utf-8") as f:
+                        json.dump(sf_cfg, f)
+                except Exception:
+                    pass
     except Exception:
         pass
 
@@ -1843,37 +1904,109 @@ def _sf_find_text_all_frames(driver, script, needle, max_depth=4):
         driver.switch_to.default_content()
 
 
+_EMAIL_RE = re.compile(r"[^\s<>\[\]@]+@[^\s<>\[\]@]+\.[^\s<>\[\]@]+")
+
+
+_sf_mail_debug = {}  # last _sf_check_mail_sent() run — which stage it stopped at, and why
+
+
 def _sf_check_mail_sent(driver, ticket_number):
-    """Click into the case's "Send an Email" tab and check whether a prior
-    email about this ticket was actually sent to someone: the compose
-    Subject auto-fills from the last email in the thread, and the quoted
-    "Original Message" body underneath it shows that email's own To: line.
-    Best-effort and non-fatal — any failure here just means the Mail Check
-    comes back not-sent, it never blocks the rest of the ticket read."""
+    """Click into the case's "Send an Email" tab and validate the quoted
+    "Original Message" block underneath the compose form — the actual
+    previous email about this ticket, not the compose form's own fields
+    (which have their own unrelated From/Subject inputs):
+
+      From:    Abraham Orthodontics [info@abrahamorthodontics.com]
+      To:      iterosupport@aligntech.com
+      Subject: Re: Part Request | Ticket Number 67142810 | ...
+
+    Mail Check only comes back green if From has a real email address, To
+    has a real email address, and Subject says "Part Request" for this
+    exact ticket number (the one currently open in Salesforce). Best-effort
+    and non-fatal — any failure here just means Mail Check comes back
+    not-sent, it never blocks the rest of the ticket read. Every step's
+    outcome is recorded into _sf_mail_debug (read back by sf_read_ticket)
+    so a false negative can actually be diagnosed instead of just "it's
+    red" — since none of this can be watched live in headless mode."""
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
 
+    global _sf_mail_debug
+    dbg = {"stage": "start"}
+    _sf_mail_debug = dbg
+
     try:
         wait = WebDriverWait(driver, 10)
-        tab = wait.until(EC.element_to_be_clickable(
-            (By.CSS_SELECTOR, "a[data-target-selection-name='Case.Send_an_EmailTab']")))
+        try:
+            tab = wait.until(EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, "a[data-target-selection-name='Case.Send_an_EmailTab']")))
+        except Exception as e:
+            dbg["stage"] = "tab_not_found"
+            dbg["error"] = str(e)
+            return False
+        dbg["stage"] = "tab_found"
+
         driver.execute_script("arguments[0].click();", tab)
         time.sleep(1.5)
-
-        subject_el = wait.until(EC.presence_of_element_located(
-            (By.CSS_SELECTOR, "input[placeholder='Enter Subject...']")))
-        subject_val = subject_el.get_attribute("value") or ""
-        if ticket_number not in subject_val:
-            return False
+        dbg["stage"] = "tab_clicked"
 
         body_text = _sf_find_text_all_frames(driver, _MAIL_DEEP_TEXT_JS, "Original Message")
-        if "Original Message" not in body_text:
+        dbg["body_text_len"] = len(body_text)
+        idx = body_text.find("Original Message")
+        if idx == -1:
+            dbg["stage"] = "original_message_not_found"
+            dbg["body_text_snippet"] = body_text[:1500]
+            return False
+        dbg["stage"] = "original_message_found"
+
+        # Only look inside the quoted block itself — the compose form above
+        # it has its own From/Subject fields that would otherwise be found
+        # first and checked instead of the actual previous email.
+        quoted = body_text[idx:]
+        dbg["quoted_snippet"] = quoted[:600]
+
+        from_m    = re.search(r"From:\s*([^\n]*)", quoted)
+        to_m      = re.search(r"To:\s*([^\n]*)", quoted)
+        subject_m = re.search(r"Subject:\s*([^\n]*)", quoted)
+        dbg["from_line"]    = from_m.group(1) if from_m else None
+        dbg["to_line"]      = to_m.group(1) if to_m else None
+        dbg["subject_line"] = subject_m.group(1) if subject_m else None
+        if not (from_m and to_m and subject_m):
+            dbg["stage"] = "from_to_subject_lines_not_found"
             return False
 
-        m = re.search(r"To:\s*([^\n]*)", body_text)
-        return bool(m and m.group(1).strip())
-    except Exception:
+        from_ok = bool(_EMAIL_RE.search(from_m.group(1)))
+        to_ok   = bool(_EMAIL_RE.search(to_m.group(1)))
+        dbg["from_email_ok"] = from_ok
+        dbg["to_email_ok"]   = to_ok
+        if not from_ok:
+            dbg["stage"] = "from_email_invalid"
+            return False
+        if not to_ok:
+            dbg["stage"] = "to_email_invalid"
+            return False
+
+        subject_text = subject_m.group(1)
+        has_part_request = bool(re.search(r"part\s*request", subject_text, re.IGNORECASE))
+        dbg["subject_has_part_request"] = has_part_request
+        if not has_part_request:
+            dbg["stage"] = "subject_missing_part_request"
+            return False
+
+        ticket_m = re.search(r"ticket\s*number\s*(\d+)", subject_text, re.IGNORECASE)
+        wanted_ticket = re.sub(r"\D", "", ticket_number or "")
+        dbg["ticket_in_subject"] = ticket_m.group(1) if ticket_m else None
+        dbg["wanted_ticket"] = wanted_ticket
+        if not (ticket_m and wanted_ticket) or ticket_m.group(1) != wanted_ticket:
+            dbg["stage"] = "ticket_number_mismatch"
+            return False
+
+        dbg["stage"] = "ok"
+        return True
+    except Exception as e:
+        dbg["stage"] = "exception"
+        dbg["error"] = str(e)
         return False
 
 
@@ -2071,20 +2204,49 @@ function deepText(el) {
     return text.replace(/[ \t]*\n[ \t]*/g, '\n').trim();
 }
 
+// Finds the nearest records-record-layout-item[field-label] ancestor
+// (climbing the real, shadow-crossing parent chain) starting from `node`
+// itself, and returns its field-label text ('' if none found within a
+// reasonable depth).
+function _nearestFieldLabel(node) {
+    for (var depth = 0; depth < 8 && node; depth++) {
+        if (node.tagName === 'RECORDS-RECORD-LAYOUT-ITEM' && node.hasAttribute && node.hasAttribute('field-label')) {
+            return (node.getAttribute('field-label') || '').trim();
+        }
+        node = realParent(node);
+    }
+    return '';
+}
+
+// True unless `valEl` demonstrably belongs to a DIFFERENT field than
+// `labelText` — i.e. climbing from valEl itself lands on some other
+// field's own field-label host. Salesforce renders several fields side by
+// side sharing a wider row-level ancestor, and each individual field still
+// gets its own (closer, more specific) field-label host nested inside that
+// row — so this catches a neighboring field's value even when it's found
+// nested inside what looked like the right field's container.
+function _valueBelongsToLabel(valEl, labelText) {
+    if (!labelText) return true;
+    var found = _nearestFieldLabel(valEl);
+    return !found || found.toLowerCase() === labelText.toLowerCase();
+}
+
 // Looks only inside each given container -- no climbing outside it. Used
 // for field-label hosts (see findValueElementByLabel below), where the
 // value is always nested directly inside the host itself, so reaching
 // outside it risks grabbing a neighboring field's value instead of
-// correctly reporting "empty".
-function findValueDirectlyIn(containers) {
+// correctly reporting "empty". labelText (optional) is re-verified against
+// each candidate's own nearest field-label ancestor, which is what actually
+// guards against a shared/too-broad container (see _valueBelongsToLabel).
+function findValueDirectlyIn(containers, labelText) {
     for (var i = 0; i < containers.length; i++) {
         var valEls = deepQueryAll('.test-id__field-value', containers[i]);
         for (var j = 0; j < valEls.length; j++) {
-            if (deepText(valEls[j])) return valEls[j];
+            if (deepText(valEls[j]) && _valueBelongsToLabel(valEls[j], labelText)) return valEls[j];
         }
         var direct = deepQueryAll('[data-output-element-id="output-field"]', containers[i]);
         for (var d = 0; d < direct.length; d++) {
-            if (deepText(direct[d])) return direct[d];
+            if (deepText(direct[d]) && _valueBelongsToLabel(direct[d], labelText)) return direct[d];
         }
     }
     return null;
@@ -2100,13 +2262,20 @@ function findValueElementIn(containers) {
         // that host itself sits at a shadow-root boundary), only visually
         // projected into the <slot> placeholder inside. Climb the real
         // parent chain (crossing shadow boundaries) and look there.
+        //
+        // Climbing broadens the search though, and can just as easily land
+        // on a horizontally-adjacent field's value instead of this one's —
+        // anchor on whatever field-label this specific container itself
+        // belongs to (if it belongs to one at all) so a climbed candidate
+        // only counts when it belongs to that same field.
+        var ownLabel = _nearestFieldLabel(containers[i]);
         var node = containers[i];
         for (var depth = 0; depth < 3; depth++) {
             node = realParent(node);
             if (!node) break;
             var candidates = deepQueryAll('[slot="outputField"], [data-output-element-id="output-field"]', node);
             for (var k = 0; k < candidates.length; k++) {
-                if (deepText(candidates[k])) return candidates[k];
+                if (deepText(candidates[k]) && _valueBelongsToLabel(candidates[k], ownLabel)) return candidates[k];
             }
         }
     }
@@ -2122,16 +2291,12 @@ function findValueElement(targetName) {
 // <records-record-layout-item> carries a field-label attribute holding the
 // exact label text shown on the page (confirmed live: field-label="Additional
 // Support" wraps the "Additional Support" field) -- so look it up by that
-// visible label instead of guessing the underlying API field name. Deliberately
-// uses findValueDirectlyIn (no ancestor climb) — the value already lives
-// inside this host, and climbing out of it is what caused Order Status and
-// SAP SO to falsely report a neighboring field's value when they were
-// actually empty.
+// visible label instead of guessing the underlying API field name.
 function findValueElementByLabel(labelText) {
     var hosts = deepQueryAll('records-record-layout-item[field-label]').filter(function(el) {
         return (el.getAttribute('field-label') || '').trim().toLowerCase() === labelText.toLowerCase();
     });
-    return findValueDirectlyIn(hosts);
+    return findValueDirectlyIn(hosts, labelText);
 }
 
 function fieldValue(targetName) {
@@ -2303,6 +2468,9 @@ def sf_read_ticket():
         "mail_sent":          _sf_mail_sent,
     }
 
+    if not _sf_mail_sent:
+        result["mail_debug"] = _sf_mail_debug
+
     if not mat_id:
         try:
             cur_url = driver.current_url
@@ -2360,3 +2528,40 @@ def sf_close_browser():
             pass
         _sf_driver = None
     return ok(None, msg="Salesforce window closed.")
+
+
+def sf_logout():
+    """A real logout, unlike sf_close_browser() (which only closes the
+    window and leaves the SSO session cookie on disk for next time): quits
+    the driver, wipes the persisted profile so the saved session is
+    actually gone, and flags the next Salesforce call to launch visibly —
+    the freshly logged-out account needs a human to redo corporate SSO
+    once; every call after that reuses the newly saved session and goes
+    back to the normal show_browser setting, headless or not."""
+    global _sf_driver
+    if _sf_driver is not None:
+        try:
+            _sf_driver.quit()
+        except Exception:
+            pass
+        _sf_driver = None
+
+    import shutil
+    try:
+        shutil.rmtree(_SF_PROFILE_DIR, ignore_errors=True)
+    except Exception:
+        pass
+
+    try:
+        cfg = {}
+        if os.path.exists(_SF_CFG_PATH):
+            with open(_SF_CFG_PATH, encoding="utf-8") as f:
+                cfg = json.load(f)
+        cfg["force_visible_once"] = True
+        os.makedirs(os.path.dirname(_SF_CFG_PATH), exist_ok=True)
+        with open(_SF_CFG_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg, f)
+    except Exception:
+        pass
+
+    return ok(None, msg="Logged out of Salesforce.")

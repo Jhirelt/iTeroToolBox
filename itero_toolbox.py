@@ -13,6 +13,7 @@ import os
 import ctypes
 import json
 import threading
+from pathlib import Path
 
 # Force EdgeChromium backend — no pythonnet required
 os.environ["PYWEBVIEW_GUI"] = "edgechromium"
@@ -208,6 +209,9 @@ class ToolboxAPI:
     def mat_close_browser(self):
         return backend.mat_close_browser()
 
+    def mat_logout(self):
+        return backend.mat_logout()
+
     # ── Salesforce (SF) — ticket checker ────
     def sf_open_home(self):
         return backend.sf_open_home()
@@ -220,6 +224,9 @@ class ToolboxAPI:
 
     def sf_close_browser(self):
         return backend.sf_close_browser()
+
+    def sf_logout(self):
+        return backend.sf_logout()
 
     def sf_load_settings(self):
         return backend.sf_load_settings()
@@ -340,6 +347,33 @@ def get_html_path():
     return os.path.join(base, "itero_toolbox_v1.html")
 
 
+def _versioned_html_path(html_path):
+    """Serve the HTML from a copy whose filename embeds its mtime.
+
+    WebView2 keeps a persistent on-disk cache (storage_path below, needed
+    so MAT/SF SSO sessions survive across launches). A plain file:// URL
+    gets served stale from that cache after editing the source during
+    dev; file:// URLs also don't reliably support cache-busting query
+    strings. A version-stamped filename sidesteps both problems.
+
+    Kept next to the original (not in TEMP) so the HTML's relative asset
+    paths (Reference/Mascot/...) still resolve.
+    """
+    import shutil
+    import glob
+    base_dir = os.path.dirname(html_path)
+    mtime = int(os.path.getmtime(html_path))
+    versioned = os.path.join(base_dir, f".itero_toolbox_v1_{mtime}.html")
+    if not os.path.exists(versioned):
+        for stale in glob.glob(os.path.join(base_dir, ".itero_toolbox_v1_*.html")):
+            try:
+                os.remove(stale)
+            except OSError:
+                pass
+        shutil.copyfile(html_path, versioned)
+    return versioned
+
+
 # ─────────────────────────────────────────────
 # WINDOW CHROME
 # ─────────────────────────────────────────────
@@ -426,9 +460,11 @@ def main():
 
     backend.start_hotkey_listener()
 
+    serve_path = _versioned_html_path(html_path)
+
     _window = webview.create_window(
         title="iTero Support Toolbox — V1.1",
-        url=f"file:///{html_path}",
+        url=Path(serve_path).as_uri(),
         js_api=api,
         width=700,
         height=725,
