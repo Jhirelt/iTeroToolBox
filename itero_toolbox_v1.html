@@ -216,6 +216,10 @@ html.size-large #sidebar-icons{zoom:1.3}
 .sbadge.idle{border-color:var(--border2);color:var(--text3);cursor:pointer}.sbadge.active{border-color:var(--green);color:var(--green);background:var(--green-bg);cursor:pointer}
 /* sidebar */
 .nav-sec{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:10px 14px 4px}
+/* display comes from the class (not inline) so role-switching's generic
+   el.style.display='' reset falls back to flex instead of collapsing to
+   the div default of block — same trick .nav-item already relies on. */
+.esc-report-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .nav-item{display:flex;align-items:center;gap:7px;padding:8px 10px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .16s var(--ease-out);white-space:nowrap}
 .nav-item:hover{background:var(--bg3);color:var(--text)}.nav-item.active{border-left-color:var(--text2);background:var(--bg3);color:var(--text)}
 .nav-icon{width:15px;height:15px;flex-shrink:0;opacity:.7}.nav-item.active .nav-icon{opacity:1}
@@ -911,6 +915,14 @@ html.size-large #sidebar-icons{zoom:1.3}
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M6 8a3 3 0 004.24 0l2-2a3 3 0 00-4.24-4.24l-1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 8a3 3 0 00-4.24 0l-2 2a3 3 0 004.24 4.24l1-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
       Link / Unlink
     </div>
+
+    <!-- Escalations only -->
+    <div class="nav-div" id="nav-report-div"></div>
+    <div class="nav-sec" id="nav-report-sec">Escalations</div>
+    <div class="nav-item" id="nav-report" onclick="switchPanel('report',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 5.5h6M5 8h6M5 10.5h3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Report
+    </div>
   </div>
 
   <!-- Collapsed icons-only strip -->
@@ -924,6 +936,7 @@ html.size-large #sidebar-icons{zoom:1.3}
     <div style="width:24px;height:1px;background:var(--border);margin:4px 0"></div>
     <div class="nav-icon-only" title="History" onclick="switchPanel('history',document.getElementById('nav-history'))"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
     <div class="nav-icon-only" title="Link / Unlink" onclick="switchPanel('linkunlink',document.getElementById('nav-linkunlink'))"><svg viewBox="0 0 16 16" fill="none"><path d="M6 8a3 3 0 004.24 0l2-2a3 3 0 00-4.24-4.24l-1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 8a3 3 0 00-4.24 0l-2 2a3 3 0 004.24 4.24l1-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <div class="nav-icon-only" id="icon-report" title="Report" onclick="switchPanel('report',document.getElementById('nav-report'))"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 5.5h6M5 8h6M5 10.5h3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
   </div>
 
 </div>
@@ -940,6 +953,15 @@ html.size-large #sidebar-icons{zoom:1.3}
   <div id="fl-context-bar" onclick="flCopySubjectBar()" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:6px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)'">
     <div id="fl-out-subject" style="flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;line-height:1.4;user-select:none"><span style="color:var(--text3);font-family:var(--mono);font-size:11px">—</span></div>
     <span id="fl-subj-copy-hint" style="font-family:var(--mono);font-size:10px;color:var(--text3);flex-shrink:0;transition:color .15s">Copy</span>
+  </div>
+
+  <!-- Escalations only: log the current ticket into the Report section -->
+  <div id="esc-report-add-row" class="esc-report-row">
+    <input class="iinput" id="esc-report-ticket-input" placeholder="Ticket Number" autocomplete="off"
+      style="flex:1;height:28px;padding:3px 10px;font-size:12px;font-family:var(--mono)"
+      onkeydown="if(event.key==='Enter')escReportAdd()">
+    <button class="btn-sm p" onclick="escReportAdd()" style="height:28px;white-space:nowrap">+ Add to Report</button>
+    <span id="esc-report-add-status" style="font-family:var(--mono);font-size:10px;color:var(--green);white-space:nowrap"></span>
   </div>
 
   <!-- Row 1: Caller + IDs -->
@@ -2354,6 +2376,27 @@ html.size-large #sidebar-icons{zoom:1.3}
   <textarea class="notes" placeholder="Escalations general notes..."></textarea>
 </div>
 
+<!-- ══════════════ ESCALATIONS REPORT (foundation) ══════════════
+     Every ticket added from Documentation's "+ Add to Report" row (ESC
+     role only) lands here as a snapshot — ticket number, model, reason,
+     specific reason, description, outcome — for periodic export into an
+     external report file. -->
+<div class="panel" id="panel-report">
+
+  <div class="sh">
+    <span class="sh-title">Escalations Report</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="sh-sub" id="esc-report-count"></span>
+      <button class="btn-sm p" onclick="escReportExport()">⬇ Export to Excel</button>
+    </div>
+  </div>
+
+  <div id="esc-report-list" style="display:flex;flex-direction:column;gap:8px;min-height:60px"></div>
+  <div id="esc-report-empty" style="display:none;padding:30px 0;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text3)">
+    No tickets added yet — enter a Ticket Number and click <strong>+ Add to Report</strong> in Documentation.
+  </div>
+</div>
+
 <!-- ══════════════ PARTS CATALOG ══════════════ -->
 <div class="panel" id="panel-partscatalog">
 
@@ -2813,9 +2856,10 @@ function applyRole(role){
   // Nav items hidden from FL (TS/ESC only)
   var flHide  = ['nav-kill','nav-cleaninstall','nav-registry','nav-eventviewer','nav-escalations',
                  'nav-networking','nav-devmanager','nav-logcollector','nav-swdownload','icon-networking',
-                 'nav-partscatalog','nav-battery','icon-battery','chip-bat-rep'];
+                 'nav-partscatalog','nav-battery','icon-battery','chip-bat-rep',
+                 'nav-report','nav-report-sec','nav-report-div','esc-report-add-row','icon-report'];
   // Nav items only for ESC (hidden from FL and TS)
-  var escOnly = ['nav-escalations'];
+  var escOnly = ['nav-escalations','nav-report','nav-report-sec','nav-report-div','esc-report-add-row','icon-report'];
   // UI elements only visible to TS / ESC
   var tsElems = ['wand-flow-toggle','wms-b','wms-done-a','wms-done-b'];
   // UI elements only visible to FL (hidden from TS/ESC)
@@ -3586,6 +3630,7 @@ window.addEventListener('DOMContentLoaded', function() {
   loadCmdVisible();
   snipRender();
   hkRenderList();
+  escReportLoad();
 
 
   // Restore theme
@@ -5673,6 +5718,7 @@ function switchPanel(name,el){
   if(name==='history'){renderHistory();}
   if(name==='partscatalog'){loadCatalog();}
   if(name==='documentation'){flSyncFromIntake();}
+  if(name==='report'){escReportRender();}
 }
 
 // ── HOLD timer ──────────────────────────────────────────
@@ -6855,6 +6901,133 @@ function escFmtDuration(ms) {
 
 function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Escalations Report (foundation) ─────────────────────────────
+// Separate from the Escalation Tracker above — this is a simple running
+// log of tickets an ESC agent has added, snapshotting whatever the
+// Documentation form held at that moment, for periodic export into an
+// external report file. Keyed by ticket number so adding the same ticket
+// again just overwrites its snapshot instead of duplicating it.
+var ESC_REPORT_KEY = 'itero_esc_report_v1';
+var _escReportEntries = [];
+
+function escReportLoad() {
+  try {
+    var parsed = JSON.parse(localStorage.getItem(ESC_REPORT_KEY) || '[]');
+    _escReportEntries = Array.isArray(parsed) ? parsed : [];
+  } catch (e) { _escReportEntries = []; }
+}
+
+function escReportSave() {
+  try { localStorage.setItem(ESC_REPORT_KEY, JSON.stringify(_escReportEntries)); } catch (e) {}
+}
+
+function escReportAdd() {
+  var ticketEl = document.getElementById('esc-report-ticket-input');
+  var ticket = (ticketEl && ticketEl.value || '').trim();
+  if (!ticket) { alert('Enter a ticket number first.'); return; }
+
+  var model  = (document.getElementById('in-model')     || {}).value || '';
+  var reason = (document.getElementById('in-reason')    || {}).value || '';
+  var sub    = (document.getElementById('in-reason-sub')|| {}).value || '';
+  var outcome = (document.getElementById('fl-outcome')  || {}).value || '';
+  var descEl = document.getElementById('fl-out-desc');
+  var description = (descEl && descEl.textContent) || '';
+  if (description === '—') description = '';
+
+  var entry = {
+    ticket: ticket, model: model, reason: reason, sub: sub,
+    description: description, outcome: outcome,
+    savedAt: new Date().toLocaleString()
+  };
+
+  var idx = _escReportEntries.findIndex(function(e) { return e.ticket === ticket; });
+  if (idx !== -1) _escReportEntries[idx] = entry; else _escReportEntries.push(entry);
+  escReportSave();
+  escReportRender();
+
+  if (ticketEl) ticketEl.value = '';
+  var statusEl = document.getElementById('esc-report-add-status');
+  if (statusEl) {
+    statusEl.textContent = 'Saved';
+    setTimeout(function() { statusEl.textContent = ''; }, 1800);
+  }
+}
+
+function escReportDelete(ticket) {
+  if (!confirm('Remove ticket ' + ticket + ' from the report?')) return;
+  _escReportEntries = _escReportEntries.filter(function(e) { return e.ticket !== ticket; });
+  escReportSave();
+  escReportRender();
+}
+
+function escReportToggle(idx) {
+  var row = document.getElementById('esc-report-detail-' + idx);
+  if (row) row.style.display = (row.style.display === 'none') ? 'block' : 'none';
+}
+
+function escReportRender() {
+  var list  = document.getElementById('esc-report-list');
+  var empty = document.getElementById('esc-report-empty');
+  var countEl = document.getElementById('esc-report-count');
+  if (!list) return;
+
+  list.innerHTML = '';
+  if (countEl) countEl.textContent = _escReportEntries.length
+    ? (_escReportEntries.length + ' ticket' + (_escReportEntries.length === 1 ? '' : 's'))
+    : '';
+  if (empty) empty.style.display = _escReportEntries.length ? 'none' : 'block';
+
+  _escReportEntries.forEach(function(e, i) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px';
+
+    var head = document.createElement('div');
+    head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer';
+    head.onclick = function() { escReportToggle(i); };
+
+    var left = document.createElement('div');
+    left.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    left.innerHTML = '<span style="font-family:var(--mono);font-weight:700;color:var(--blue)">' + escHtml(e.ticket) + '</span>'
+      + (e.model  ? ' <span style="color:var(--text2);font-size:12px">' + escHtml(e.model) + '</span>' : '')
+      + (e.reason ? ' <span style="color:var(--text3);font-size:11px">— ' + escHtml(e.reason) + (e.sub ? ' / ' + escHtml(e.sub) : '') + '</span>' : '');
+
+    var right = document.createElement('div');
+    right.style.cssText = 'display:flex;align-items:center;gap:8px;flex-shrink:0';
+    var dateSpan = document.createElement('span');
+    dateSpan.style.cssText = 'font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap';
+    dateSpan.textContent = e.savedAt || '';
+    var delBtn = document.createElement('button');
+    delBtn.className = 'btn-sm r';
+    delBtn.textContent = '✕';
+    delBtn.style.cssText = 'font-size:10px';
+    delBtn.onclick = function(ev) { ev.stopPropagation(); escReportDelete(e.ticket); };
+    right.appendChild(dateSpan);
+    right.appendChild(delBtn);
+
+    head.appendChild(left);
+    head.appendChild(right);
+
+    var detail = document.createElement('div');
+    detail.id = 'esc-report-detail-' + i;
+    detail.style.cssText = 'display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);white-space:pre-wrap';
+    var detailParts = [];
+    if (e.description) detailParts.push('<div style="margin-bottom:6px"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">DESCRIPTION</span><br>' + escHtml(e.description) + '</div>');
+    if (e.outcome)      detailParts.push('<div><span style="color:var(--text3);font-family:var(--mono);font-size:10px">OUTCOME</span><br>' + escHtml(e.outcome) + '</div>');
+    detail.innerHTML = detailParts.length ? detailParts.join('') : '<span style="color:var(--text3)">No description or outcome saved.</span>';
+
+    card.appendChild(head);
+    card.appendChild(detail);
+    list.appendChild(card);
+  });
+}
+
+function escReportExport() {
+  if (!_escReportEntries.length) { alert('No tickets to export yet.'); return; }
+  pyApi('esc_report_export', _escReportEntries).then(function(r) {
+    if (!r || r.status !== 'ok') { alert('Could not generate the report.'); return; }
+  });
 }
 
 // Hook switchPanel

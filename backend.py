@@ -741,6 +741,61 @@ def generate_link_unlink_excel(data):
         return err(f'Failed to generate Excel: {e}')
 
 
+def esc_report_export(entries):
+    """Export the Escalations Report log (foundation) to an Excel file —
+    one row per ticket snapshot the agent added from Documentation."""
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+        from datetime import datetime
+
+        ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+        dest_dir = Path(r'C:\iTeroToolbox\EscalationReports')
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        fname = f'EscReport_{ts}.xlsx'
+        dest  = dest_dir / fname
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = 'Escalations Report'
+
+        thin   = Side(style='thin', color='CCCCCC')
+        border = Border(left=thin, right=thin, top=thin, bottom=thin)
+        center = Alignment(horizontal='center', vertical='center')
+        left   = Alignment(horizontal='left', vertical='top', wrap_text=True)
+
+        headers = ['Ticket Number', 'Model', 'Reason', 'Specific Reason', 'Description', 'Outcome', 'Saved At']
+        hdr_font = Font(name='Arial', bold=True, color='FFFFFF', size=11)
+        hdr_fill = PatternFill('solid', start_color='1F3A6E')
+        for col, h in enumerate(headers, 1):
+            c = ws.cell(row=1, column=col, value=h)
+            c.font = hdr_font; c.fill = hdr_fill
+            c.alignment = center; c.border = border
+
+        row = 2
+        for e in (entries or []):
+            vals = [
+                e.get('ticket', ''), e.get('model', ''), e.get('reason', ''),
+                e.get('sub', ''), e.get('description', ''), e.get('outcome', ''),
+                e.get('savedAt', ''),
+            ]
+            for col, val in enumerate(vals, 1):
+                c = ws.cell(row=row, column=col, value=val)
+                c.border = border; c.alignment = left
+            row += 1
+
+        for i, w in enumerate([16, 16, 20, 22, 50, 30, 18], 1):
+            ws.column_dimensions[get_column_letter(i)].width = w
+        ws.row_dimensions[1].height = 20
+
+        wb.save(str(dest))
+        subprocess.Popen(f'explorer /select,"{dest}"', shell=True)
+        return ok({'path': str(dest), 'filename': fname})
+
+    except Exception as e:
+        return err(f'Failed to generate report: {e}')
+
 
 def open_woa_collage_folder(path):
     """Open File Explorer selecting the given file path."""

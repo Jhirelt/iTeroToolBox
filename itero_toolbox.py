@@ -152,6 +152,9 @@ class ToolboxAPI:
     def generate_link_unlink_excel(self, data):
         return backend.generate_link_unlink_excel(data)
 
+    def esc_report_export(self, entries=None):
+        return backend.esc_report_export(entries or [])
+
     def open_woa_collage_folder(self, path):
         return backend.open_woa_collage_folder(path)
 
