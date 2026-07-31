@@ -1205,8 +1205,26 @@ def set_cmd_visible(enabled=False):
 # ─────────────────────────────────────────────
 # MAT (myaligntech.com) SCRAPER
 # ─────────────────────────────────────────────
+# Unlike Salesforce, MAT's login page (_MAT_LOGIN_URL, note "auth=false")
+# always forces the login form regardless of any existing session cookie
+# — so unattended scraping genuinely needs the password resubmitted on
+# every call, not just once. It's stored on disk, DPAPI-encrypted
+# (CryptProtectData) rather than in plaintext/base64 — DPAPI ties
+# decryption to this specific Windows user account, so the file is
+# useless to anyone without that account's login, unlike a reversible
+# encoding.
 
 import base64
+import win32crypt
+
+def _mat_dpapi_encrypt(plain_text):
+    blob = win32crypt.CryptProtectData(plain_text.encode("utf-8"), "iTeroToolBox MAT credential", None, None, None, 0)
+    return base64.b64encode(blob).decode("ascii")
+
+def _mat_dpapi_decrypt(enc_b64):
+    blob = base64.b64decode(enc_b64)
+    _, decrypted = win32crypt.CryptUnprotectData(blob, None, None, None, 0)
+    return decrypted.decode("utf-8")
 
 _MAT_CFG_PATH     = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroToolBox", "mat_config.json")
 _MAT_PROFILE_DIR  = os.path.join(os.environ.get("APPDATA", "C:\\Users"), "iTeroToolBox", "mat_profile")
@@ -1232,7 +1250,7 @@ def mat_save_credentials(email, password_plain, show_browser=False, enabled=True
     try:
         cfg = {
             "email":        email,
-            "password_b64": base64.b64encode(password_plain.encode("utf-8")).decode(),
+            "password_enc": _mat_dpapi_encrypt(password_plain),
             "show_browser": bool(show_browser),
             "enabled":      bool(enabled),
         }
@@ -1244,30 +1262,42 @@ def mat_save_credentials(email, password_plain, show_browser=False, enabled=True
         return err(str(e))
 
 
-def mat_get_credentials():
+def mat_get_settings():
+    """MAT's visible/enabled flags plus whether credentials are already
+    configured — deliberately never echoes the email/password themselves
+    back to the renderer, only a boolean, so the saved password can't be
+    read back out through this call. Self-heals: any credential saved by
+    an older, less-secure version of this app (plain base64, no DPAPI) is
+    re-encrypted with DPAPI the first time it's read.
+    """
     try:
         if not os.path.exists(_MAT_CFG_PATH):
-            return ok({"email": "", "password": "", "show_browser": False, "enabled": False})
+            return ok({"show_browser": False, "enabled": False, "has_credentials": False})
         with open(_MAT_CFG_PATH, encoding="utf-8") as f:
             cfg = json.load(f)
-        password = ""
-        if cfg.get("password_b64"):
+        if cfg.get("password_b64") and not cfg.get("password_enc"):
             try:
-                password = base64.b64decode(cfg["password_b64"]).decode("utf-8")
+                plain = base64.b64decode(cfg["password_b64"]).decode("utf-8")
+                cfg["password_enc"] = _mat_dpapi_encrypt(plain)
             except Exception:
-                password = ""
+                pass
+            cfg.pop("password_b64", None)
+            try:
+                with open(_MAT_CFG_PATH, "w", encoding="utf-8") as f:
+                    json.dump(cfg, f)
+            except Exception:
+                pass
         return ok({
-            "email":        cfg.get("email", ""),
-            "password":     password,
-            "show_browser": cfg.get("show_browser", False),
-            "enabled":      cfg.get("enabled", False),
+            "show_browser":    cfg.get("show_browser", False),
+            "enabled":         cfg.get("enabled", False),
+            "has_credentials": bool(cfg.get("email") and cfg.get("password_enc")),
         })
     except Exception as e:
         return err(str(e))
 
 
 def mat_set_enabled(enabled):
-    """Toggle MAT auto-scrape on/off without touching credentials."""
+    """Toggle MAT auto-scrape on/off."""
     try:
         cfg = {}
         if os.path.exists(_MAT_CFG_PATH):
@@ -1283,7 +1313,7 @@ def mat_set_enabled(enabled):
 
 
 def mat_save_show_browser(show_browser):
-    """Toggle MAT's browser visibility without touching credentials."""
+    """Toggle MAT's browser visibility."""
     try:
         cfg = {}
         if os.path.exists(_MAT_CFG_PATH):
@@ -1427,9 +1457,12 @@ def mat_scrape(serial):
             return err("No MAT credentials. Configure in Settings → MAT.")
         with open(_MAT_CFG_PATH, encoding="utf-8") as f:
             cfg = json.load(f)
-        email    = cfg.get("email", "")
-        password = base64.b64decode(cfg.get("password_b64", "")).decode("utf-8")
-        show     = cfg.get("show_browser", False)
+        email = cfg.get("email", "")
+        try:
+            password = _mat_dpapi_decrypt(cfg["password_enc"]) if cfg.get("password_enc") else ""
+        except Exception:
+            password = ""
+        show = cfg.get("show_browser", False)
         if not email or not password:
             return err("MAT credentials incomplete. Configure in Settings → MAT.")
         # One-shot override left behind by mat_logout() — the freshly wiped
@@ -1472,7 +1505,9 @@ def mat_scrape(serial):
 
         if not _on_mat():
             # Either the local login form, or the site bounced us out to a
-            # Microsoft/Okta SSO page instead.
+            # Microsoft/Okta SSO page instead. This login URL forces the
+            # form regardless of any existing session (see _MAT_LOGIN_URL),
+            # so this runs on every call, not just the first.
             has_local_form = False
             try:
                 driver.find_element(By.ID, "LoginControl_UserName")

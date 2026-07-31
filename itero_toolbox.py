@@ -194,8 +194,8 @@ class ToolboxAPI:
     def mat_save_credentials(self, email="", password="", show_browser=False, enabled=True):
         return backend.mat_save_credentials(email, password, show_browser, enabled)
 
-    def mat_get_credentials(self):
-        return backend.mat_get_credentials()
+    def mat_get_settings(self):
+        return backend.mat_get_settings()
 
     def mat_set_enabled(self, enabled):
         return backend.mat_set_enabled(enabled)
@@ -347,8 +347,17 @@ def get_html_path():
     return os.path.join(base, "itero_toolbox_v1.html")
 
 
+def get_icon_path():
+    """Resolve the app icon path — works both in dev and as frozen exe."""
+    if getattr(sys, "frozen", False):
+        base = sys._MEIPASS
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base, "Reference", "iterologo2.ico")
+
+
 def _versioned_html_path(html_path):
-    """Serve the HTML from a copy whose filename embeds its mtime.
+    """Serve the HTML from a copy whose filename embeds a content hash.
 
     WebView2 keeps a persistent on-disk cache (storage_path below, needed
     so MAT/SF SSO sessions survive across launches). A plain file:// URL
@@ -356,32 +365,97 @@ def _versioned_html_path(html_path):
     dev; file:// URLs also don't reliably support cache-busting query
     strings. A version-stamped filename sidesteps both problems.
 
+    Hashing the actual content (rather than using mtime) matters: mtime
+    truncated to whole seconds means two edits saved within the same
+    second produce the same filename, so the second edit would silently
+    never get copied and the app would keep serving the first edit's
+    snapshot even after a full restart.
+
     Kept next to the original (not in TEMP) so the HTML's relative asset
     paths (Reference/Mascot/...) still resolve.
+
+    Never lets a failure here (locked file, AV scan, two instances
+    launching close together and racing on the same filename, OneDrive
+    sync, ...) crash the whole app before a window even exists — falls
+    back to serving html_path directly, which just risks the original
+    stale-cache symptom this function exists to avoid, instead of killing
+    the launch outright.
     """
-    import shutil
-    import glob
-    base_dir = os.path.dirname(html_path)
-    mtime = int(os.path.getmtime(html_path))
-    versioned = os.path.join(base_dir, f".itero_toolbox_v1_{mtime}.html")
-    if not os.path.exists(versioned):
-        for stale in glob.glob(os.path.join(base_dir, ".itero_toolbox_v1_*.html")):
-            try:
-                os.remove(stale)
-            except OSError:
-                pass
-        shutil.copyfile(html_path, versioned)
-    return versioned
+    try:
+        import glob
+        import hashlib
+        base_dir = os.path.dirname(html_path)
+        with open(html_path, "rb") as f:
+            content = f.read()
+        digest = hashlib.sha1(content).hexdigest()[:12]
+        versioned = os.path.join(base_dir, f".itero_toolbox_v1_{digest}.html")
+        if not os.path.exists(versioned):
+            for stale in glob.glob(os.path.join(base_dir, ".itero_toolbox_v1_*.html")):
+                try:
+                    os.remove(stale)
+                except OSError:
+                    pass
+            with open(versioned, "wb") as f:
+                f.write(content)
+        return versioned
+    except Exception:
+        return html_path
 
 
 # ─────────────────────────────────────────────
 # WINDOW CHROME
 # ─────────────────────────────────────────────
 
+def _enable_context_menu():
+    """Re-enable WebView2's native right-click context menu.
+
+    pywebview ties AreDefaultContextMenusEnabled to the same debug flag as
+    AreDevToolsEnabled (see webview.platforms.edgechromium.on_webview_ready)
+    — with debug off (the default here), WebView2 suppresses its whole
+    native context menu, spelling-suggestion popup included. This flips
+    just that one setting back on directly on the live CoreWebView2
+    instance, leaving AreDevToolsEnabled exactly as debug_mode set it.
+    """
+    try:
+        from webview.platforms.winforms import BrowserView
+        inst = BrowserView.instances.get(_window.uid)
+        browser = getattr(inst, "browser", None)
+        core = browser.web_view.CoreWebView2 if browser else None
+        if core:
+            core.Settings.AreDefaultContextMenusEnabled = True
+    except Exception:
+        pass
+
+
+def _set_window_icon(hwnd):
+    """Set the taskbar/title-bar icon directly on the live window.
+
+    The frozen .exe already carries this icon as its own PE resource (see
+    the .spec file's icon= setting), which Windows uses for the taskbar
+    automatically. Running from source (`python itero_toolbox.py`) has no
+    such resource — the taskbar would otherwise fall back to Python's own
+    icon — so this loads the same .ico directly onto the window instead,
+    covering both cases identically.
+    """
+    try:
+        import win32gui, win32con
+        icon_path = get_icon_path()
+        if not os.path.exists(icon_path):
+            return
+        flags = win32con.LR_LOADFROMFILE
+        hicon_big   = win32gui.LoadImage(0, icon_path, win32con.IMAGE_ICON, 32, 32, flags)
+        hicon_small = win32gui.LoadImage(0, icon_path, win32con.IMAGE_ICON, 16, 16, flags)
+        win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_BIG, hicon_big)
+        win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_SMALL, hicon_small)
+    except Exception:
+        pass
+
+
 def _strip_caption():
     """Remove native title bar; keep WS_THICKFRAME for resize. Fix DWM strip."""
     import time
     time.sleep(0.6)
+    _enable_context_menu()
     try:
         import ctypes
         import win32gui, win32con
@@ -389,6 +463,8 @@ def _strip_caption():
         hwnd = win32gui.FindWindow(None, _window.title)
         if not hwnd:
             return
+
+        _set_window_icon(hwnd)
 
         # Remove caption, keep resize border
         style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)

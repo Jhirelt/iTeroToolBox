@@ -166,8 +166,8 @@ html.size-large #sidebar-icons{zoom:1.3}
 .app{display:grid;grid-template-rows:auto auto 1fr;grid-template-columns:max-content 1fr;height:100vh;transition:grid-template-columns .26s var(--ease-out);overflow:hidden}
 .titlebar{grid-column:1/-1;background:#080b10;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 0 0 16px;height:40px;gap:10px;user-select:none;-webkit-app-region:drag}
 .titlebar button,.titlebar input,.titlebar select,.titlebar a{-webkit-app-region:no-drag}
-.win-btn{-webkit-app-region:no-drag;width:28px;align-self:stretch;border:none;background:transparent;color:var(--text3);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s,color .12s;flex-shrink:0;border-radius:0;padding:0}
-.win-btn:hover{background:rgba(255,255,255,.12);color:var(--text);border-radius:5px}
+.win-btn{-webkit-app-region:no-drag;width:28px;align-self:stretch;border:none;background:transparent;color:var(--tb-name, var(--text3));font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s,color .12s;flex-shrink:0;border-radius:0;padding:0}
+.win-btn:hover{background:rgba(255,255,255,.12);color:var(--tb-name, var(--text));border-radius:5px}
 .win-btn-close{border-top-right-radius:9px}
 .win-btn-close:hover{background:#c42b1c !important;color:#fff !important;border-radius:5px;border-top-right-radius:9px}
 .intake-bar{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:4px 14px;height:auto;min-height:44px;gap:10px;flex-wrap:wrap;overflow-x:hidden}
@@ -475,7 +475,7 @@ html.size-large #sidebar-icons{zoom:1.3}
 <body>
 
 <!-- ══════════════ LOGIN OVERLAY ══════════════ -->
-<div id="login-overlay" style="display:flex;position:fixed;inset:0;background:var(--bg);z-index:9999;align-items:center;justify-content:center">
+<div id="login-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;align-items:center;justify-content:center">
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:36px 32px;width:320px;box-shadow:0 8px 40px rgba(0,0,0,.35)">
     <div style="text-align:center;margin-bottom:28px">
       <div style="font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.02em">iTeroToolBox</div>
@@ -540,9 +540,9 @@ html.size-large #sidebar-icons{zoom:1.3}
   <!-- Settings gear -->
   <div style="position:relative;margin-left:6px" id="settings-wrap">
     <button id="settings-btn" onclick="toggleSettingsMenu(event)" title="Settings"
-      style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:none;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text3);transition:border-color .15s,color .15s"
-      onmouseover="this.style.borderColor='var(--border2)';this.style.color='var(--text)'"
-      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">
+      style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:none;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--tb-name, var(--text3));transition:border-color .15s,color .15s"
+      onmouseover="this.style.borderColor='var(--border2)';this.style.color='var(--tb-name, var(--text))'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--tb-name, var(--text3))'">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -610,6 +610,13 @@ html.size-large #sidebar-icons{zoom:1.3}
         </button>
         <div id="mat-section" style="display:none;padding:6px 10px 8px;box-sizing:border-box;width:100%;background:var(--bg3);border-radius:var(--r)">
           <div style="display:flex;flex-direction:column;gap:6px">
+            <input type="text" id="mat-email-input" class="iinput" placeholder="MAT email" autocomplete="off" style="width:100%;height:24px;font-size:11px;padding:2px 6px;box-sizing:border-box">
+            <input type="password" id="mat-password-input" class="iinput" placeholder="MAT password" autocomplete="new-password" style="width:100%;height:24px;font-size:11px;padding:2px 6px;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:6px">
+              <button class="btn-sm" onclick="matSaveCredentials()" style="flex:1">Save credentials</button>
+              <span id="mat-cred-status" style="font-size:10px;color:var(--text3);font-family:var(--mono);white-space:nowrap"></span>
+            </div>
+            <div style="height:1px;background:var(--border);margin:2px 0"></div>
             <div style="display:flex;align-items:center;justify-content:space-between">
               <span style="font-size:11px;color:var(--text2)">Visible</span>
               <label class="hk-switch">
@@ -1062,6 +1069,10 @@ html.size-large #sidebar-icons{zoom:1.3}
       <button id="wand-disc-btn" onclick="openWandFlow()" style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:var(--bg4);border:1px solid var(--border2);border-radius:20px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text2);transition:all .15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
         <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M3 21l6-6M14 4l6 6-9 9-3-3 9-9M17 4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Wand Disc.
+      </button>
+      <button id="storage-cleanup-btn" onclick="fillStorageCleanup()" style="display:none;align-items:center;gap:3px;padding:2px 7px;background:var(--bg4);border:1px solid var(--border2);border-radius:20px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text2);transition:all .15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Cleanup
       </button>
     </div>
   </div>
@@ -3199,10 +3210,29 @@ function toggleCB() {
 }
 
 function cbClickAttempt(n) {
+  var wrap   = document.getElementById('fl-cb-attempt-wrap');
+  var vmBtn  = document.getElementById('fl-cb-vm-btn');
+  var vmWrap = document.getElementById('fl-cb-vm-wrap');
+
+  // Clicking the already-selected attempt again is a "back" — return to
+  // showing all three numbers instead of drilling further into VM.
+  if (_cbAttempt === n) {
+    _cbAttempt  = null;
+    _cbVmActive = false;
+    if (wrap) {
+      Array.prototype.forEach.call(wrap.querySelectorAll('.fl-chip'), function(b) {
+        b.classList.remove('fl-chip-active');
+        _cbSetChipCollapsed(b, false);
+      });
+    }
+    if (vmBtn) vmBtn.classList.remove('fl-chip-active');
+    if (vmWrap) { vmWrap.style.maxWidth = '0'; vmWrap.style.opacity = '0'; }
+    flBuildOutputs();
+    return;
+  }
+
   _cbAttempt  = n;
   _cbVmActive = false; // a newly picked attempt is a fresh call — start unanswered-until-told
-  var wrap = document.getElementById('fl-cb-attempt-wrap');
-  var clickedBtn = null;
   if (wrap) {
     // Picking one attempt hides the other two (smooth collapse) so only
     // the chosen number stays visible next to VM.
@@ -3210,12 +3240,9 @@ function cbClickAttempt(n) {
       var active = Number(b.dataset.n) === n;
       b.classList.toggle('fl-chip-active', active);
       _cbSetChipCollapsed(b, !active);
-      if (active) clickedBtn = b;
     });
   }
-  var vmBtn = document.getElementById('fl-cb-vm-btn');
   if (vmBtn) vmBtn.classList.remove('fl-chip-active');
-  var vmWrap = document.getElementById('fl-cb-vm-wrap');
   if (vmWrap) { vmWrap.style.maxWidth = '30px'; vmWrap.style.opacity = '1'; }
   // Picking an attempt (without VM) no longer copies straight to the
   // clipboard — it just renders the CB template into the Description tile
@@ -3533,6 +3560,20 @@ function flNavSetup(){
 }
 
 window.addEventListener('DOMContentLoaded', function() {
+  // Check saved profile first, before any other init work — the overlay
+  // starts hidden in the HTML now (see #login-overlay), so a returning
+  // agent with a saved profile never sees the login form flash at all;
+  // it only appears if this check actually comes back empty. Kicking it
+  // off before the rest of init also means it resolves sooner either way.
+  pyApi('get_user_profile').then(function(r) {
+    if (r && r.status === 'ok' && r.data && r.data.name && r.data.role) {
+      applyProfile(r.data.name, r.data.role);
+      hideLoginOverlay();
+    } else {
+      showLoginOverlay();
+    }
+  }).catch(function() { showLoginOverlay(); });
+
   renderHistory();
   reasonChanged();
   flNavSetup();
@@ -3554,16 +3595,6 @@ window.addEventListener('DOMContentLoaded', function() {
   // Restore UI size
   var savedSize = localStorage.getItem('itero_size') || 'normal';
   setUiSize(savedSize, true);
-
-  // Check saved profile
-  pyApi('get_user_profile').then(function(r) {
-    if (r && r.status === 'ok' && r.data && r.data.name && r.data.role) {
-      applyProfile(r.data.name, r.data.role);
-      hideLoginOverlay();
-    } else {
-      showLoginOverlay();
-    }
-  }).catch(function() { showLoginOverlay(); });
 
   // Close settings menu on outside click
   document.addEventListener('click', function(e) {
@@ -4184,16 +4215,37 @@ function matLogout() {
 }
 
 // Deliberately doesn't prefill email/password — the settings panel never
-// echoes stored credentials back to the screen. Only the toggle states
-// (visible, enabled) reflect what's saved.
+// echoes the stored credential back to the screen, only whether one is
+// configured (has_credentials), shown via mat-cred-status.
 function matLoadSettings() {
-  pyApi('mat_get_credentials').then(function(r) {
+  pyApi('mat_get_settings').then(function(r) {
     if (!r || r.status !== 'ok') return;
     var d = r.data || {};
     var chkEl = document.getElementById('mat-show-browser-chk');
     if (chkEl) chkEl.checked = !!d.show_browser;
     _matEnabled = !!d.enabled;
     matRefreshToggle();
+    var statusEl = document.getElementById('mat-cred-status');
+    if (statusEl) {
+      statusEl.textContent = d.has_credentials ? 'Configured' : 'Not set';
+      statusEl.style.color = d.has_credentials ? 'var(--green)' : 'var(--text3)';
+    }
+  });
+}
+
+function matSaveCredentials() {
+  var emailEl = document.getElementById('mat-email-input');
+  var passEl  = document.getElementById('mat-password-input');
+  var email   = (emailEl && emailEl.value || '').trim();
+  var password = (passEl && passEl.value) || '';
+  if (!email || !password) { alert('Enter both MAT email and password.'); return; }
+  var showBrowser = !!(document.getElementById('mat-show-browser-chk') || {}).checked;
+  pyApi('mat_save_credentials', email, password, showBrowser, _matEnabled).then(function(r) {
+    if (!r || r.status !== 'ok') { alert('Could not save MAT credentials.'); return; }
+    if (passEl) passEl.value = '';
+    if (emailEl) emailEl.value = '';
+    var statusEl = document.getElementById('mat-cred-status');
+    if (statusEl) { statusEl.textContent = 'Saved'; statusEl.style.color = 'var(--green)'; }
   });
 }
 
@@ -5458,6 +5510,7 @@ function resetDocFields(){
   tmActive=false;
   cbReset();
   document.querySelectorAll('.fl-chip-active').forEach(function(c){c.classList.remove('fl-chip-active');});
+  _flChipOrder = [];
   _orderExtra = [];
   var orderExtraPanel = document.getElementById('fl-order-extra-panel'); if (orderExtraPanel) orderExtraPanel.style.display = 'none';
   _flSelectedKb = null;
@@ -6826,12 +6879,29 @@ var FL_REASONS = [
   'Software','Network','Add a Lab','Billing/Invoice'
 ];
 
+// Storage cleanup flow: only relevant for Software — Storage cleanup,
+// shown/hidden alongside the Wand Disc. button in the actions-chips row.
+function _updateStorageCleanupVisibility() {
+  var reason = (document.getElementById('in-reason')     || {}).value || '';
+  var sub    = (document.getElementById('in-reason-sub') || {}).value || '';
+  var btn    = document.getElementById('storage-cleanup-btn');
+  if (btn) btn.style.display = (reason === 'Software' && sub === 'Storage cleanup') ? 'inline-flex' : 'none';
+}
+
+function fillStorageCleanup() {
+  var el = document.getElementById('fl-actions-extra');
+  if (!el) return;
+  el.value = 'Remote in\nCleanup done deleting old cases from disk\nTest scan done\nIssue fixed';
+  flBuildOutputs();
+}
+
 // Sync context bar from intake bar inputs
 function flSyncFromIntake() {
   var sn     = (document.getElementById('in-serial')     || {}).value || '—';
   var model  = (document.getElementById('in-model')      || {}).value || '—';
   var reason = (document.getElementById('in-reason')     || {}).value || '—';
   var sub    = (document.getElementById('in-reason-sub') || {}).value || '';
+  _updateStorageCleanupVisibility();
 
   flBuildOutputs();
 }
@@ -6892,17 +6962,28 @@ function flAddOrderExtraRow() {
   flRenderOrderExtra();
 }
 
-// Toggle quick-action chips
+// Toggle quick-action chips — _flChipOrder tracks the order chips were
+// actually clicked in (re-activating a chip moves it to the end, as the
+// most recent selection), independent of their fixed DOM/button order.
+var _flChipOrder = [];
+
 function flToggleChip(btn) {
   btn.classList.toggle('fl-chip-active');
+  var val = btn.getAttribute('data-val');
+  var idx = _flChipOrder.indexOf(val);
+  if (btn.classList.contains('fl-chip-active')) {
+    if (idx !== -1) _flChipOrder.splice(idx, 1);
+    _flChipOrder.push(val);
+  } else if (idx !== -1) {
+    _flChipOrder.splice(idx, 1);
+  }
   flBuildOutputs();
 }
 
 function flGetChips() {
-  var chips = document.querySelectorAll('.fl-chip-active');
-  var vals  = [];
-  chips.forEach(function(c){ vals.push(c.getAttribute('data-val')); });
-  return vals;
+  var activeVals = {};
+  document.querySelectorAll('#fl-actions-chips .fl-chip-active').forEach(function(c){ activeVals[c.getAttribute('data-val')] = true; });
+  return _flChipOrder.filter(function(v){ return activeVals[v]; });
 }
 
 // Sub-category map for Reason
@@ -6913,15 +6994,15 @@ var ACCOUNT_SUBS = ['Add Relationship','Add a lab','Delete/Remove','Bridging','L
 var REASON_SUB_CATS = {
   'Account Management': ACCOUNT_SUBS,
   'Request':            ACCOUNT_SUBS.concat(['Expedite Case']),
-  'Hardware':           ['Issue','Wand Disconnections','Physical Damage','Battery','Power Issues',
+  'Hardware':           ['HW issue','Wand Disconnections','Physical Damage','Battery','Power Issues',
                           'Webcam Issues','Touchscreen Issues','Wand Overheating','Faulty Wand Noises',
-                          'Part Replacement','Cleaning & Disinfection'],
-  'Software':           ['Issue','Design Suite','IOSim','IOSim Pro','Oral Health Suite','iTero Needs to be Closed','Manual Registration','Duplicate Case',
+                          'Cleaning & Disinfection'],
+  'Software':           ['SW crash','Design Suite','IOSim','IOSim Pro','Oral Health Suite','iTero Needs to be Closed','Manual Registration','Duplicate Case',
                           'Gray Screen Error','Slow Performance','Factory Reset','Scanning Assistance',
                           'OrthoCAD','Lumina Issues','Progress Assessment','Rx / Case Procedure','Restorative/Ortho Scenario',
-                          'Software Update','Clean Install'],
+                          'Software Update','Clean Install','Storage cleanup'],
   'Third Party Software': ['Glidewell','exocad Milling','Dentrix Integration','DPMS / Lab Connector API'],
-  'Networking':         ['Ports and IP','Basic Troubleshooting'],
+  'Networking':         ['Ports and IP','Network Troubleshooting'],
   'Inquiry':            ['Pricing / Shipping Fees','POC List','Phone Extensions / IVR','Process Time Frames',
                           'Terminology / Glossary','Scan Report','Snapshot Tool','TimeLapse Tool','STL Export',
                           'Smile Architect','Sales Rep Notification','Invisalign Smile Video','MAT / MyiTero Website'],
@@ -7958,9 +8039,36 @@ var REPLACEMENT_REASONS = ['Wand Replacement', 'PPC Replacement', 'Part Replacem
 var WARRANTY_OPTIONS = ['Active', 'Inactive', 'Customer Satisfaction', 'Physical Damage', 'DOA'];
 
 var PPC_REPLACEMENT_SUBS = [
-  'Broken screen', 'Slowness', 'Touchscreen issues', 'SW Crash', 'Failed EFRA',
-  'Blackscreen/BIOS', 'Power Issues', 'Broken hinge/holder', 'iTero logo off'
+  'Broken/Damaged screen', 'Slowness', 'Touchscreen issues', 'SW Crash', 'Failed EFRA',
+  'Blackscreen/BIOS', 'Power Issues', 'Damaged hinge/holder', 'iTero logo off', 'Faulty noises'
 ];
+
+// Standard closing notes appended to the end of the description for
+// Wand/PPC/Part Replacement tickets — Wand/PPC also get the RMA/UPS line
+// (Part Replacement doesn't ship the old part back via UPS the same way),
+// and BLX (Element 2 / Element 2 5D) gets one extra battery-swap line on
+// top of whichever block applies.
+function flReplacementClosingNotes(reason, model) {
+  var lines = [];
+  if (reason === 'PPC Replacement' || reason === 'Wand Replacement') {
+    lines = [
+      '‣ Verified follow-up email and shipping address.',
+      '‣ Provided the office with the corresponding delivery time frame.',
+      '‣ Let the office know to turn off the unit before replacing any parts.',
+      '‣ Advised the office that UPS will return with an RMA label to pick up the old part and to return that part within 14 days.'
+    ];
+    if ((SN_MAP['BLX'].models || []).indexOf(model) !== -1) {
+      lines.push('‣ Advised the office to take the battery out of the old PPC and put it in the replacement PPC.');
+    }
+  } else if (reason === 'Part Replacement') {
+    lines = [
+      '‣ Verified follow-up email and shipping address.',
+      '‣ Provided the office with the corresponding delivery time frame.',
+      '‣ Let the office know to turn off the unit before replacing any parts.'
+    ];
+  }
+  return lines;
+}
 
 // HW Diagnosis error only applies to WOA/BLX scanners, or the 5D variants
 // of YUC/NZK (not their Lumina variants).
@@ -7982,7 +8090,7 @@ function flWandReplacementSubs() {
   var subs = ['Wand disconnections'];
   if (_wandHwDiagVisible(model)) subs.push('HW Diagnosis error');
   if (_wandBitsVisible(model))   subs.push('BITS errors');
-  subs.push('Broken Wand', 'Broken USB Port', 'Broken Tip', 'Faulty Noises - VCM', 'Faulty Noises - Fan', 'Overheating', 'Decoloration', 'Proactive RMA');
+  subs.push('Damaged Wand', 'Damaged USB Port', 'Damaged Tip', 'Faulty Noises - VCM', 'Faulty Noises - Fan', 'Overheating', 'Decoloration', 'Proactive RMA');
   return subs;
 }
 
@@ -8062,16 +8170,31 @@ function flRefreshSoftwareSubs() {
 // abbreviates the Element line; every other model keeps its normal name.
 var TS_MODEL_ABBR = { 'Element 2 5D': 'E2 5D', 'Element 2': 'E2' };
 
+var FL_SUBJECT_EMPTY_HTML = '<span style="color:var(--text3);font-family:var(--mono);font-size:11px">—</span>';
+
+// Escalations always leads the subject with "Escalations" regardless of
+// Reason/format (replacement, TS, or the default FL layout below) —
+// applied as a final step after whichever builder ran, rather than
+// duplicated inside each one.
+function _flApplyEscSubjectPrefix(el) {
+  var role = (document.getElementById('in-role') || {}).value || currentRole || '';
+  if (role !== 'ESC') return;
+  var escSpan = '<span style="font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.01em;color:var(--red)">Escalations</span>';
+  if (el.innerHTML === FL_SUBJECT_EMPTY_HTML) { el.innerHTML = escSpan; return; }
+  var sep = '<span style="color:var(--border2);font-weight:300"> | </span>';
+  el.innerHTML = escSpan + sep + el.innerHTML;
+}
+
 // Build subject line immediately from available data (no AI needed)
 function flBuildSubject() {
   var el = document.getElementById('fl-out-subject');
   if (!el) return;
 
   var reasonVal = (document.getElementById('in-reason') || {}).value || '';
-  if (REPLACEMENT_REASONS.indexOf(reasonVal) !== -1) { flBuildSubjectReplacement(el); return; }
+  if (REPLACEMENT_REASONS.indexOf(reasonVal) !== -1) { flBuildSubjectReplacement(el); _flApplyEscSubjectPrefix(el); return; }
 
   var role = (document.getElementById('in-role') || {}).value || currentRole || '';
-  if (role === 'TS') { flBuildSubjectTS(el); return; }
+  if (role === 'TS') { flBuildSubjectTS(el); _flApplyEscSubjectPrefix(el); return; }
 
   var sn       = (document.getElementById('in-serial')          || {}).value || '';
   var model    = (document.getElementById('in-model')           || {}).value || '';
@@ -8094,7 +8217,8 @@ function flBuildSubject() {
 
   el.innerHTML = htmlParts.length
     ? htmlParts.join(sep)
-    : '<span style="color:var(--text3);font-family:var(--mono);font-size:11px">—</span>';
+    : FL_SUBJECT_EMPTY_HTML;
+  _flApplyEscSubjectPrefix(el);
 }
 
 // Tech Support subject format: Reason | Model | PPC SN: X / Wand SN: Y | Specific issue | Subject text
@@ -8108,8 +8232,8 @@ function flBuildSubjectTS(el) {
   var modelLabel = TS_MODEL_ABBR[model] || model;
 
   var snParts = [];
-  if (sn)     snParts.push('PPC SN: ' + sn);
-  if (wandSn) snParts.push('Wand SN: ' + wandSn);
+  if (sn)                                 snParts.push('PPC SN: ' + sn);
+  if (wandSn && reason === 'Wand Replacement') snParts.push('Wand SN: ' + wandSn);
   var snCombo = snParts.join(' / ');
 
   var sep = '<span style="color:var(--border2);font-weight:300"> | </span>';
@@ -8216,6 +8340,7 @@ function flBuildDescriptionTS(o) {
 
   groups.push(
     '‣ Customer\'s phone number: ' + (o.phone || 'N/A') + '\n' +
+    '‣ Customer\'s email: ' + (o.email || 'N/A') + '\n' +
     '‣ Customer\'s name: ' + (o.caller || 'N/A') + ' — Role: ' + callerRole
   );
 
@@ -8228,10 +8353,29 @@ function flBuildDescriptionTS(o) {
 
   groups.push('‣ Call details: \n' + (o.issueText || 'N/A'));
 
+  if (o.orderIds && o.orderIds.length) groups.push('‣ Order ID: ' + o.orderIds.join(' | '));
+
   var actionsFinal = o.actionsText ? o.actionsText.trim() : 'N/A';
   groups.push('‣ Actions taken: \n' + actionsFinal);
 
+  var closingNotes = flReplacementClosingNotes(o.reason, o.model);
+  if (closingNotes.length) groups.push(closingNotes.join('\n'));
+
   return groups.join('\n\n');
+}
+
+// Escalations-only: "‣ reason | specific reason | subject text" always
+// leads the Description, above everything else (even a CB template) —
+// whichever of the three fields is actually filled in, skipping any that
+// aren't rather than writing "N/A" for them.
+function _escDescPrefixLine() {
+  var role = (document.getElementById('in-role') || {}).value || currentRole || '';
+  if (role !== 'ESC') return '';
+  var reason = (document.getElementById('in-reason')          || {}).value || '';
+  var sub    = (document.getElementById('in-reason-sub')      || {}).value || '';
+  var custom = ((document.getElementById('fl-subject-override') || {}).value || '').trim();
+  var parts = [reason, sub, custom].filter(Boolean);
+  return parts.length ? '‣ ' + parts.join(' | ') : '';
 }
 
 function flBuildOutputs() {
@@ -8247,7 +8391,8 @@ function flBuildOutputs() {
   // into a call write-up that doesn't apply to a callback.
   if (_cbActive && _cbAttempt) {
     var descElCb = document.getElementById('fl-out-desc');
-    if (descElCb) descElCb.textContent = cbBuildText();
+    var escPrefixCb = _escDescPrefixLine();
+    if (descElCb) descElCb.textContent = (escPrefixCb ? escPrefixCb + '\n\n' : '') + cbBuildText();
     return;
   }
 
@@ -8293,15 +8438,21 @@ function flBuildOutputs() {
   // Taken specifically, as "Escalated to business support"). No periods
   // anywhere in here — the system never punctuates its own generated text,
   // only whatever the agent types by hand stays exactly as typed.
+  // Chips are joined in the order they were actually clicked (_flChipOrder,
+  // via flGetChips), one per line — whatever the agent then types by hand
+  // always lands on its own new line right after the last flow, only when
+  // at least one flow is selected.
   var allChipText = chips.filter(function(c){ return c !== 'Transferred to TS'; })
-    .map(function(c){ return CHIP_TEXT[c] || c; }).join(' — ');
+    .map(function(c){ return CHIP_TEXT[c] || c; }).join('\n');
 
   var issueText = desc ? desc.trim() : 'N/A';
 
   var actionsParts = [];
   if (allChipText) actionsParts.push(allChipText);
   if (extra)       actionsParts.push(extra.trim());
-  var actionsText = actionsParts.join(' ');
+  var actionsText = actionsParts.join('\n');
+
+  var allOrderIds = [(document.getElementById('fl-order-id-input') || {}).value || ''].concat(_orderExtra).map(function(s){return s.trim();}).filter(Boolean);
 
   if (role === 'TS') {
     if (transferredTS) {
@@ -8311,8 +8462,9 @@ function flBuildOutputs() {
     var descElTS = document.getElementById('fl-out-desc');
     if (descElTS) {
       descElTS.textContent = flBuildDescriptionTS({
-        caller: caller, phone: phone, sn: sn, wandSn: wandSn,
-        issueText: issueText, actionsText: actionsText
+        caller: caller, phone: phone, email: email, sn: sn, wandSn: wandSn,
+        issueText: issueText, actionsText: actionsText, orderIds: allOrderIds,
+        reason: cat, model: model
       });
     }
     return;
@@ -8330,7 +8482,6 @@ function flBuildOutputs() {
     outcome ? 'OUTCOME: ' + outcome.trim() : null,
   ].filter(Boolean);
 
-  var allOrderIds = [(document.getElementById('fl-order-id-input') || {}).value || ''].concat(_orderExtra).map(function(s){return s.trim();}).filter(Boolean);
   if (allOrderIds.length) textParts.push('ORDER IDS: ' + allOrderIds.join(' | '));
 
   var summary = '| ' + textParts.join('\n| ');
@@ -8349,6 +8500,12 @@ function flBuildOutputs() {
   if (transferredTS) {
     summary += '\nTRANSFERRED TO TS';
   }
+
+  var closingNotes = flReplacementClosingNotes(cat, model);
+  if (closingNotes.length) summary += '\n' + closingNotes.join('\n');
+
+  var escPrefix = _escDescPrefixLine();
+  if (escPrefix) summary = escPrefix + '\n\n' + summary;
 
   var descEl = document.getElementById('fl-out-desc');
   if (descEl) descEl.textContent = summary;
@@ -8395,7 +8552,6 @@ function flCopyDescBar() {
   var hint = document.getElementById('fl-desc-copy-hint');
   var bar  = document.getElementById('fl-desc-header');
   if (!el || el.textContent === '—') return;
-  flDescToggle(true);
   navigator.clipboard.writeText(el.textContent).then(function() {
     if (hint) { hint.textContent = 'Copied'; hint.style.color = 'var(--green)'; }
     if (bar)  { bar.style.borderColor = 'var(--green)'; }

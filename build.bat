@@ -16,7 +16,7 @@ if errorlevel 1 (
 )
 
 echo [3/4] Building executable...
-python -c "import PyInstaller.__main__; PyInstaller.__main__.run(['--onefile','--windowed','--name','iTero_Toolbox_V1_1','--add-data','itero_toolbox_v1.html;.','--add-data','data\kb_data.json;data','--add-data','Reference;Reference','--hidden-import','webview','--hidden-import','win32api','--hidden-import','win32con','--hidden-import','winreg','--hidden-import','psutil','itero_toolbox.py'])"
+python -c "import PyInstaller.__main__; PyInstaller.__main__.run(['--onefile','--windowed','--name','iTero_Toolbox_V1_1','--icon','Reference\iterologo2.ico','--add-data','itero_toolbox_v1.html;.','--add-data','data\kb_data.json;data','--add-data','Reference;Reference','--hidden-import','webview','--hidden-import','win32api','--hidden-import','win32con','--hidden-import','winreg','--hidden-import','psutil','itero_toolbox.py'])"
 
 echo [4/4] Checking output...
 if exist "dist\iTero_Toolbox_V1_1.exe" (
