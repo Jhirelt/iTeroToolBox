@@ -69,7 +69,8 @@ html.roronoa #fl-actions-extra{padding-right:230px !important}
 html.pompompurin #fl-actions-extra,
 html.melody #fl-actions-extra,
 html.itachi #fl-actions-extra,
-html.uzumaki #fl-actions-extra{padding-right:115px !important}
+html.uzumaki #fl-actions-extra,
+html.sponge #fl-actions-extra{padding-right:115px !important}
 html.melody{
   --bg:#fdf3f9;--bg2:#fff8fc;--bg3:#f3ddec;--bg4:#ecc9e3;
   --border:#ddb2ee;--border2:#c98fd4;
@@ -83,19 +84,23 @@ html.melody{
   --mono:'Baloo 2',sans-serif;--sans:'Baloo 2',sans-serif;
   --accent:#e08bab;--accent-dim:#f0a0bb;
   --titlebar-bg:#cf7aa0;--tb-name:#fdf3f9;--tb-role:#5a3a52;--tb-role-bg:#fff8fc;--tb-role-border:#ddb2ee}
-/* Shared structure for "character" themes (everything except roronoa) */
-html.pompompurin body,html.melody body{font-weight:600}
+/* Shared structure for "character" themes (everything except roronoa).
+   sponge is wired the same as the rest — images not dropped into
+   Reference/Mascot* yet just show as broken icons until they're added. */
+html.pompompurin body,html.melody body,html.sponge body{font-weight:600}
 html.pompompurin .titlebar,html.melody .titlebar{background:var(--titlebar-bg)}
-html.pompompurin .app,html.melody .app{background:var(--bg)}
-html.pompompurin .iinput,html.melody .iinput{border-radius:14px;font-weight:600}
-html.pompompurin .bcard,html.pompompurin .hcard,html.melody .bcard,html.melody .hcard{border-radius:16px}
+html.pompompurin .app,html.melody .app,html.sponge .app{background:var(--bg)}
+html.pompompurin .iinput,html.melody .iinput,html.sponge .iinput{border-radius:14px;font-weight:600}
+html.pompompurin .bcard,html.pompompurin .hcard,html.melody .bcard,html.melody .hcard,
+html.sponge .bcard,html.sponge .hcard{border-radius:16px}
 html.pompompurin .sh-title,html.pompompurin .bcard-title,html.pompompurin label,
-html.melody .sh-title,html.melody .bcard-title,html.melody label{font-weight:700}
-html.pompompurin #brand-square,html.melody #brand-square{display:none}
-html.pompompurin #brand-mini-btn,html.melody #brand-mini-btn{display:inline-flex !important}
-html.pompompurin #issue-mascot,html.melody #issue-mascot{display:block !important}
-html.pompompurin #tb-user-name,html.melody #tb-user-name{color:var(--tb-name) !important}
-html.pompompurin #tb-user-role,html.melody #tb-user-role{color:var(--tb-role) !important;background:var(--tb-role-bg) !important;border-color:var(--tb-role-border) !important}
+html.melody .sh-title,html.melody .bcard-title,html.melody label,
+html.sponge .sh-title,html.sponge .bcard-title,html.sponge label{font-weight:700}
+html.pompompurin #brand-square,html.melody #brand-square,html.sponge #brand-square{display:none}
+html.pompompurin #brand-mini-btn,html.melody #brand-mini-btn,html.sponge #brand-mini-btn{display:inline-flex !important}
+html.pompompurin #issue-mascot,html.melody #issue-mascot,html.sponge #issue-mascot{display:block !important}
+html.pompompurin #tb-user-name,html.melody #tb-user-name,html.sponge #tb-user-name{color:var(--tb-name) !important}
+html.pompompurin #tb-user-role,html.melody #tb-user-role,html.sponge #tb-user-role{color:var(--tb-role) !important;background:var(--tb-role-bg) !important;border-color:var(--tb-role-border) !important}
 html.itachi{
   --bg:#1c1e22;--bg2:#22252b;--bg3:#2b3550;--bg4:#333d5c;
   --border:#3a4565;--border2:#4a5680;
@@ -142,11 +147,51 @@ html.uzumaki #brand-mini-btn{display:inline-flex !important}
 html.uzumaki #issue-mascot{display:block !important;bottom:0 !important;right:0 !important}
 html.uzumaki #tb-user-name{color:var(--tb-name) !important}
 html.uzumaki #tb-user-role{color:var(--tb-role) !important;background:var(--tb-role-bg) !important;border-color:var(--tb-role-border) !important}
+html.sponge{
+  --bg:#fffce6;--bg2:#ffffff;--bg3:#fdf6c4;--bg4:#f9ed5b;
+  --border:#f0dc7a;--border2:#d4b83a;
+  --text:#2b2410;--text2:#6b5a1f;--text3:#9c8a4a;
+  --blue:#2f7ec4;--blue-bg:#dcedfb;--blue-dim:#7bb4e6;
+  --green:#3f8f4a;--green-bg:#dff2e1;
+  --amber:#b2793b;--amber-bg:#f5e6cc;
+  --red:#e53636;--red-bg:#fbdede;
+  --teal:#2f7ec4;--teal-bg:#dcedfb;
+  --purple:#b2793b;--purple-bg:#f5e6cc;
+  --mono:'Baloo 2',sans-serif;--sans:'Baloo 2',sans-serif;
+  --accent:#2f7ec4;--accent-dim:#7bb4e6;
+  --titlebar-bg:#ebde3d;--tb-name:#2b2410;--tb-role:#6b5a1f;--tb-role-bg:#fffef2;--tb-role-border:#f0dc7a}
+/* SpongeBob's pants — a handful of scattered brown dots on the yellow bar
+   instead of the flat titlebar-bg every other theme uses. Kept as its own
+   rule (not folded into the shared "character theme" .titlebar selector
+   below) because that shared rule uses the `background` shorthand, which
+   would reset this background-image back to none.
+   Four dots, deliberately uneven (different sizes, off-grid positions) —
+   a repeating tiled pattern read as too mechanical/linear; real pants
+   dots are scattered and a couple sit low enough to be cropped by the
+   bar's own bottom edge. */
+html.sponge .titlebar{
+  background-color:var(--titlebar-bg);
+  background-repeat:no-repeat;
+  background-image:
+    radial-gradient(circle at 5% 115%, rgba(139,94,42,.5) 15px, transparent 15.5px),
+    radial-gradient(circle at 21% 25%, rgba(139,94,42,.4) 6px, transparent 6.5px),
+    radial-gradient(circle at 60% 130%, rgba(139,94,42,.45) 11px, transparent 11.5px),
+    radial-gradient(circle at 83% 40%, rgba(139,94,42,.35) 4px, transparent 4.5px)}
 .settings-item{display:block;width:100%;text-align:left;padding:7px 14px;font-size:12px;font-family:var(--sans);background:none;border:none;color:var(--text2);cursor:pointer;transition:background .1s}
 .settings-item:hover{background:var(--bg4);color:var(--text)}
 .settings-item.active{color:var(--blue);font-weight:600}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;background:var(--bg);font-family:var(--sans);color:var(--text);font-size:14px;font-weight:500;-webkit-font-smoothing:antialiased}
+/* Smooth app entrance — the window used to just snap into view mid-layout
+   (role-gated elements visibly disappearing a beat after first paint,
+   theme swapping in, sidebar sizing settling). Staying invisible until
+   JS says everything's settled (see revealApp() in the DOMContentLoaded
+   handler) turns all of that into one clean fade+rise of the final,
+   already-correct page instead of watching it assemble itself. */
+body{opacity:0}
+body.app-ready{opacity:1;transition:opacity .45s var(--ease-out)}
+.app,#login-overlay{transform:translateY(10px);transition:transform .45s var(--ease-out)}
+body.app-ready .app,body.app-ready #login-overlay{transform:translateY(0)}
 /* Size modes zoom only the scrollable *content* of each scroll container
    (#content-zoom, #sidebar-full/#sidebar-icons), never the scroll container
    itself (.content, .sidebar) or the titlebar. This keeps each scrollbar's
@@ -217,9 +262,11 @@ html.size-large #sidebar-icons{zoom:1.3}
 /* sidebar */
 .nav-sec{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:10px 14px 4px}
 /* display comes from the class (not inline) so role-switching's generic
-   el.style.display='' reset falls back to flex instead of collapsing to
-   the div default of block — same trick .nav-item already relies on. */
-.esc-report-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+   el.style.display='' reset falls back to inline-flex instead of
+   collapsing to the div default of block — same trick .nav-item relies
+   on. inline-flex (not flex) so this sits as one item alongside KB/FU in
+   #fl-outcome-row instead of forcing its own full-width row. */
+.esc-report-row{display:inline-flex;align-items:center;gap:6px}
 .nav-item{display:flex;align-items:center;gap:7px;padding:8px 10px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .16s var(--ease-out);white-space:nowrap}
 .nav-item:hover{background:var(--bg3);color:var(--text)}.nav-item.active{border-left-color:var(--text2);background:var(--bg3);color:var(--text)}
 .nav-icon{width:15px;height:15px;flex-shrink:0;opacity:.7}.nav-item.active .nav-icon{opacity:1}
@@ -293,6 +340,11 @@ html.size-large #sidebar-icons{zoom:1.3}
 .btn-sm.g{background:var(--green-bg);border-color:#2a5e42;color:var(--green)}.btn-sm.g:hover{background:#1a3d2a;color:var(--green)}
 .btn-sm.r{background:var(--red-bg);border-color:#4a1f1a;color:#c06060}.btn-sm.r:hover{background:#2e1410;color:#e07070}
 .btn-sm.a{background:var(--amber-bg);border-color:#4a3010;color:#b87830}.btn-sm.a:hover{background:#2a1e08;color:var(--amber)}
+/* Placed after the color variants (.p/.g/.r/.a) so it wins regardless of
+   which one a disabled button also has — same selector specificity means
+   later-in-file otherwise loses. pointer-events:none also blocks the
+   hover rules above from visibly reacting while disabled. */
+.btn-sm:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
 /* snippets */
 .snip-list{display:flex;flex-direction:column;gap:5px;margin-bottom:18px}
 .snip-row{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px 11px;display:flex;align-items:center;gap:9px}
@@ -487,7 +539,7 @@ html.size-large #sidebar-icons{zoom:1.3}
     </div>
     <div style="margin-bottom:12px">
       <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:4px">YOUR NAME</label>
-      <input id="login-name" class="iinput" placeholder="e.g. John Doe" autocomplete="off"
+      <input id="login-name" class="iinput" placeholder="Name" autocomplete="off"
         style="width:100%;height:32px;font-size:13px" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div style="margin-bottom:22px">
@@ -568,6 +620,7 @@ html.size-large #sidebar-icons{zoom:1.3}
         <button class="settings-item" id="theme-melody-btn" onclick="setTheme('melody')">🎀 Melody</button>
         <button class="settings-item" id="theme-itachi-btn" onclick="setTheme('itachi')">🌙 Itachi</button>
         <button class="settings-item" id="theme-uzumaki-btn" onclick="setTheme('uzumaki')">🍥 Uzumaki</button>
+        <button class="settings-item" id="theme-sponge-btn" onclick="setTheme('sponge')">🍍 Bob Esponja</button>
       </div>
       <div style="height:1px;background:var(--border);margin:4px 0"></div>
       <button class="settings-item" onclick="event.stopPropagation();toggleSettingsSection('size')" style="display:flex;align-items:center;justify-content:space-between">
@@ -955,17 +1008,8 @@ html.size-large #sidebar-icons{zoom:1.3}
     <span id="fl-subj-copy-hint" style="font-family:var(--mono);font-size:10px;color:var(--text3);flex-shrink:0;transition:color .15s">Copy</span>
   </div>
 
-  <!-- Escalations only: log the current ticket into the Report section -->
-  <div id="esc-report-add-row" class="esc-report-row">
-    <input class="iinput" id="esc-report-ticket-input" placeholder="Ticket Number" autocomplete="off"
-      style="flex:1;height:28px;padding:3px 10px;font-size:12px;font-family:var(--mono)"
-      onkeydown="if(event.key==='Enter')escReportAdd()">
-    <button class="btn-sm p" onclick="escReportAdd()" style="height:28px;white-space:nowrap">+ Add to Report</button>
-    <span id="esc-report-add-status" style="font-family:var(--mono);font-size:10px;color:var(--green);white-space:nowrap"></span>
-  </div>
-
   <!-- Row 1: Caller + IDs -->
-  <div class="fl-doc-row1" style="display:grid;grid-template-columns:1fr 1.1fr 1.5fr 1.15fr 1.15fr;gap:6px;margin-bottom:8px">
+  <div class="fl-doc-row1" style="display:grid;grid-template-columns:1fr 1.1fr 1.5fr;gap:6px;margin-bottom:8px">
     <div>
       <div style="display:flex;align-items:center;gap:6px;height:14px;margin-bottom:2px">
         <label style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:14px">NAME</label>
@@ -1001,30 +1045,6 @@ html.size-large #sidebar-icons{zoom:1.3}
       <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">EMAIL</label>
       <input class="iinput" id="fl-caller-email" placeholder="Email" autocomplete="off" type="text" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="flBuildOutputs()">
     </div>
-    <!-- TS role repurposes these last two cells to host the FU/KB buttons
-         (see applyRole()) instead of TV ID/Pass, which TS doesn't use —
-         each cell keeps both its original content and a TS-only slot,
-         toggled instead of removed so the grid track layout never shifts. -->
-    <div id="fl-tvid-wrap" style="position:relative">
-      <div id="fl-tvid-content">
-        <div style="display:flex;align-items:center;justify-content:space-between;height:14px;margin-bottom:2px">
-          <label style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:14px">TV ID</label>
-          <button id="fl-tv-extra-btn" onclick="event.stopPropagation();flToggleTvExtra()" title="Add another TV ID / Pass" style="font-size:9px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);cursor:pointer">+</button>
-        </div>
-        <input class="iinput" id="fl-tvid" placeholder="TV ID" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="this.value=this.value.replace(/[^0-9]/g,'');flBuildOutputs()">
-        <div id="fl-tv-extra-panel" onclick="event.stopPropagation()" style="display:none;position:absolute;top:100%;right:0;margin-top:4px;width:230px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:8px;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.3)">
-          <div id="fl-tv-extra-rows" style="display:flex;flex-direction:column;gap:5px"></div>
-          <button onclick="flAddTvExtraRow()" style="margin-top:6px;font-family:var(--mono);font-size:10px;padding:2px 8px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;width:100%">+ Add another</button>
-        </div>
-      </div>
-      <div id="fl-ts-slot-fu" style="display:none;height:24px;align-items:end"></div>
-    </div>
-    <div id="fl-tvpass-wrap">
-      <div id="fl-tvpass-content">
-        <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">TV PASS</label>
-        <input class="iinput" id="fl-tvpass" placeholder="Password" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" type="text" oninput="flBuildOutputs()">
-      </div>
-    </div>
   </div>
 
   <!-- Mat ID -->
@@ -1038,12 +1058,45 @@ html.size-large #sidebar-icons{zoom:1.3}
     <div id="fl-orderid-wrap" style="position:relative;width:160px">
       <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">ORDER ID</label>
       <input class="iinput" id="fl-order-id-input" placeholder="Order ID" autocomplete="off"
-        style="width:100%;height:24px;padding:2px 26px 2px 7px;font-size:12px;font-family:var(--mono);display:block;box-sizing:border-box"
+        style="width:100%;height:24px;padding:2px 26px 2px 7px;font-size:12px;display:block;box-sizing:border-box"
         oninput="flParseOrderIdPaste(this)">
       <button id="fl-order-extra-btn" onclick="event.stopPropagation();flToggleOrderExtra()" title="Add another Order ID" style="position:absolute;top:28px;right:5px;transform:translateY(-50%);font-size:9px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);cursor:pointer">+</button>
       <div id="fl-order-extra-panel" onclick="event.stopPropagation()" style="display:none;position:absolute;top:100%;left:0;margin-top:4px;width:230px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:8px;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.3)">
         <div id="fl-order-extra-rows" style="display:flex;flex-direction:column;gap:5px"></div>
         <button onclick="flAddOrderExtraRow()" style="margin-top:6px;font-family:var(--mono);font-size:10px;padding:2px 8px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;width:100%">+ Add another</button>
+      </div>
+    </div>
+
+    <!-- Escalations only: log the current ticket into the Report section -->
+    <div id="esc-report-add-row">
+      <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px;visibility:hidden">·</label>
+      <div class="esc-report-row">
+        <input class="iinput" id="esc-report-ticket-input" placeholder="Ticket" autocomplete="off"
+          style="width:100px;height:24px;padding:2px 7px;font-size:12px"
+          onkeydown="if(event.key==='Enter')escReportAdd('esc-report-ticket-input')">
+        <button class="btn-sm p" onclick="escReportAdd('esc-report-ticket-input')" style="height:24px">Add</button>
+      </div>
+    </div>
+
+    <!-- TS role hides these two (see applyRole) — it doesn't use TV ID/Pass -->
+    <div id="fl-tvid-wrap" style="position:relative;width:150px">
+      <div id="fl-tvid-content">
+        <div style="display:flex;align-items:center;justify-content:space-between;height:14px;margin-bottom:2px">
+          <label style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:14px">TV ID</label>
+          <button id="fl-tv-extra-btn" onclick="event.stopPropagation();flToggleTvExtra()" title="Add another TV ID / Pass" style="font-size:9px;padding:0 5px;height:14px;line-height:12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);cursor:pointer">+</button>
+        </div>
+        <input class="iinput" id="fl-tvid" placeholder="TV ID" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="this.value=this.value.replace(/[^0-9]/g,'');flBuildOutputs()">
+        <div id="fl-tv-extra-panel" onclick="event.stopPropagation()" style="display:none;position:absolute;top:100%;right:0;margin-top:4px;width:230px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:8px;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.3)">
+          <div id="fl-tv-extra-rows" style="display:flex;flex-direction:column;gap:5px"></div>
+          <button onclick="flAddTvExtraRow()" style="margin-top:6px;font-family:var(--mono);font-size:10px;padding:2px 8px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r);color:var(--text3);cursor:pointer;width:100%">+ Add another</button>
+        </div>
+      </div>
+      <div id="fl-ts-slot-fu" style="display:none;height:24px;align-items:end"></div>
+    </div>
+    <div id="fl-tvpass-wrap" style="width:150px">
+      <div id="fl-tvpass-content">
+        <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;height:14px;line-height:14px;margin-bottom:2px">TV PASS</label>
+        <input class="iinput" id="fl-tvpass" placeholder="Password" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" type="text" oninput="flBuildOutputs()">
       </div>
     </div>
 
@@ -1059,9 +1112,6 @@ html.size-large #sidebar-icons{zoom:1.3}
         <input class="iinput" id="fl-rma-email" placeholder="Email" autocomplete="off" style="width:100%;height:22px;padding:2px 6px;font-size:11px;box-sizing:border-box">
       </div>
     </div>
-
-    <!-- TS-only: KB indicator lives here instead of the Outcome row -->
-    <div id="fl-ts-slot-kb-order" style="display:none"></div>
   </div>
 
   <!-- Issue Description: placeholder doubles as the label, auto-fills from Subject -->
@@ -1088,6 +1138,12 @@ html.size-large #sidebar-icons{zoom:1.3}
       <button id="chip-net-diag" class="fl-chip" onclick="flToggleChip(this)" data-val="Network diagnosis">🌐 Net Diag</button>
       <button id="chip-bat-rep" class="fl-chip" onclick="flToggleChip(this)" data-val="Battery Replacement">🔌 Bat Rep</button>
       <button id="chip-transfer-ts" class="fl-chip" onclick="flToggleChip(this)" data-val="Transferred to TS">↗ To TS</button>
+      <div id="fl-kb-ind-wrap" style="display:none">
+        <button id="fl-kb-ind-btn" onclick="flToggleKbIndicator()" title="No KB added yet" style="display:flex;align-items:center;gap:5px;height:22px;padding:0 9px;background:var(--red-bg);border:1px solid var(--red);border-radius:20px;cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s">
+          <svg width="10" height="10" viewBox="0 0 14 14" fill="none" style="flex-shrink:0"><path id="fl-kb-ind-path" d="M3 3l8 8M11 3l-8 8" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="fl-kb-ind-lbl" style="font-family:var(--mono);font-size:10px;color:var(--red);transition:color .15s">KB</span>
+        </button>
+      </div>
       <button id="wand-disc-btn" onclick="openWandFlow()" style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:var(--bg4);border:1px solid var(--border2);border-radius:20px;cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--text2);transition:all .15s;white-space:nowrap" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
         <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M3 21l6-6M14 4l6 6-9 9-3-3 9-9M17 4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Wand Disc.
@@ -1137,13 +1193,6 @@ html.size-large #sidebar-icons{zoom:1.3}
       <button id="fl-followup-btn" title="Follow up" onclick="document.getElementById('fl-followup-chk').checked=!document.getElementById('fl-followup-chk').checked;flFollowupToggle()" style="display:flex;align-items:center;gap:5px;height:22px;padding:0 9px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s">
         <span id="fl-followup-dot" style="width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .15s"></span>
         <span id="fl-followup-lbl" style="font-family:var(--mono);font-size:10px;color:var(--text3);transition:color .15s">FU</span>
-      </button>
-    </div>
-    <div id="fl-kb-ind-wrap" style="display:none">
-      <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px;visibility:hidden">·</label>
-      <button id="fl-kb-ind-btn" onclick="flToggleKbIndicator()" title="No KB added yet" style="display:flex;align-items:center;gap:5px;height:22px;padding:0 9px;background:var(--red-bg);border:1px solid var(--red);border-radius:20px;cursor:pointer;user-select:none;white-space:nowrap;transition:all .15s">
-        <svg width="10" height="10" viewBox="0 0 14 14" fill="none" style="flex-shrink:0"><path id="fl-kb-ind-path" d="M3 3l8 8M11 3l-8 8" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span id="fl-kb-ind-lbl" style="font-family:var(--mono);font-size:10px;color:var(--red);transition:color .15s">KB</span>
       </button>
     </div>
   </div>
@@ -2377,23 +2426,42 @@ html.size-large #sidebar-icons{zoom:1.3}
 </div>
 
 <!-- ══════════════ ESCALATIONS REPORT (foundation) ══════════════
-     Every ticket added from Documentation's "+ Add to Report" row (ESC
-     role only) lands here as a snapshot — ticket number, model, reason,
-     specific reason, description, outcome — for periodic export into an
-     external report file. -->
+     Every ticket added here or from Documentation's "+ Add to Report" row
+     (ESC role only) lands as one entry — ticket number, scanner model,
+     plus Categorization/Solution Provided once pulled from Salesforce via
+     the lupa button — for periodic export into an external report file. -->
 <div class="panel" id="panel-report">
 
   <div class="sh">
     <span class="sh-title">Escalations Report</span>
     <div style="display:flex;gap:8px;align-items:center">
       <span class="sh-sub" id="esc-report-count"></span>
+      <button class="btn-sm" onclick="escReportToggleTemplates()">Outcomes List</button>
       <button class="btn-sm p" onclick="escReportExport()">⬇ Export to Excel</button>
     </div>
   </div>
 
+  <!-- Reference list of the fixed Solution Provided phrases the tool
+       recognizes for categorization — click any pill to copy it, so it can
+       be pasted straight into Salesforce's Solution Provided field. -->
+  <div id="esc-report-templates-wrap" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r)"></div>
+
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px">
+    <input class="iinput" id="esc-report-ticket-input-tab" placeholder="Ticket" autocomplete="off"
+      style="width:140px;height:26px;padding:2px 8px;font-size:12px"
+      onkeydown="if(event.key==='Enter')escReportAdd('esc-report-ticket-input-tab')">
+    <button class="btn-sm p" onclick="escReportAdd('esc-report-ticket-input-tab')" style="height:26px">Add</button>
+    <button class="btn-sm" id="esc-report-lookup-all-btn" onclick="escReportLookupAll()" style="height:26px;margin-left:auto;display:flex;align-items:center;gap:5px">
+      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/></svg>
+      Find All
+    </button>
+    <button class="btn-sm r" id="esc-report-cancel-btn" onclick="escReportCancelLookupAll()" style="height:26px;margin-left:auto;display:none">Cancel</button>
+    <span id="esc-report-bulk-status" style="font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap"></span>
+  </div>
+
   <div id="esc-report-list" style="display:flex;flex-direction:column;gap:8px;min-height:60px"></div>
   <div id="esc-report-empty" style="display:none;padding:30px 0;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text3)">
-    No tickets added yet — enter a Ticket Number and click <strong>+ Add to Report</strong> in Documentation.
+    No tickets added yet — enter a Ticket Number above and click <strong>Add</strong>.
   </div>
 </div>
 
@@ -2752,6 +2820,16 @@ function clearCmd(){
 function focusCmdInput(){
   document.getElementById('cmd-in').focus();
 }
+// ESC is a superset of TS (TS's whole feature set, plus its own extras
+// like the Report tab) — never the other way around. Anywhere a behavior
+// is gated to TS should go through this helper instead of a bare
+// role === 'TS' check, so it reaches ESC automatically; add role === 'ESC'
+// separately alongside it only when something is meant to be ESC-only.
+// FL is untouched by this and only ever changes on its own explicit ask.
+function _isTsOrEsc(role) {
+  return role === 'TS' || role === 'ESC';
+}
+
 // Tech Support doesn't use TV ID/Pass, so its
 // layout reclaims those two grid cells for the FU/KB buttons instead —
 // widens Name a bit in the process. Every other role keeps the original
@@ -2764,26 +2842,23 @@ function applyTsLayout(isTs) {
     if (isTs) {
       // The responsive breakpoints below ~680px width force this same
       // property to 2-3 columns via !important (see @media rules), which
-      // silently wins over a plain inline style and was why the FU/KB
-      // buttons weren't fully showing up — setProperty(...,'important')
+      // silently wins over a plain inline style — setProperty(...,'important')
       // is the one way an inline style can out-rank an author stylesheet's
-      // !important rule, so TS keeps its 5-column layout at any width.
-      row1.style.setProperty('grid-template-columns', '1.2fr 1fr 1.5fr auto auto', 'important');
+      // !important rule, so TS keeps its own column weighting at any width.
+      row1.style.setProperty('grid-template-columns', '1.2fr 1fr 1.5fr', 'important');
     } else {
       // Drop back to the plain (non-!important) inline value so the
       // responsive breakpoints behave exactly as they did before any of
       // this TS-layout code existed.
       row1.style.removeProperty('grid-template-columns');
-      row1.style.gridTemplateColumns = '1fr 1.1fr 1.5fr 1.15fr 1.15fr';
+      row1.style.gridTemplateColumns = '1fr 1.1fr 1.5fr';
     }
   }
 
   var tvIdContent   = document.getElementById('fl-tvid-content');
   var tvPassContent = document.getElementById('fl-tvpass-content');
   var slotFu     = document.getElementById('fl-ts-slot-fu'); // unused now that FU is just hidden in TS, not relocated
-  var slotKbOrder = document.getElementById('fl-ts-slot-kb-order');
   var fuWrap     = document.getElementById('fl-followup-wrap');
-  var kbWrap     = document.getElementById('fl-kb-ind-wrap');
   var outcomeRow = document.getElementById('fl-outcome-row');
   var outcomeWrap   = document.getElementById('fl-outcome-wrap');
   var wandDiscBtn   = document.getElementById('wand-disc-btn');
@@ -2798,7 +2873,6 @@ function applyTsLayout(isTs) {
     if (outcomeWrap) outcomeWrap.style.display = 'none'; // TS doesn't use Outcome
     if (outcomeRow && fuWrap) outcomeRow.appendChild(fuWrap); // keep it put, just hidden below
     if (fuWrap) fuWrap.style.display = 'none';
-    if (slotKbOrder && kbWrap) { slotKbOrder.appendChild(kbWrap); slotKbOrder.style.display = 'flex'; }
     if (wandDiscBtn) wandDiscBtn.style.display = 'none';
     if (netDiagChip)  netDiagChip.textContent  = '🌐 Net Rep';
     if (transferChip) transferChip.textContent = '↗ T3';
@@ -2807,15 +2881,13 @@ function applyTsLayout(isTs) {
     if (tvPassContent) tvPassContent.style.display = '';
     if (outcomeWrap) outcomeWrap.style.display = '';
     if (fuWrap) fuWrap.style.display = '';
-    if (slotKbOrder) slotKbOrder.style.display = 'none';
     if (wandDiscBtn) wandDiscBtn.style.display = '';
     if (netDiagChip)  netDiagChip.textContent  = '🌐 Net Diag';
     if (transferChip) transferChip.textContent = '↗ To TS';
     // Always re-append — appendChild moves an existing node rather than
     // duplicating it, so this is safe to call every time and always
-    // restores [Outcome, FU, KB] regardless of current position.
+    // restores [Outcome, FU] regardless of current position.
     if (outcomeRow && fuWrap) outcomeRow.appendChild(fuWrap);
-    if (outcomeRow && kbWrap) outcomeRow.appendChild(kbWrap);
   }
   rmaUpdateVisibility();
 }
@@ -2835,7 +2907,7 @@ function applyRole(role){
     return;
   }
   currentRole=role;
-  applyTsLayout(role === 'TS');
+  applyTsLayout(_isTsOrEsc(role));
 
   // Role badge
   var badge = document.getElementById('role-badge');
@@ -2885,23 +2957,25 @@ function applyRole(role){
     var docNav = document.getElementById('nav-documentation');
     if (docNav) switchPanel('documentation', docNav);
     flSyncFromIntake();
-  } else if(role === 'TS'){
-    // ESC-only items hidden for plain TS
-    escOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+  } else if(_isTsOrEsc(role)){
+    // ESC runs every bit of TS's setup below, then layers its own extras
+    // on top (escOnly nav, tracker tick) — sharing this block instead of
+    // keeping a hand-copied duplicate is the whole point: a future change
+    // to TS's behavior here reaches ESC automatically, with no separate
+    // copy to remember to update.
     flOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
     applyCmdVisibility(_cmdVisible); // hidden by default — technician opts in via Settings → Connections
     var banner=document.getElementById('lumina-fl-banner'); if(banner)banner.style.display='none';
     var slfddBtns=document.querySelectorAll('#slfdd-btn-driver,#slfdd-btn-util');
     slfddBtns.forEach(function(b){b.disabled=false;b.style.cursor='';});
-  } else if(role === 'ESC'){
-    // ESC = TS permissions + escalations nav
-    flOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
-    applyCmdVisibility(_cmdVisible);
-    var banner=document.getElementById('lumina-fl-banner'); if(banner)banner.style.display='none';
-    var slfddBtns=document.querySelectorAll('#slfdd-btn-driver,#slfdd-btn-util');
-    slfddBtns.forEach(function(b){b.disabled=false;b.style.cursor='';});
-    // Boot the tracker tick
-    escTickAll();
+
+    if (role === 'TS') {
+      // ESC-only items hidden for plain TS
+      escOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+    } else {
+      // ESC-only extras on top of everything TS just got above
+      escTickAll();
+    }
   }
 }
 
@@ -3604,6 +3678,20 @@ function flNavSetup(){
 }
 
 window.addEventListener('DOMContentLoaded', function() {
+  // Reveal the page (see the body.app-ready CSS above) only once we know
+  // whether to show the login overlay or the main UI — for the main UI
+  // that's after applyProfile() -> applyRole() has already run, so the
+  // fade-in shows the already-settled page instead of the raw unfiltered
+  // one. A timeout backstops it so a hung pyApi call can't leave the
+  // window blank forever.
+  var _revealed = false;
+  function revealApp() {
+    if (_revealed) return;
+    _revealed = true;
+    document.body.classList.add('app-ready');
+  }
+  setTimeout(revealApp, 1500);
+
   // Check saved profile first, before any other init work — the overlay
   // starts hidden in the HTML now (see #login-overlay), so a returning
   // agent with a saved profile never sees the login form flash at all;
@@ -3616,7 +3704,8 @@ window.addEventListener('DOMContentLoaded', function() {
     } else {
       showLoginOverlay();
     }
-  }).catch(function() { showLoginOverlay(); });
+    revealApp();
+  }).catch(function() { showLoginOverlay(); revealApp(); });
 
   renderHistory();
   reasonChanged();
@@ -5100,8 +5189,8 @@ document.addEventListener('wheel', function(e) {
 }, { passive: false });
 
 function setTheme(mode, skipSave) {
-  document.documentElement.classList.remove('light', 'pompompurin', 'roronoa', 'melody', 'itachi', 'uzumaki');
-  if (mode === 'light' || mode === 'pompompurin' || mode === 'roronoa' || mode === 'melody' || mode === 'itachi' || mode === 'uzumaki') {
+  document.documentElement.classList.remove('light', 'pompompurin', 'roronoa', 'melody', 'itachi', 'uzumaki', 'sponge');
+  if (mode === 'light' || mode === 'pompompurin' || mode === 'roronoa' || mode === 'melody' || mode === 'itachi' || mode === 'uzumaki' || mode === 'sponge') {
     document.documentElement.classList.add(mode);
   }
   if (!skipSave) localStorage.setItem('itero_theme', mode);
@@ -5112,6 +5201,7 @@ function setTheme(mode, skipSave) {
   var mb = document.getElementById('theme-melody-btn');
   var ib = document.getElementById('theme-itachi-btn');
   var ub = document.getElementById('theme-uzumaki-btn');
+  var bb = document.getElementById('theme-sponge-btn');
   if (db) db.className = 'settings-item' + (mode === 'dark'        ? ' active' : '');
   if (lb) lb.className = 'settings-item' + (mode === 'light'       ? ' active' : '');
   if (pb) pb.className = 'settings-item' + (mode === 'pompompurin' ? ' active' : '');
@@ -5119,17 +5209,18 @@ function setTheme(mode, skipSave) {
   if (mb) mb.className = 'settings-item' + (mode === 'melody'      ? ' active' : '');
   if (ib) ib.className = 'settings-item' + (mode === 'itachi'      ? ' active' : '');
   if (ub) ub.className = 'settings-item' + (mode === 'uzumaki'     ? ' active' : '');
+  if (bb) bb.className = 'settings-item' + (mode === 'sponge'  ? ' active' : '');
   var miniImg = document.getElementById('brand-mini-img');
   if (miniImg) miniImg.src = 'Reference/MascotMini/' + mode + '.png';
   var mascotImg = document.getElementById('issue-mascot');
   if (mascotImg && mode !== 'roronoa') {
     mascotImg.src = 'Reference/Mascot/' + (MASCOT_FILES[mode] || ('mascot_' + mode + '.png'));
   }
-  var THEME_LABELS = { dark: 'Dark', light: 'Light', pompompurin: 'Pompompurin', roronoa: 'Roronoa', melody: 'Melody', itachi: 'Itachi', uzumaki: 'Uzumaki' };
+  var THEME_LABELS = { dark: 'Dark', light: 'Light', pompompurin: 'Pompompurin', roronoa: 'Roronoa', melody: 'Melody', itachi: 'Itachi', uzumaki: 'Uzumaki', sponge: 'Bob Esponja' };
   var themeLabel = document.getElementById('theme-current-label');
   if (themeLabel) themeLabel.textContent = THEME_LABELS[mode] || mode;
 }
-var MASCOT_FILES = { pompompurin: 'mascot.png', uzumaki: 'mascot_uzumaki.gif' };
+var MASCOT_FILES = { pompompurin: 'mascot.png', uzumaki: 'mascot_uzumaki.png' };
 
 function setUiSize(mode, skipSave) {
   document.documentElement.classList.remove('size-medium', 'size-large');
@@ -5163,7 +5254,7 @@ function playThemeMascotVideo() {
     miniImg.classList.add('mascot-jump');
     miniImg.addEventListener('animationend', function(){ miniImg.classList.remove('mascot-jump'); }, { once: true });
   }
-  var THEME_NAMES = ['light', 'pompompurin', 'roronoa', 'melody', 'itachi', 'uzumaki'];
+  var THEME_NAMES = ['light', 'pompompurin', 'roronoa', 'melody', 'itachi', 'uzumaki', 'sponge'];
   var theme = THEME_NAMES.filter(function(t){ return document.documentElement.classList.contains(t); })[0] || 'dark';
   var audio = document.getElementById('theme-mascot-audio');
   if (!audio) return;
@@ -6905,12 +6996,70 @@ function escHtml(str) {
 
 // ── Escalations Report (foundation) ─────────────────────────────
 // Separate from the Escalation Tracker above — this is a simple running
-// log of tickets an ESC agent has added, snapshotting whatever the
-// Documentation form held at that moment, for periodic export into an
-// external report file. Keyed by ticket number so adding the same ticket
-// again just overwrites its snapshot instead of duplicating it.
+// log of tickets an ESC agent has added (scanner model from Documentation
+// if added from there, plus Categorization/Solution Provided pulled from
+// Salesforce via the lupa button), for periodic export into an external
+// report file. Keyed by ticket number so adding the same ticket again
+// just overwrites its snapshot instead of duplicating it.
 var ESC_REPORT_KEY = 'itero_esc_report_v1';
 var _escReportEntries = [];
+// Same magnifying-glass icon Documentation's MAT search button uses.
+var ESC_REPORT_LUPA_SVG = '<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/></svg>';
+
+// Mirrors backend.py's _ESC_REPORT_SOLUTION_TEMPLATES exactly — these are
+// the only phrases _esc_report_match_solution_template() recognizes in a
+// ticket's Solution Provided text, so this is just a reference/copy list,
+// never fed back into the matching logic itself.
+var ESC_REPORT_SOLUTION_TEMPLATES = [
+  'Part Replacement – PPC',
+  'Part Replacement – Wand',
+  'Part Replacement – PPC & Wand',
+  'Part Replacement – DOA',
+  'Part Replacement – Wheelstand',
+  'Part Replacement – Cable',
+  'Part Replacement – HUB',
+  'Part Replacement – Batteries',
+  'Network Troubleshooting',
+  'Cleanup',
+  'Manual Registration',
+  'No Response from Customer',
+  'CTL',
+  'Workaround',
+  'Added to Jira',
+  'Scanner Updated',
+  'Reinstallation',
+  'EFRA',
+  'Clean Install',
+  'FTI Reinstallation',
+  'No Escalations scope',
+];
+
+function escReportRenderTemplates() {
+  var wrap = document.getElementById('esc-report-templates-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = ESC_REPORT_SOLUTION_TEMPLATES.map(function(t, i) {
+    return '<span class="pill" style="cursor:pointer;user-select:none;border-color:var(--border2);color:var(--text2)" title="Click to copy" onclick="escReportCopyTemplate(this,' + i + ')">' + escHtml(t) + '</span>';
+  }).join('');
+}
+
+function escReportCopyTemplate(el, i) {
+  var text = ESC_REPORT_SOLUTION_TEMPLATES[i];
+  if (!text || !el) return;
+  navigator.clipboard.writeText(text).then(function() {
+    var prevBorder = el.style.borderColor, prevColor = el.style.color;
+    el.style.borderColor = 'var(--green)'; el.style.color = 'var(--green)';
+    setTimeout(function() { el.style.borderColor = prevBorder; el.style.color = prevColor; }, 900);
+  });
+}
+
+function escReportToggleTemplates() {
+  var wrap = document.getElementById('esc-report-templates-wrap');
+  if (!wrap) return;
+  var showing = wrap.style.display !== 'none';
+  if (showing) { wrap.style.display = 'none'; return; }
+  escReportRenderTemplates();
+  wrap.style.display = 'flex';
+}
 
 function escReportLoad() {
   try {
@@ -6923,26 +7072,41 @@ function escReportSave() {
   try { localStorage.setItem(ESC_REPORT_KEY, JSON.stringify(_escReportEntries)); } catch (e) {}
 }
 
-function escReportAdd() {
-  var ticketEl = document.getElementById('esc-report-ticket-input');
+// Called from either the Documentation panel's row or the Report tab's own
+// row (ticketInputId tells it which input to read) — both feed the same
+// list. Re-adding an already-logged ticket number overwrites its snapshot
+// rather than duplicating it, but keeps whatever categorization/solution
+// was already pulled from Salesforce instead of wiping it back to blank.
+function escReportAdd(ticketInputId) {
+  var ticketEl = document.getElementById(ticketInputId || 'esc-report-ticket-input');
   var ticket = (ticketEl && ticketEl.value || '').trim();
   if (!ticket) { alert('Enter a ticket number first.'); return; }
 
-  var model  = (document.getElementById('in-model')     || {}).value || '';
-  var reason = (document.getElementById('in-reason')    || {}).value || '';
-  var sub    = (document.getElementById('in-reason-sub')|| {}).value || '';
-  var outcome = (document.getElementById('fl-outcome')  || {}).value || '';
-  var descEl = document.getElementById('fl-out-desc');
-  var description = (descEl && descEl.textContent) || '';
-  if (description === '—') description = '';
+  // Documentation only contributes the scanner model — Categorization and
+  // Solution Provided (the lupa button, pulled from Salesforce) are what
+  // actually matter for this report now, not a Description/Outcome dump.
+  var model = (document.getElementById('in-model') || {}).value || '';
+
+  var idx = _escReportEntries.findIndex(function(e) { return e.ticket === ticket; });
+  var existing = idx !== -1 ? _escReportEntries[idx] : null;
 
   var entry = {
-    ticket: ticket, model: model, reason: reason, sub: sub,
-    description: description, outcome: outcome,
+    ticket: ticket,
+    // Documentation's model wins when it actually has one — but re-adding
+    // with it blank (e.g. just re-logging the same ticket) must not wipe
+    // out a model the lupa already resolved.
+    model: model || (existing && existing.model) || '',
+    modelCandidates: model ? null : ((existing && existing.modelCandidates) || null),
+    serialNumber:   (existing && existing.serialNumber) || '',
+    categorization: (existing && existing.categorization) || '',
+    ticketType:     (existing && existing.ticketType) || '',
+    issueType:      (existing && existing.issueType) || '',
+    subIssueType:   (existing && existing.subIssueType) || '',
+    solution:       (existing && existing.solution) || '',
+    csat:           (existing && existing.csat) || '',
     savedAt: new Date().toLocaleString()
   };
 
-  var idx = _escReportEntries.findIndex(function(e) { return e.ticket === ticket; });
   if (idx !== -1) _escReportEntries[idx] = entry; else _escReportEntries.push(entry);
   escReportSave();
   escReportRender();
@@ -6955,7 +7119,177 @@ function escReportAdd() {
   }
 }
 
+// Resolves the raw scanner S/N the backend pulled from Asset/Serial_Number__c
+// against the same SN_MAP prefix table Scanner S/N parsing already relies
+// on elsewhere (no separate copy of it here). A prefix mapping to exactly
+// one model resolves cleanly; one mapping to several (e.g. YUC covers four
+// different Cart variants, with nothing in the S/N to tell them apart)
+// comes back as candidates instead of a guess — the UI turns that into a
+// dropdown (see escReportSetModel) rather than silently picking one. No
+// S/N at all -> "Office PC/other", no candidates.
+function _escReportResolveModel(sn) {
+  var m = (sn || '').toUpperCase().match(SN_REGEX);
+  if (!m) return { model: 'Office PC/other', candidates: null };
+  var info = SN_MAP[m[0].slice(0, 3)];
+  if (!info || !info.models.length) return { model: 'Office PC/other', candidates: null };
+  if (info.models.length === 1) return { model: info.models[0], candidates: null };
+  return { model: '', candidates: info.models.slice() };
+}
+
+// Shared by the per-row lupa button and Find All below — one ticket's
+// worth of the SF lookup + entry update, no UI feedback of its own so
+// both callers can drive their own loading state around it. closeAfter
+// mirrors the backend param: single clicks close the browser right away
+// (respecting "Show browser"); Find All passes false to keep reusing the
+// same browser across the whole batch, closing it itself exactly once
+// when the batch actually ends (see escReportLookupAll).
+async function _escReportFetchOne(idx, closeAfter) {
+  var entry = _escReportEntries[idx];
+  if (!entry) return { ok: false };
+  var r = await pyApi('esc_report_sf_lookup', entry.ticket, closeAfter !== false);
+  if (!r || r.status !== 'ok') return { ok: false, msg: (r && r.msg) || 'Could not look up that ticket.' };
+  var d = r.data || {};
+  if (d.status_text === 'login_required') return { ok: false, loginRequired: true };
+  if (d.status_text === 'no_case_match')  return { ok: false, noMatch: true };
+  entry.categorization = d.categorization || '';
+  // Kept individually too (not just folded into categorization above) —
+  // the Excel export's per-field statistics tally each of these on its
+  // own, ignoring whichever tickets don't have that specific one.
+  entry.ticketType     = d.ticket_type || '';
+  entry.issueType      = d.issue_type || '';
+  entry.subIssueType   = d.sub_issue_type || '';
+  entry.solution        = d.solution || '';
+  entry.csat             = d.csat || 'NO';
+  entry.serialNumber     = d.scanner_sn || '';
+  // A model already on the entry (typically sent from Documentation, where
+  // it's picked by hand and flows into the Subject) always wins — the SF
+  // lookup only fills it in when it's still blank, and only when the S/N
+  // resolves to exactly one possible model; an ambiguous S/N leaves it
+  // blank with modelCandidates set instead, for escReportSetModel's
+  // dropdown to resolve.
+  if (!entry.model) {
+    var resolved = _escReportResolveModel(entry.serialNumber);
+    entry.model = resolved.model;
+    entry.modelCandidates = resolved.candidates;
+  }
+  escReportSave();
+  return { ok: true };
+}
+
+// Report tab's model dropdown, for when the S/N resolved to more than one
+// possible model — picks one and clears the candidate list.
+function escReportSetModel(idx, value) {
+  var entry = _escReportEntries[idx];
+  if (!entry || !value) return;
+  entry.model = value;
+  entry.modelCandidates = null;
+  escReportSave();
+  escReportRender();
+}
+
+// Double-click-to-copy for report values that are plain display text, not
+// an actual <input> — the app's global dblclick-copy listener only fires
+// for a focused input/textarea, which these aren't. Looks the value up
+// fresh off the entry (by field name) rather than baking it into the
+// handler string, so there's no quoting/escaping to get wrong.
+function _escReportCopyField(idx, field, el) {
+  var entry = _escReportEntries[idx];
+  var val = entry && entry[field];
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(function() {
+    if (!el) return;
+    var origColor = el.style.color;
+    el.style.color = 'var(--green)';
+    setTimeout(function() { el.style.color = origColor; }, 900);
+  });
+}
+
+// Report tab's own lupa button — Ticket Checker's SF flow narrowed down to
+// just Categorization (Ticket/Issue/Sub-Issue Type) and Solution Provided.
+function escReportLookupSf(idx, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  _escReportFetchOne(idx, true).then(function(res) {
+    // escReportRender() rebuilds the button (with its icon) on success —
+    // this restore only actually matters on the early-return failure
+    // paths below, where render() never runs.
+    if (btn) { btn.disabled = false; btn.innerHTML = ESC_REPORT_LUPA_SVG; }
+    if (res.loginRequired) { alert('Log in on the Salesforce window that opened, then try again.'); return; }
+    if (res.noMatch)       { alert('No matching case found for that ticket.'); return; }
+    if (!res.ok)            { alert(res.msg || 'Could not look up that ticket.'); return; }
+    escReportRender();
+  });
+}
+
+// Find All — runs the same lookup across every ticket that's still
+// missing Categorization/Solution, one at a time (the SF browser can only
+// do one search at a time). Skips tickets already filled in so re-running
+// it only fills gaps instead of re-scraping everything. While running,
+// every per-row lupa/delete button is disabled and Find All itself can't
+// be re-clicked (see escReportRender/_escReportUpdateBulkUi) — Cancel is
+// the only way back to a normal, interactive state.
+var _escReportBulkRunning     = false;
+var _escReportCancelRequested = false;
+
+function _escReportUpdateBulkUi() {
+  var findBtn   = document.getElementById('esc-report-lookup-all-btn');
+  var cancelBtn = document.getElementById('esc-report-cancel-btn');
+  if (findBtn)   findBtn.style.display   = _escReportBulkRunning ? 'none' : '';
+  if (cancelBtn) cancelBtn.style.display = _escReportBulkRunning ? '' : 'none';
+}
+
+async function escReportLookupAll() {
+  if (_escReportBulkRunning) return;
+  var pending = [];
+  _escReportEntries.forEach(function(e, i) { if (!(e.categorization && e.solution)) pending.push(i); });
+  if (!pending.length) { alert('Every ticket already has Categorization + Solution Provided.'); return; }
+
+  _escReportBulkRunning     = true;
+  _escReportCancelRequested = false;
+  _escReportUpdateBulkUi();
+  escReportRender(); // rebuild the list now so every row's buttons come up disabled
+
+  var statusEl = document.getElementById('esc-report-bulk-status');
+
+  for (var n = 0; n < pending.length; n++) {
+    if (_escReportCancelRequested) break;
+    var entry = _escReportEntries[pending[n]];
+    if (statusEl) statusEl.textContent = 'Looking up ' + (n + 1) + ' / ' + pending.length + ' — ' + entry.ticket;
+    var res = await _escReportFetchOne(pending[n], false);
+    if (_escReportCancelRequested) break; // cancelled while that request was in flight
+    escReportRender();
+    if (res.loginRequired) {
+      alert('Log in on the Salesforce window that opened, then run Find All again for the rest.');
+      break;
+    }
+    // no_case_match / a single ticket erroring out — just move on to the next one
+  }
+
+  // Always fully close the SF browser once the batch is done — whether it
+  // ran to completion, hit a login wall, or was cancelled — instead of
+  // leaving it (and however many tickets' worth of tabs) sitting open in
+  // the background.
+  pyApi('sf_close_browser');
+
+  _escReportBulkRunning     = false;
+  _escReportCancelRequested = false;
+  if (statusEl) statusEl.textContent = '';
+  _escReportUpdateBulkUi();
+  escReportRender(); // re-enable every row's buttons
+}
+
+// Cancel doesn't abort whichever single lookup is already mid-flight
+// (Selenium has no clean way to interrupt that safely) — it stops the
+// batch from starting the *next* one and closes the browser right after
+// the current one finishes.
+function escReportCancelLookupAll() {
+  if (!_escReportBulkRunning) return;
+  _escReportCancelRequested = true;
+  var statusEl = document.getElementById('esc-report-bulk-status');
+  if (statusEl) statusEl.textContent = 'Cancelling…';
+}
+
 function escReportDelete(ticket) {
+  if (_escReportBulkRunning) return;
   if (!confirm('Remove ticket ' + ticket + ' from the report?')) return;
   _escReportEntries = _escReportEntries.filter(function(e) { return e.ticket !== ticket; });
   escReportSave();
@@ -6987,23 +7321,43 @@ function escReportRender() {
     head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer';
     head.onclick = function() { escReportToggle(i); };
 
+    // Ticket + Model (or S/N fallback) on their own line, Solution
+    // Provided on a second line right below — visible at a glance without
+    // expanding. Both ticket number and S/N are double-click-copyable.
     var left = document.createElement('div');
-    left.style.cssText = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-    left.innerHTML = '<span style="font-family:var(--mono);font-weight:700;color:var(--blue)">' + escHtml(e.ticket) + '</span>'
-      + (e.model  ? ' <span style="color:var(--text2);font-size:12px">' + escHtml(e.model) + '</span>' : '')
-      + (e.reason ? ' <span style="color:var(--text3);font-size:11px">— ' + escHtml(e.reason) + (e.sub ? ' / ' + escHtml(e.sub) : '') + '</span>' : '');
+    left.style.cssText = 'min-width:0;overflow:hidden;flex:1';
+    var topLine = '<span style="font-family:var(--mono);font-weight:700;color:var(--blue);cursor:pointer" title="Double-click to copy" ondblclick="event.stopPropagation();_escReportCopyField(' + i + ',\'ticket\',this)">' + escHtml(e.ticket) + '</span>'
+      + (e.model ? ' <span style="color:var(--text2);font-size:12px">' + escHtml(e.model) + '</span>'
+                 : (e.serialNumber ? ' <span style="color:var(--text3);font-size:12px;font-family:var(--mono);cursor:pointer" title="Double-click to copy" ondblclick="event.stopPropagation();_escReportCopyField(' + i + ',\'serialNumber\',this)">' + escHtml(e.serialNumber) + '</span>' : ''));
+    var solutionLine = e.solution
+      ? '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text3);margin-top:2px">' + escHtml(e.solution) + '</div>'
+      : '';
+    left.innerHTML = '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + topLine + '</div>' + solutionLine;
 
+    // Date only (no time — these reports are always for one week's
+    // tickets), then the lupa sitting right next to delete. The split
+    // handles both this new date-only format and any older entry still
+    // holding a full date+time string from before.
     var right = document.createElement('div');
-    right.style.cssText = 'display:flex;align-items:center;gap:8px;flex-shrink:0';
+    right.style.cssText = 'display:flex;align-items:center;gap:6px;flex-shrink:0';
     var dateSpan = document.createElement('span');
     dateSpan.style.cssText = 'font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap';
-    dateSpan.textContent = e.savedAt || '';
+    dateSpan.textContent = (e.savedAt || '').split(',')[0];
+    var lupaBtn = document.createElement('button');
+    lupaBtn.className = 'btn-sm';
+    lupaBtn.innerHTML = ESC_REPORT_LUPA_SVG;
+    lupaBtn.title = 'Pull Categorization + Solution Provided from Salesforce';
+    lupaBtn.style.cssText = 'font-size:10px;display:flex;align-items:center';
+    lupaBtn.disabled = _escReportBulkRunning;
+    lupaBtn.onclick = function(ev) { ev.stopPropagation(); escReportLookupSf(i, lupaBtn); };
     var delBtn = document.createElement('button');
     delBtn.className = 'btn-sm r';
     delBtn.textContent = '✕';
     delBtn.style.cssText = 'font-size:10px';
+    delBtn.disabled = _escReportBulkRunning;
     delBtn.onclick = function(ev) { ev.stopPropagation(); escReportDelete(e.ticket); };
     right.appendChild(dateSpan);
+    right.appendChild(lupaBtn);
     right.appendChild(delBtn);
 
     head.appendChild(left);
@@ -7013,9 +7367,18 @@ function escReportRender() {
     detail.id = 'esc-report-detail-' + i;
     detail.style.cssText = 'display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);white-space:pre-wrap';
     var detailParts = [];
-    if (e.description) detailParts.push('<div style="margin-bottom:6px"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">DESCRIPTION</span><br>' + escHtml(e.description) + '</div>');
-    if (e.outcome)      detailParts.push('<div><span style="color:var(--text3);font-family:var(--mono);font-size:10px">OUTCOME</span><br>' + escHtml(e.outcome) + '</div>');
-    detail.innerHTML = detailParts.length ? detailParts.join('') : '<span style="color:var(--text3)">No description or outcome saved.</span>';
+    if (e.modelCandidates && e.modelCandidates.length) {
+      var modelOpts = '<option value="">Select model…</option>' + e.modelCandidates.map(function(mo) {
+        return '<option value="' + escHtml(mo) + '">' + escHtml(mo) + '</option>';
+      }).join('');
+      detailParts.push('<div style="margin-bottom:6px"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">MODEL — S/N MATCHES MORE THAN ONE, PICK ONE</span><br>'
+        + '<select class="iinput" style="width:100%;height:26px;font-size:12px;margin-top:3px" onchange="escReportSetModel(' + i + ', this.value)">' + modelOpts + '</select></div>');
+    }
+    if (e.serialNumber)   detailParts.push('<div style="margin-bottom:6px"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">SERIAL NUMBER</span><br><span style="cursor:pointer" title="Double-click to copy" ondblclick="event.stopPropagation();_escReportCopyField(' + i + ',\'serialNumber\',this)">' + escHtml(e.serialNumber) + '</span></div>');
+    if (e.categorization) detailParts.push('<div style="margin-bottom:6px"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">CATEGORIZATION</span><br>' + escHtml(e.categorization) + '</div>');
+    if (e.solution)        detailParts.push('<div style="margin-bottom:6px"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">SOLUTION PROVIDED</span><br>' + escHtml(e.solution) + '</div>');
+    if (e.csat)             detailParts.push('<div><span style="color:var(--text3);font-family:var(--mono);font-size:10px">CSAT</span><br>' + escHtml(e.csat) + '</div>');
+    detail.innerHTML = detailParts.length ? detailParts.join('') : '<span style="color:var(--text3)">No info available</span>';
 
     card.appendChild(head);
     card.appendChild(detail);
@@ -7392,7 +7755,7 @@ var _rmaManual = null;
 function rmaReasonActive() {
   var role   = (document.getElementById('in-role')   || {}).value || currentRole || '';
   var reason = (document.getElementById('in-reason') || {}).value || '';
-  return role === 'TS' && (reason === 'Wand Replacement' || reason === 'PPC Replacement');
+  return _isTsOrEsc(role) && (reason === 'Wand Replacement' || reason === 'PPC Replacement');
 }
 
 function rmaUpdateVisibility() {
@@ -7492,7 +7855,7 @@ function flToggleKbIndicator() {
   if (_flSelectedKb) { flClearSelectedKb(); return; }
 
   var role = (document.getElementById('in-role') || {}).value || currentRole || '';
-  if (role === 'TS') {
+  if (_isTsOrEsc(role)) {
     _flKbManuallyAdded = !_flKbManuallyAdded;
     flBuildOutputs();
     return;
@@ -8367,7 +8730,7 @@ function flBuildSubject() {
   if (REPLACEMENT_REASONS.indexOf(reasonVal) !== -1) { flBuildSubjectReplacement(el); _flApplyEscSubjectPrefix(el); return; }
 
   var role = (document.getElementById('in-role') || {}).value || currentRole || '';
-  if (role === 'TS') { flBuildSubjectTS(el); _flApplyEscSubjectPrefix(el); return; }
+  if (_isTsOrEsc(role)) { flBuildSubjectTS(el); _flApplyEscSubjectPrefix(el); return; }
 
   var sn       = (document.getElementById('in-serial')          || {}).value || '';
   var model    = (document.getElementById('in-model')           || {}).value || '';
@@ -8391,7 +8754,6 @@ function flBuildSubject() {
   el.innerHTML = htmlParts.length
     ? htmlParts.join(sep)
     : FL_SUBJECT_EMPTY_HTML;
-  _flApplyEscSubjectPrefix(el);
 }
 
 // Tech Support subject format: Reason | Model | PPC SN: X / Wand SN: Y | Specific issue | Subject text
@@ -8587,11 +8949,15 @@ function flBuildOutputs() {
   var followup = fuChk && fuChk.checked ? 'Yes' : 'No';
   var chips    = flGetChips();
   var role     = (document.getElementById('in-role') || {}).value || currentRole || '';
+  // Escalations uses the exact same Description template as Tech Support
+  // (flBuildDescriptionTS below) — only the subject line still has its
+  // own separate "Escalations" prefix (see _flApplyEscSubjectPrefix).
+  var useTsFormat = _isTsOrEsc(role);
 
   // Tech Support writes these two up as full remote-session notes instead
   // of one-line confirmations — same chips, different wording, so nothing
   // downstream needs to know or care which one is showing.
-  var CHIP_TEXT = role === 'TS' ? {
+  var CHIP_TEXT = useTsFormat ? {
     'Pictures':            'Pictures requested and attached',
     'Power Drain':         'Power drain performed',
     'Network diagnosis':   'Remote in\nGot and attached the network report\nFindings: ',
@@ -8627,18 +8993,20 @@ function flBuildOutputs() {
 
   var allOrderIds = [(document.getElementById('fl-order-id-input') || {}).value || ''].concat(_orderExtra).map(function(s){return s.trim();}).filter(Boolean);
 
-  if (role === 'TS') {
+  if (useTsFormat) {
     if (transferredTS) {
       actionsText = (actionsText.trim() ? actionsText.trim() + ' — ' : '') + 'Escalated to business support';
     }
     var wandSn = (document.getElementById('in-wand-sn') || {}).value || '';
     var descElTS = document.getElementById('fl-out-desc');
     if (descElTS) {
-      descElTS.textContent = flBuildDescriptionTS({
+      var escPrefixTS = _escDescPrefixLine();
+      var descTS = flBuildDescriptionTS({
         caller: caller, phone: phone, email: email, sn: sn, wandSn: wandSn,
         issueText: issueText, actionsText: actionsText, orderIds: allOrderIds,
         reason: cat, model: model
       });
+      descElTS.textContent = (escPrefixTS ? escPrefixTS + '\n\n' : '') + descTS;
     }
     return;
   }

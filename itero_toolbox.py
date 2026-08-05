@@ -155,6 +155,9 @@ class ToolboxAPI:
     def esc_report_export(self, entries=None):
         return backend.esc_report_export(entries or [])
 
+    def esc_report_sf_lookup(self, ticket_number="", close_after=True):
+        return backend.esc_report_sf_lookup(ticket_number, close_after)
+
     def open_woa_collage_folder(self, path):
         return backend.open_woa_collage_folder(path)
 
@@ -541,27 +544,82 @@ def main():
 
     serve_path = _versioned_html_path(html_path)
 
-    _window = webview.create_window(
-        title="iTero Support Toolbox — V1.1",
-        url=Path(serve_path).as_uri(),
-        js_api=api,
-        width=700,
-        height=725,
-        min_size=(700, 725),
-        resizable=True,
-        text_select=False,
-        background_color="#0e1117",
-    )
+    # WebView2 initialization is asynchronous and can fail silently — e.g.
+    # "resource in use" (0x800700AA) if the previous run's WebView2 process
+    # or antivirus/EDR scanning of the freshly-touched profile folder
+    # hasn't let go of it yet. Measured on this machine: a failure can take
+    # 20-30+ seconds to clear on its own, not just a second or two. A
+    # failed init doesn't raise in Python; it just leaves a blank window
+    # sitting there forever with webview.start() never returning, which
+    # looks exactly like a crash/hang with zero explanation. Detect it via
+    # the 'loaded' event never firing, close that dead window, and retry
+    # with backoff long enough to actually clear it before giving up.
+    import time
+    backoff_schedule = [2, 4, 6, 10, 15]  # seconds between attempts
+    max_attempts = len(backoff_schedule) + 1
+    load_failed = {"flag": False}
 
-    webview.start(
-        func=_strip_caption,
-        gui="edgechromium",
-        debug=debug_mode,
-        private_mode=False,
-        storage_path=os.path.join(os.environ.get("TEMP", "C:\\Temp"), "itero_toolbox_cache"),
-    )
+    for attempt in range(max_attempts):
+        _window = webview.create_window(
+            title="iTero Support Toolbox — V1.1",
+            url=Path(serve_path).as_uri(),
+            js_api=api,
+            width=700,
+            height=725,
+            min_size=(700, 725),
+            resizable=True,
+            text_select=False,
+            background_color="#0e1117",
+        )
+
+        load_failed["flag"] = False
+
+        def _on_start():
+            if not _window.events.loaded.wait(8):
+                load_failed["flag"] = True
+                # window.destroy() is gated behind this same 'loaded' event
+                # (pywebview's _loaded_call decorator waits on it for 20s
+                # before raising) — since it never fires here, .destroy()
+                # would just deadlock too and webview.start() would never
+                # return. Close the native window directly instead.
+                try:
+                    import win32gui, win32con
+                    hwnd = win32gui.FindWindow(None, _window.title)
+                    if hwnd:
+                        win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+                except Exception:
+                    pass
+                return
+            _strip_caption()
+
+        webview.start(
+            func=_on_start,
+            gui="edgechromium",
+            debug=debug_mode,
+            private_mode=False,
+            storage_path=os.path.join(os.environ.get("TEMP", "C:\\Temp"), "itero_toolbox_cache"),
+        )
+
+        if not load_failed["flag"]:
+            break
+        if attempt < max_attempts - 1:
+            print(f'[MAIN] Browser component busy, retrying ({attempt+1}/{max_attempts})...', flush=True)
+            time.sleep(backoff_schedule[attempt])
 
     backend.stop_hotkey_listener()
+
+    if load_failed["flag"]:
+        import tkinter as tk
+        from tkinter import messagebox
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror(
+            "iTero Toolbox",
+            "Could not start the app's browser component — it's still busy from "
+            "a previous run or being scanned by antivirus.\n\n"
+            "Wait about a minute and try again."
+        )
+        sys.exit(1)
 
     # Quit any Selenium-driven Edge windows (SF, MAT) gracefully instead of
     # leaving them orphaned — an abrupt kill can stop Chromium from flushing

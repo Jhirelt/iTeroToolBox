@@ -742,14 +742,30 @@ def generate_link_unlink_excel(data):
 
 
 def esc_report_export(entries):
-    """Export the Escalations Report log (foundation) to an Excel file —
-    one row per ticket snapshot the agent added from Documentation."""
+    """Export the Escalations Report log to an Excel file with two sheets:
+
+    'Escalations Report' — one row per logged ticket (Model, Serial Number,
+    Ticket/Issue/Sub-Issue Type, Solution Provided, CSAT). No date/saved-at
+    column — these reports are always for one week's worth of tickets, so
+    a per-row date is redundant.
+
+    'Statistics' — a count + percentage-of-total table and a pie chart for
+    each of Model, Ticket Type, Issue Type, Sub-Issue Type, and Solution
+    Provided. Each field's percentage base is only the tickets that
+    actually have that field filled in — one ticket missing, say, Sub-Issue
+    Type just isn't counted in that one breakdown, not dropped from the
+    report or the other breakdowns.
+    """
     try:
         from openpyxl import Workbook
         from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
         from openpyxl.utils import get_column_letter
+        from openpyxl.chart import PieChart, Reference
+        from openpyxl.chart.label import DataLabelList
         from datetime import datetime
+        from collections import Counter
 
+        entries = entries or []
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         dest_dir = Path(r'C:\iTeroToolbox\EscalationReports')
         dest_dir.mkdir(parents=True, exist_ok=True)
@@ -764,30 +780,96 @@ def esc_report_export(entries):
         border = Border(left=thin, right=thin, top=thin, bottom=thin)
         center = Alignment(horizontal='center', vertical='center')
         left   = Alignment(horizontal='left', vertical='top', wrap_text=True)
-
-        headers = ['Ticket Number', 'Model', 'Reason', 'Specific Reason', 'Description', 'Outcome', 'Saved At']
         hdr_font = Font(name='Arial', bold=True, color='FFFFFF', size=11)
         hdr_fill = PatternFill('solid', start_color='1F3A6E')
+
+        headers = ['Ticket Number', 'Model', 'Serial Number', 'Ticket Type', 'Issue Type',
+                   'Sub-Issue Type', 'Solution Provided', 'CSAT']
         for col, h in enumerate(headers, 1):
             c = ws.cell(row=1, column=col, value=h)
             c.font = hdr_font; c.fill = hdr_fill
             c.alignment = center; c.border = border
 
         row = 2
-        for e in (entries or []):
+        for e in entries:
             vals = [
-                e.get('ticket', ''), e.get('model', ''), e.get('reason', ''),
-                e.get('sub', ''), e.get('description', ''), e.get('outcome', ''),
-                e.get('savedAt', ''),
+                e.get('ticket', ''), e.get('model', ''), e.get('serialNumber', ''),
+                e.get('ticketType', ''), e.get('issueType', ''), e.get('subIssueType', ''),
+                e.get('solution', ''), e.get('csat', ''),
             ]
             for col, val in enumerate(vals, 1):
                 c = ws.cell(row=row, column=col, value=val)
                 c.border = border; c.alignment = left
             row += 1
 
-        for i, w in enumerate([16, 16, 20, 22, 50, 30, 18], 1):
+        for i, w in enumerate([16, 24, 18, 18, 22, 24, 45, 10], 1):
             ws.column_dimensions[get_column_letter(i)].width = w
         ws.row_dimensions[1].height = 20
+        ws.freeze_panes = 'A2'
+
+        # ── Statistics sheet ──────────────────────────────────────
+        stats_ws = wb.create_sheet('Statistics')
+        stat_fields = [
+            ('model',        'Scanner Model'),
+            ('ticketType',   'Ticket Type'),
+            ('issueType',    'Issue Type'),
+            ('subIssueType', 'Sub-Issue Type'),
+            ('solution',     'Solution Provided'),
+        ]
+        MIN_BLOCK_ROWS = 18  # leaves enough room for the pie chart regardless of row count
+
+        cur_row = 1
+        for field_key, field_label in stat_fields:
+            counts = Counter(
+                (e.get(field_key) or '').strip()
+                for e in entries
+                if (e.get(field_key) or '').strip()
+            )
+            total = sum(counts.values())
+
+            title_cell = stats_ws.cell(row=cur_row, column=1, value=field_label)
+            title_cell.font = Font(name='Arial', bold=True, size=13, color='1F3A6E')
+            block_start = cur_row
+            cur_row += 1
+
+            if not total:
+                stats_ws.cell(row=cur_row, column=1, value='No data for this field yet').font = Font(italic=True, color='888888')
+                cur_row = block_start + MIN_BLOCK_ROWS
+                continue
+
+            table_row = cur_row
+            for col, h in enumerate(['Value', 'Count', '% of total'], 1):
+                c = stats_ws.cell(row=table_row, column=col, value=h)
+                c.font = hdr_font; c.fill = hdr_fill
+                c.alignment = center; c.border = border
+            cur_row += 1
+
+            data_start = cur_row
+            for val, cnt in counts.most_common():
+                stats_ws.cell(row=cur_row, column=1, value=val).border = border
+                stats_ws.cell(row=cur_row, column=2, value=cnt).border = border
+                pct_cell = stats_ws.cell(row=cur_row, column=3, value=cnt / total)
+                pct_cell.number_format = '0.0%'
+                pct_cell.border = border
+                cur_row += 1
+            data_end = cur_row - 1
+
+            chart = PieChart()
+            chart.title = f'{field_label} ({total} tickets)'
+            data = Reference(stats_ws, min_col=2, min_row=table_row, max_row=data_end)
+            cats = Reference(stats_ws, min_col=1, min_row=data_start, max_row=data_end)
+            chart.add_data(data, titles_from_data=True)
+            chart.set_categories(cats)
+            chart.dataLabels = DataLabelList()
+            chart.dataLabels.showPercent = True
+            chart.height = 8
+            chart.width = 13
+            stats_ws.add_chart(chart, f'E{table_row}')
+
+            cur_row = max(data_end + 2, block_start + MIN_BLOCK_ROWS)
+
+        for i, w in enumerate([34, 10, 12], 1):
+            stats_ws.column_dimensions[get_column_letter(i)].width = w
 
         wb.save(str(dest))
         subprocess.Popen(f'explorer /select,"{dest}"', shell=True)
@@ -2210,9 +2292,22 @@ def sf_open_ticket(ticket_number=""):
         # identity — leaving it open can knock the technician's own,
         # separate softphone session offline, since Twilio Client
         # typically allows only one live connection per identity. Close
-        # everything except the one we're actually keeping.
+        # everything except the one we're actually keeping — including
+        # handles_before: on a repeated caller (Escalations Report's Find
+        # All), that's the *previous* ticket's tab, which this search just
+        # navigated back to the SF home page instead of reusing for the
+        # new record. Left unclosed, it silently piles up one more stray
+        # tab per ticket over a long batch.
+        #
+        # Only closes handles_before when keep_handle is real (a fresh tab
+        # actually opened) — if the click ever doesn't open one and
+        # keep_handle ends up None, closing every handle_before tab would
+        # leave the browser with zero windows open, which kills the whole
+        # WebDriver session on its next command instead of just failing
+        # this one search.
         keep_handle = record_handle or (new_handles[-1] if new_handles else None)
-        for h in new_handles:
+        stale_handles = list(new_handles) + (list(handles_before) if keep_handle is not None else [])
+        for h in stale_handles:
             if h == keep_handle:
                 continue
             try:
@@ -2399,6 +2494,28 @@ function fieldValueByLabel(labelText) {
     return el ? deepText(el) : '';
 }
 
+// deepText() walks child TEXT_NODEs, which doesn't reflect a live-edited
+// <textarea>'s current text (that lives in .value, not as child text
+// nodes) — needed for fields like "Solution Provided" that render as an
+// actual editable lightning-textarea rather than a read-only output field.
+// Falls back to grabbing the first .slds-textarea anywhere on the page in
+// case this field doesn't follow the usual field-label wrapper pattern at
+// all (an editable field may not be nested in a records-record-layout-item
+// the way read-only display fields are).
+function fieldValueByLabelTextarea(labelText) {
+    var el = findValueElementByLabel(labelText);
+    if (el) {
+        if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') return (el.value || '').trim();
+        var inner = deepQueryAll('textarea, input', el);
+        if (inner.length) return (inner[0].value || '').trim();
+        var txt = deepText(el);
+        if (txt) return txt;
+    }
+    var textareas = deepQueryAll('textarea.slds-textarea');
+    if (textareas.length) return (textareas[0].value || '').trim();
+    return '';
+}
+
 function addressValue(targetName) {
     var el = findValueElement(targetName);
     if (!el) return '';
@@ -2442,6 +2559,16 @@ return {
     chargeable: fieldValueByLabel("Is It Chargeable?"),
     order_status: fieldValueByLabel("Order Status"),
     sap_so: fieldValueByLabel("Sales Order(iTero/Webstore/Event/Cntrct)"),
+    solution_provided: fieldValueByLabelTextarea("Solution Provided"),
+    // Escalations Report's Model column falls back to this editable field
+    // (name="Serial_Number__c") when Asset doesn't carry a scanner S/N —
+    // it's a plain <input>, not a field-label-wrapped output field, so
+    // read it directly by its name attribute instead of going through
+    // findValueElementByLabel.
+    serial_number_field: (function() {
+        var els = deepQueryAll('input[name="Serial_Number__c"]');
+        return els.length ? (els[0].value || '').trim() : '';
+    })(),
     debug_container_found: matContainers.length,
     debug_value_el_found: matValueEls.length,
     debug_raw_html: matAncestorHtml.slice(0, 4000)
@@ -2581,6 +2708,154 @@ def sf_read_ticket():
 
     _sf_close_if_headless()
     return ok(result)
+
+
+# Fixed keyword templates the agent's Solution Provided text always
+# contains one of (at the start or somewhere in a line) — these are what
+# actually categorize the outcome, not the verbose free text around them.
+_ESC_REPORT_SOLUTION_TEMPLATES = [
+    "Part Replacement – PPC",
+    "Part Replacement – Wand",
+    "Part Replacement – PPC & Wand",
+    "Part Replacement – DOA",
+    "Part Replacement – Wheelstand",
+    "Part Replacement – Cable",
+    "Part Replacement – HUB",
+    "Part Replacement – Batteries",
+    "Network Troubleshooting",
+    "Cleanup",
+    "Manual Registration",
+    "No Response from Customer",
+    "CTL",
+    "Workaround",
+    "Added to Jira",
+    "Scanner Updated",
+    "Reinstallation",
+    "EFRA",
+    "Clean Install",
+    "FTI Reinstallation",
+    "No Escalations scope",
+]
+
+
+def _esc_report_normalize(text):
+    # Salesforce's actual text may use a plain hyphen instead of the
+    # en dash ("–") the templates are written with — normalize both sides
+    # to a plain "-" before comparing so that difference never causes a
+    # miss, along with collapsing any run of whitespace.
+    text = (text or "").lower().replace("–", "-").replace("—", "-")
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _esc_report_match_solution_template(solution_text):
+    """Scans the Solution Provided text left to right and returns whichever
+    template appears earliest — "stop reading at the first one you find".
+    None of the 21 templates present -> None (caller falls back to the raw
+    scraped text)."""
+    haystack = _esc_report_normalize(solution_text)
+    if not haystack:
+        return None
+    best_pos, best_template = None, None
+    for template in _ESC_REPORT_SOLUTION_TEMPLATES:
+        pos = haystack.find(_esc_report_normalize(template))
+        if pos != -1 and (best_pos is None or pos < best_pos):
+            best_pos, best_template = pos, template
+    return best_template
+
+
+def esc_report_sf_lookup(ticket_number, close_after=True):
+    """Escalations Report tab's lupa button — a narrower version of the
+    Ticket Checker flow. Opens the ticket itself (unlike sf_read_ticket,
+    which needs it already open) and pulls only Categorization
+    (Ticket/Issue/Sub-Issue Type, same fields Ticket Checker already
+    shows) and Solution Provided.
+
+    close_after=False lets Find All keep reusing the same browser across
+    a whole batch instead of quitting and relaunching Edge once per
+    ticket — the frontend closes it itself (unconditionally, via
+    sf_close_browser) exactly once when the batch actually ends.
+    """
+    ticket_number = (ticket_number or "").strip()
+    if not ticket_number:
+        return err("Enter a ticket number.")
+
+    try:
+        open_data = json.loads(sf_open_ticket(ticket_number))
+    except Exception as e:
+        return err(f"Could not open the ticket: {e}")
+
+    if open_data.get("status") != "ok" or (open_data.get("data") or {}).get("status_text") != "opened":
+        # Bubble up login_required / no_case_match / error as-is so the
+        # frontend can show the same messaging Ticket Checker already does.
+        return json.dumps(open_data)
+
+    global _sf_driver
+    if _sf_driver is None:
+        return err("Salesforce window closed unexpectedly.")
+
+    driver = _sf_driver
+    data = {}
+    try:
+        for attempt in range(4):
+            data = _sf_search_all_frames(driver, _SF_DEEP_EXTRACT_JS) or {}
+            if (data.get("ticket_type") or "").strip() or (data.get("solution_provided") or "").strip():
+                break
+            time.sleep(1.0 + attempt * 0.5)
+    except Exception as e:
+        return err(f"Error reading ticket: {e}")
+
+    ticket_type    = (data.get("ticket_type") or "").strip()
+    issue_type     = (data.get("issue_type") or "").strip()
+    sub_issue_type = (data.get("sub_issue_type") or "").strip()
+    solution_raw   = (data.get("solution_provided") or "").strip()
+    asset          = (data.get("asset") or "").strip()
+    serial_field   = (data.get("serial_number_field") or "").strip()
+
+    categorization_parts = [p for p in (ticket_type, issue_type, sub_issue_type) if p]
+    categorization = " / ".join(categorization_parts) if categorization_parts else "Empty"
+
+    # The agent's Solution Provided text always contains one of the fixed
+    # keyword templates somewhere — that's what categorizes the outcome,
+    # not the verbose text around it. Falls back to the raw scraped text
+    # if none of the templates show up.
+    matched = _esc_report_match_solution_template(solution_raw)
+    solution = matched or solution_raw
+
+    # Model comes from whichever of Asset / Serial_Number__c actually
+    # holds a recognizable scanner S/N — Asset first (same field/pattern
+    # Ticket Checker already trusts for its own S/N check), Serial_Number__c
+    # as the fallback for tickets where Asset wasn't populated. The
+    # frontend turns this raw S/N into an actual model name (it already
+    # owns the prefix table); neither found here means no scanner at all,
+    # which the frontend reports as "Office PC/other".
+    scanner_sn = ""
+    for candidate in (asset.upper(), serial_field.upper()):
+        m = _SN_REGEX.search(candidate)
+        if m:
+            # Just the matched S/N itself — not m.start() to end-of-string,
+            # which was also dragging along whatever trailing text Asset
+            # has after it (e.g. "...A103-SCANNER").
+            scanner_sn = m.group(0)
+            break
+
+    # Customer Satisfaction sub-issue type means the unit shipped under a
+    # special approval — flagged plainly as its own column.
+    csat = "YES" if sub_issue_type.lower() == "customer satisfaction" else "NO"
+
+    if close_after:
+        _sf_close_if_headless()
+    return ok({
+        "categorization": categorization,
+        # Also broken out individually (not just the joined string above) —
+        # the Excel export's per-field statistics need to tally each one
+        # on its own.
+        "ticket_type": ticket_type,
+        "issue_type": issue_type,
+        "sub_issue_type": sub_issue_type,
+        "solution": solution or "Empty",
+        "scanner_sn": scanner_sn,
+        "csat": csat,
+    })
 
 
 def _sf_close_if_headless():
