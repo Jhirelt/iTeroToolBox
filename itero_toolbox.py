@@ -1,7 +1,10 @@
 """
-iTero Support Toolbox — V1.0
+iTero Support Toolbox — V1.2
 Entry point. Launches PyWebView window loading the HTML frontend.
-Must be run as Administrator.
+Do NOT run as Administrator — WebView2 refuses to create its data
+directory when the host process is elevated (a Chromium security
+restriction, not something this app controls), so the window never
+opens at all under an elevated session.
 
 Usage:
     python itero_toolbox.py
@@ -14,6 +17,35 @@ import ctypes
 import json
 import threading
 from pathlib import Path
+
+# A --windowed/onefile build has no console, so PyInstaller leaves
+# sys.stdout/sys.stderr genuinely UNSET (not just None — the attribute
+# doesn't exist at all, so even `sys.stdout is None` raises AttributeError;
+# has to be checked with getattr). Any print() anywhere in the app (there
+# are plenty, e.g. the hotkey listener) then raises RuntimeError("lost
+# sys.stdout") and kills whatever thread hit it, silently, with no console
+# to ever show it. Redirecting to a log file instead of just swallowing it
+# means a real trail exists next time something only breaks in the built
+# exe and not when run from source.
+if getattr(sys, 'stdout', None) is None or getattr(sys, 'stderr', None) is None:
+    try:
+        _log_dir = Path(os.environ.get('APPDATA', '.')) / 'iTeroToolBox'
+        _log_dir.mkdir(parents=True, exist_ok=True)
+        _log_file = open(_log_dir / 'app.log', 'a', encoding='utf-8', buffering=1)
+        if getattr(sys, 'stdout', None) is None:
+            sys.stdout = _log_file
+        if getattr(sys, 'stderr', None) is None:
+            sys.stderr = _log_file
+    except Exception:
+        # Last resort — a no-op stream so print() at least can't crash
+        # anything, even if we can't get a log file for some reason.
+        class _NullStream:
+            def write(self, *a, **k): pass
+            def flush(self, *a, **k): pass
+        if getattr(sys, 'stdout', None) is None:
+            sys.stdout = _NullStream()
+        if getattr(sys, 'stderr', None) is None:
+            sys.stderr = _NullStream()
 
 # Force EdgeChromium backend — no pythonnet required
 os.environ["PYWEBVIEW_GUI"] = "edgechromium"
@@ -48,15 +80,6 @@ class ToolboxAPI:
     def get_wifi_details(self):
         return backend.get_wifi_details()
 
-    def get_network_details(self):
-        return backend.get_network_details()
-
-    def disable_ipv6(self):
-        return backend.disable_ipv6()
-
-    def flush_dns(self):
-        return backend.flush_dns()
-
     def generate_network_report(self):
         return backend.generate_network_report()
 
@@ -70,20 +93,7 @@ class ToolboxAPI:
     def get_battery_events(self):
         return backend.get_battery_events()
 
-    # ── Services ────────────────────────────
-    def check_service(self, name):
-        return backend.check_service(name)
-
-    def set_service_auto_start(self, name):
-        return backend.set_service_auto_start(name)
-
     # ── Registry ────────────────────────────
-    def query_registry(self, key_path):
-        return backend.query_registry(key_path)
-
-    def set_registry_value(self, key_path, value_name, value_data, value_type="REG_BINARY"):
-        return backend.set_registry_value(key_path, value_name, value_data, value_type)
-
     def open_regedit(self, key_path=None):
         return backend.open_regedit(key_path)
 
@@ -91,38 +101,12 @@ class ToolboxAPI:
     def kill_all_itero(self):
         return backend.kill_all_itero()
 
-    def kill_process(self, process_name):
-        return backend.kill_process(process_name)
-
-    # ── Clean install ───────────────────────
-    def rename_cadent_folders(self):
-        return backend.rename_cadent_folders()
-
-    def clean_registry(self):
-        return backend.clean_registry()
-
-    def remove_leftover_files(self):
-        return backend.remove_leftover_files()
-
-    # ── Transfer service / folder ───────────
-    def verify_export_folder(self):
-        return backend.verify_export_folder()
-
-    def share_export_folder(self):
-        return backend.share_export_folder()
-
-    def disable_password_sharing(self):
-        return backend.disable_password_sharing()
-
     # ── System tools ────────────────────────
     def open_device_manager(self):
         return backend.open_device_manager()
 
     def open_event_viewer(self):
         return backend.open_event_viewer()
-
-    def open_services(self):
-        return backend.open_services()
 
     def open_log_collector(self, output_path=r"C:\Temp\Logs"):
         return backend.open_log_collector(output_path)
@@ -255,19 +239,6 @@ class ToolboxAPI:
     # ── KB data (Subject Constructor) ───────
     def get_kb_data(self):
         return backend.get_kb_data()
-
-# ── Utility ─────────────────────────────
-    def get_hostname(self):
-        import socket
-        return json.dumps({"status": "ok", "data": socket.gethostname()})
-
-    def get_os_info(self):
-        out, _, _ = backend._run(
-            'powershell -NoProfile -Command '
-            '"(Get-WmiObject Win32_OperatingSystem).Caption + \' Build \' + '
-            '(Get-WmiObject Win32_OperatingSystem).BuildNumber"'
-        )
-        return json.dumps({"status": "ok", "data": out.strip()})
 
     # ── Window chrome ────────────────────────
     def win_minimize(self):
@@ -561,7 +532,7 @@ def main():
 
     for attempt in range(max_attempts):
         _window = webview.create_window(
-            title="iTero Support Toolbox — V1.1",
+            title="iTero Support Toolbox — V1.2.2",
             url=Path(serve_path).as_uri(),
             js_api=api,
             width=700,

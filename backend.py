@@ -41,23 +41,6 @@ def _run(cmd, shell=True, timeout=30):
         return "", str(e), 1
 
 
-def _run_elevated(cmd, wait=True):
-    """
-    Run a command elevated (ShellExecute runas).
-    For commands that need UAC even when already admin.
-    """
-    try:
-        import win32api
-        import win32con
-        ret = win32api.ShellExecute(
-            0, "runas", "cmd.exe",
-            f'/c "{cmd}"', None, win32con.SW_HIDE if not wait else win32con.SW_SHOW
-        )
-        return str(ret), "", 0
-    except Exception as e:
-        return "", str(e), 1
-
-
 def _ts():
     return datetime.now().strftime("%H:%M:%S")
 
@@ -212,56 +195,6 @@ def get_wifi_details():
     return ok(out) if rc == 0 else err(stderr)
 
 
-def get_network_details():
-    """Return structured network info for Transfer Service panel."""
-    out, _, _ = _run("ipconfig /all")
-    data = {
-        "ssid": "", "mac": "", "ipv4": "", "subnet": "",
-        "gateway": "", "dhcp": "", "dns": "", "dhcp_enabled": ""
-    }
-    # Parse relevant fields
-    lines = out.splitlines()
-    in_wifi = False
-    for line in lines:
-        l = line.lower()
-        if "wireless" in l or "wi-fi" in l or "wlan" in l:
-            in_wifi = True
-        if in_wifi:
-            if "physical address" in l:
-                data["mac"] = line.split(":")[-1].strip() if ":" in line else ""
-            elif "ipv4 address" in l and not data["ipv4"]:
-                data["ipv4"] = re.sub(r"\(.*\)", "", line.split(":")[-1]).strip()
-            elif "subnet mask" in l:
-                data["subnet"] = line.split(":")[-1].strip()
-            elif "default gateway" in l:
-                data["gateway"] = line.split(":")[-1].strip()
-            elif "dhcp server" in l:
-                data["dhcp"] = line.split(":")[-1].strip()
-            elif "dhcp enabled" in l:
-                data["dhcp_enabled"] = line.split(":")[-1].strip()
-            elif "dns servers" in l:
-                data["dns"] = line.split(":")[-1].strip()
-    # SSID
-    wifi_out, _, _ = _run("netsh wlan show interfaces")
-    for line in wifi_out.splitlines():
-        if "ssid" in line.lower() and "bssid" not in line.lower():
-            data["ssid"] = line.split(":")[-1].strip()
-            break
-    return ok(data)
-
-
-def disable_ipv6():
-    out, stderr, rc = _run("netsh int ipv6 set state disabled")
-    if rc == 0:
-        return ok("IPv6 disabled successfully")
-    return err(stderr or out)
-
-
-def flush_dns():
-    out, stderr, rc = _run("ipconfig /flushdns")
-    return ok(out) if rc == 0 else err(stderr)
-
-
 def generate_network_report():
     """Generate netsh network report and return path."""
     path = r"C:\Users\Public\network-report.html"
@@ -333,46 +266,8 @@ def get_battery_events():
 
 
 # ─────────────────────────────────────────────
-# SERVICES
-# ─────────────────────────────────────────────
-
-def check_service(name):
-    out, stderr, rc = _run(f"sc query {name}")
-    if "RUNNING" in out:
-        status = "running"
-    elif "STOPPED" in out:
-        status = "stopped"
-    elif "does not exist" in out.lower() or rc != 0:
-        status = "missing"
-    else:
-        status = "unknown"
-    return ok({"name": name, "status": status, "raw": out})
-
-
-def set_service_auto_start(name):
-    out1, _, rc1 = _run(f"sc config {name} start= auto")
-    out2, _, rc2 = _run(f"sc start {name}")
-    if rc1 == 0:
-        return ok(f"Service {name} set to Automatic. Start result: {out2}")
-    return err(f"Failed to configure service: {out1}")
-
-
-# ─────────────────────────────────────────────
 # REGISTRY
 # ─────────────────────────────────────────────
-
-def query_registry(key_path):
-    """Query a registry key and return its values."""
-    out, stderr, rc = _run(f'reg query "{key_path}"')
-    return ok(out) if rc == 0 else err(stderr or out)
-
-
-def set_registry_value(key_path, value_name, value_data, value_type="REG_BINARY"):
-    out, stderr, rc = _run(
-        f'reg add "{key_path}" /v "{value_name}" /t {value_type} /d "{value_data}" /f'
-    )
-    return ok(out) if rc == 0 else err(stderr or out)
-
 
 def open_regedit(key_path=None):
     """Open regedit, optionally pre-navigated to a key."""
@@ -459,90 +354,6 @@ def kill_all_itero():
     })
 
 
-def kill_process(process_name):
-    out, _, rc = _run(f'taskkill /F /IM "{process_name}"')
-    return ok(out) if "SUCCESS" in out or rc == 0 else err(out)
-
-
-# ─────────────────────────────────────────────
-# CLEAN INSTALL
-# ─────────────────────────────────────────────
-
-def rename_cadent_folders():
-    cmd = (
-        'powershell -NoProfile -ExecutionPolicy Bypass -Command '
-        '"$paths=@(\'C:\\Program Files\\Cadent\','
-        '\'C:\\Program Files (x86)\\Cadent\','
-        '\'C:\\ProgramData\\Cadent\');'
-        'foreach($p in $paths){'
-        '  if(Test-Path $p){'
-        '    $parent=Split-Path $p;'
-        '    $new=Join-Path $parent \'Cadent_old\';'
-        '    Rename-Item -Path $p -NewName \'Cadent_old\' -Force -ErrorAction SilentlyContinue;'
-        '    Write-Host \'Renamed: \' $p'
-        '  } else { Write-Host \'Not found: \' $p }'
-        '}"'
-    )
-    out, stderr, rc = _run(cmd, timeout=60)
-    return ok(out) if rc == 0 else err(stderr or out)
-
-
-def clean_registry():
-    keys = [
-        (r"HKLM\SOFTWARE\Cadent", "iTeroPackageVersion"),
-        (r"HKLM\SOFTWARE\Cadent", "TensorCUDA"),
-        (r"HKLM\SOFTWARE\Cadent", "BiosUpdate"),
-        (r"HKLM\SOFTWARE\Cadent", "DotNetVersion"),
-        (r"HKLM\SOFTWARE\Cadent\ElementDemoDB", "Version"),
-        (r"HKLM\SOFTWARE\Cadent\AngieDemoDB", "Version"),
-    ]
-    results = []
-    for path, name in keys:
-        out, _, rc = _run(f'reg delete "{path}" /v "{name}" /f')
-        results.append(f"{'OK' if rc == 0 else 'Skip'}: {path}\\{name}")
-    return ok("\n".join(results))
-
-
-def remove_leftover_files():
-    cmds = [
-        r'del "C:\ProgramData\Cadent\iTero\RxData.sqlite" /f /q',
-        r'del "C:\ProgramData\Cadent\Config\cadent_ini.dll" /f /q',
-        r'del "C:\ProgramData\Cadent\Config\RxManagerConfig.ini.dll" /f /q',
-    ]
-    results = []
-    for cmd in cmds:
-        out, _, rc = _run(cmd)
-        results.append(f"{'OK' if rc == 0 else 'Skip/NF'}: {cmd.split(chr(34))[1]}")
-    return ok("\n".join(results))
-
-
-# ─────────────────────────────────────────────
-# TRANSFER SERVICE / FOLDER
-# ─────────────────────────────────────────────
-
-def verify_export_folder():
-    path = r"C:\itero\export"
-    if not os.path.exists(path):
-        os.makedirs(path, exist_ok=True)
-        return ok(f"Created {path}")
-    return ok(f"Exists: {path}")
-
-
-def share_export_folder():
-    out, stderr, rc = _run(
-        r'net share export="C:\itero\export" /GRANT:Everyone,FULL'
-    )
-    return ok(out) if rc == 0 else err(stderr or out)
-
-
-def disable_password_sharing():
-    out, stderr, rc = _run(
-        r'reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" '
-        r'/v "restrictanonymous" /t REG_DWORD /d 0 /f'
-    )
-    return ok(out) if rc == 0 else err(stderr)
-
-
 # ─────────────────────────────────────────────
 # SYSTEM TOOLS
 # ─────────────────────────────────────────────
@@ -555,11 +366,6 @@ def open_device_manager():
 def open_event_viewer():
     subprocess.Popen(["eventvwr.msc"], shell=True)
     return ok("Event Viewer opened")
-
-
-def open_services():
-    subprocess.Popen(["services.msc"], shell=True)
-    return ok("Services opened")
 
 
 def open_log_collector(output_path=r"C:\Temp\Logs"):
@@ -633,13 +439,13 @@ def open_woa_collage(agent_email=""):
     else:
         base = Path(__file__).parent
 
-    src = base / "wand_reference_WOA.png"
+    src = base / "Reference" / "WOA" / "wand_reference_WOA.png"
     dest_dir = Path(r"C:\iTeroToolbox\Reference\WOA")
     dest_dir.mkdir(parents=True, exist_ok=True)
     dest = dest_dir / "wand_reference_WOA.png"
 
     if not src.exists():
-        alt = Path(__file__).parent / "wand_reference_WOA.png"
+        alt = Path(__file__).parent / "Reference" / "WOA" / "wand_reference_WOA.png"
         if alt.exists():
             src = alt
 
@@ -784,7 +590,8 @@ def esc_report_export(entries):
         hdr_fill = PatternFill('solid', start_color='1F3A6E')
 
         headers = ['Ticket Number', 'Model', 'Serial Number', 'Ticket Type', 'Issue Type',
-                   'Sub-Issue Type', 'Solution Provided', 'CSAT']
+                   'Sub-Issue Type', 'Solution Provided', 'CSAT', 'Origin of the Escalation',
+                   'Previous Case Handler']
         for col, h in enumerate(headers, 1):
             c = ws.cell(row=1, column=col, value=h)
             c.font = hdr_font; c.fill = hdr_fill
@@ -795,14 +602,15 @@ def esc_report_export(entries):
             vals = [
                 e.get('ticket', ''), e.get('model', ''), e.get('serialNumber', ''),
                 e.get('ticketType', ''), e.get('issueType', ''), e.get('subIssueType', ''),
-                e.get('solution', ''), e.get('csat', ''),
+                e.get('solution', ''), e.get('csat', ''), e.get('origin', ''),
+                e.get('previousHandler', ''),
             ]
             for col, val in enumerate(vals, 1):
                 c = ws.cell(row=row, column=col, value=val)
                 c.border = border; c.alignment = left
             row += 1
 
-        for i, w in enumerate([16, 24, 18, 18, 22, 24, 45, 10], 1):
+        for i, w in enumerate([16, 24, 18, 18, 22, 24, 45, 10, 26, 22], 1):
             ws.column_dimensions[get_column_letter(i)].width = w
         ws.row_dimensions[1].height = 20
         ws.freeze_panes = 'A2'
@@ -919,20 +727,26 @@ def open_collage_by_b64(collage_type, b64_data):
 
 def open_collage_file(collage_type):
     """Open a pre-saved collage PNG from Reference\\subfolder in Explorer."""
+    import sys
     config = {
-        'yucblx': (r'C:\iTeroToolbox\Reference\YUC_BLX', 'wand_reference_YUC_BLX.png'),
-        'lumina':  (r'C:\iTeroToolbox\Reference\Lumina',  'wand_reference_LUMINA.png'),
-        'woa':     (r'C:\iTeroToolbox\Reference\WOA',     'wand_reference_WOA.png'),
+        'yucblx': (r'C:\iTeroToolbox\Reference\YUC_BLX', 'YUC_BLX', 'wand_reference_YUC_BLX.png'),
+        'lumina':  (r'C:\iTeroToolbox\Reference\Lumina',  'Lumina',  'wand_reference_LUMINA.png'),
+        'woa':     (r'C:\iTeroToolbox\Reference\WOA',     'WOA',     'wand_reference_WOA.png'),
     }
     if collage_type not in config:
         return err(f'Unknown collage type: {collage_type}')
-    folder, fname = config[collage_type]
+    folder, subdir, fname = config[collage_type]
     dest = Path(folder) / fname
-    # If not in Reference subfolder, fall back to app dir
+    # If not already in the persistent Reference subfolder, copy it there
+    # from the bundled copy (sys._MEIPASS when frozen, else the source
+    # tree next to this file) so it's easy to find/attach next time too.
     if not dest.exists():
-        alt = Path(__file__).parent / fname
+        if getattr(sys, 'frozen', False):
+            base = Path(sys._MEIPASS)
+        else:
+            base = Path(__file__).parent
+        alt = base / "Reference" / subdir / fname
         if alt.exists():
-            # Copy to correct subfolder
             import shutil
             Path(folder).mkdir(parents=True, exist_ok=True)
             shutil.copy2(str(alt), str(dest))
@@ -943,9 +757,14 @@ def open_collage_file(collage_type):
 
 
 def get_catalog_parts(model=""):
-    """Return list of parts from C:\\iTeroToolbox\\Catalog\\ as base64-encoded images."""
+    """Return list of parts from the bundled Catalog/ folder as base64-encoded images."""
     import base64
-    catalog_dir = Path(r"C:\iTeroToolbox\Catalog")
+    import sys
+    if getattr(sys, 'frozen', False):
+        base = Path(sys._MEIPASS)
+    else:
+        base = Path(__file__).parent
+    catalog_dir = base / "Catalog"
     if not catalog_dir.exists():
         return err(f"Catalog folder not found: {catalog_dir}")
 
@@ -1134,96 +953,114 @@ def _type_text(text, multiline=True):
 
 _hk_thread_ref = None
 _hk_stop_evt   = threading.Event()
-_hk_status     = {'registered': 0, 'failed': [], 'fired': 0, 'thread_alive': False}
+_hk_status     = {'registered': 0, 'failed': [], 'fired': 0, 'thread_alive': False, 'crash': ''}
 
 def _hk_thread_func(hotkeys):
     global _hk_status
-    user32   = ctypes.windll.user32
-    kernel32 = ctypes.windll.kernel32
+    # The whole body used to run with no top-level exception handling — if
+    # anything unexpected threw here (e.g. a restricted/AV-locked-down PC
+    # blocking these Win32 calls), the daemon thread just died silently and
+    # _hk_status was stuck at its all-zero default forever, with no way to
+    # tell "nothing configured" apart from "listener crashed on startup".
+    # Now any such crash is captured and surfaced in get_hotkey_status().
+    try:
+        user32   = ctypes.windll.user32
+        kernel32 = ctypes.windll.kernel32
 
-    # Force creation of this thread's Win32 message queue BEFORE RegisterHotKey.
-    # Without this, RegisterHotKey may succeed but WM_HOTKEY is never delivered.
-    _init_msg = _MSG()
-    user32.PeekMessageW(ctypes.byref(_init_msg), None, 0, 0, 0)  # PM_NOREMOVE
+        # Force creation of this thread's Win32 message queue BEFORE RegisterHotKey.
+        # Without this, RegisterHotKey may succeed but WM_HOTKEY is never delivered.
+        _init_msg = _MSG()
+        user32.PeekMessageW(ctypes.byref(_init_msg), None, 0, 0, 0)  # PM_NOREMOVE
 
-    tid = kernel32.GetCurrentThreadId()
-    print(f'[HK] Thread started (tid={tid})', flush=True)
+        tid = kernel32.GetCurrentThreadId()
+        print(f'[HK] Thread started (tid={tid})', flush=True)
 
-    registered = []
-    hk_map   = {}
-    failed   = []
-    reg_id   = 1
+        registered = []
+        hk_map   = {}
+        failed   = []
+        reg_id   = 1
 
-    for hk in hotkeys:
-        if not hk.get('enabled', True):
-            continue
-        vk = _VK_MAP.get((hk.get('key') or '').upper())
-        if not vk:
-            continue
-        mods = _MOD_NOREPEAT
-        for m in (hk.get('mods') or []):
-            mods |= _MOD_MAP.get(m, 0)
-        label = hk.get('label') or hk.get('key', '?')
-        # Retry up to 5 times — Win32 may still hold the handle briefly after
-        # the previous thread's UnregisterHotKey if the thread restart is fast.
-        ok_reg = False
-        for attempt in range(5):
-            ok_reg = user32.RegisterHotKey(None, reg_id, mods, vk)
+        for hk in hotkeys:
+            if not hk.get('enabled', True):
+                continue
+            vk = _VK_MAP.get((hk.get('key') or '').upper())
+            if not vk:
+                continue
+            mods = _MOD_NOREPEAT
+            for m in (hk.get('mods') or []):
+                mods |= _MOD_MAP.get(m, 0)
+            label = hk.get('label') or hk.get('key', '?')
+            # Retry up to 5 times — Win32 may still hold the handle briefly after
+            # the previous thread's UnregisterHotKey if the thread restart is fast.
+            ok_reg = False
+            for attempt in range(5):
+                ok_reg = user32.RegisterHotKey(None, reg_id, mods, vk)
+                if ok_reg:
+                    break
+                err_code = kernel32.GetLastError()
+                if err_code == 1409 and attempt < 4:  # ERROR_HOTKEY_ALREADY_REGISTERED
+                    print(f'[HK] retry {attempt+1} for {label} (err=1409)…', flush=True)
+                    time.sleep(0.1)
+                else:
+                    break
             if ok_reg:
-                break
-            err_code = kernel32.GetLastError()
-            if err_code == 1409 and attempt < 4:  # ERROR_HOTKEY_ALREADY_REGISTERED
-                print(f'[HK] retry {attempt+1} for {label} (err=1409)…', flush=True)
-                time.sleep(0.1)
+                registered.append(reg_id)
+                hk_map[reg_id] = hk
+                reg_id += 1
+                print(f'[HK] OK registered: {label} (win_id={reg_id-1})', flush=True)
             else:
-                break
-        if ok_reg:
-            registered.append(reg_id)
-            hk_map[reg_id] = hk
-            reg_id += 1
-            print(f'[HK] OK registered: {label} (win_id={reg_id-1})', flush=True)
-        else:
-            err_code = kernel32.GetLastError()
-            entry = f'{label} (err={err_code})'
-            failed.append(entry)
-            print(f'[HK] FAILED register: {entry}', flush=True)
+                err_code = kernel32.GetLastError()
+                entry = f'{label} (err={err_code})'
+                failed.append(entry)
+                print(f'[HK] FAILED register: {entry}', flush=True)
 
-    _hk_status = {'registered': len(registered), 'failed': failed, 'fired': 0, 'thread_alive': True}
-    print(f'[HK] Thread alive — {len(registered)} registered, {len(failed)} failed', flush=True)
+        _hk_status = {'registered': len(registered), 'failed': failed, 'fired': 0, 'thread_alive': True, 'crash': ''}
+        print(f'[HK] Thread alive — {len(registered)} registered, {len(failed)} failed', flush=True)
 
-    msg = _MSG()
-    while not _hk_stop_evt.is_set():
-        if user32.PeekMessageW(ctypes.byref(msg), None, _WM_HOTKEY, _WM_HOTKEY, 1):
-            if msg.message == _WM_HOTKEY:
-                hk = hk_map.get(msg.wParam)
-                print(f'[HK] WM_HOTKEY fired: wParam={msg.wParam} → {hk.get("label") if hk else "unknown"}', flush=True)
-                if hk:
-                    _hk_status['fired'] += 1
-                    time.sleep(0.08)
-                    if hk.get('source') == 'cmd' and hk.get('cmd'):
-                        cmd = hk['cmd']
-                        print(f'[HK] running cmd: {cmd[:80]}', flush=True)
-                        threading.Thread(
-                            target=subprocess.run,
-                            args=[cmd],
-                            kwargs={'shell': True, 'capture_output': True},
-                            daemon=True
-                        ).start()
-                    else:
-                        sent = _type_text(hk.get('text') or '', multiline=hk.get('multiline', True))
-                        print(f'[HK] SendInput sent {sent} events', flush=True)
-        else:
-            time.sleep(0.02)
+        msg = _MSG()
+        while not _hk_stop_evt.is_set():
+            if user32.PeekMessageW(ctypes.byref(msg), None, _WM_HOTKEY, _WM_HOTKEY, 1):
+                if msg.message == _WM_HOTKEY:
+                    hk = hk_map.get(msg.wParam)
+                    print(f'[HK] WM_HOTKEY fired: wParam={msg.wParam} → {hk.get("label") if hk else "unknown"}', flush=True)
+                    if hk:
+                        _hk_status['fired'] += 1
+                        try:
+                            time.sleep(0.08)
+                            if hk.get('source') == 'cmd' and hk.get('cmd'):
+                                cmd = hk['cmd']
+                                print(f'[HK] running cmd: {cmd[:80]}', flush=True)
+                                threading.Thread(
+                                    target=subprocess.run,
+                                    args=[cmd],
+                                    kwargs={'shell': True, 'capture_output': True},
+                                    daemon=True
+                                ).start()
+                            else:
+                                sent = _type_text(hk.get('text') or '', multiline=hk.get('multiline', True))
+                                print(f'[HK] SendInput sent {sent} events', flush=True)
+                        except Exception as fire_err:
+                            # One bad keystroke/command must not kill the
+                            # listener for every hotkey after it.
+                            print(f'[HK] Error firing {hk.get("label")}: {fire_err}', flush=True)
+            else:
+                time.sleep(0.02)
 
-    _hk_status['thread_alive'] = False
-    for hk_id in registered:
-        result = user32.UnregisterHotKey(None, hk_id)
-        if not result:
-            ue = kernel32.GetLastError()
-            print(f'[HK] UnregisterHotKey({hk_id}) FAILED err={ue}', flush=True)
-        else:
-            print(f'[HK] UnregisterHotKey({hk_id}) OK', flush=True)
-    print('[HK] Thread stopped', flush=True)
+        _hk_status['thread_alive'] = False
+        for hk_id in registered:
+            result = user32.UnregisterHotKey(None, hk_id)
+            if not result:
+                ue = kernel32.GetLastError()
+                print(f'[HK] UnregisterHotKey({hk_id}) FAILED err={ue}', flush=True)
+            else:
+                print(f'[HK] UnregisterHotKey({hk_id}) OK', flush=True)
+        print('[HK] Thread stopped', flush=True)
+    except Exception as e:
+        _hk_status = {
+            'registered': 0, 'failed': [], 'fired': 0,
+            'thread_alive': False, 'crash': str(e)
+        }
+        print(f'[HK] Thread crashed: {e}', flush=True)
 
 def start_hotkey_listener():
     global _hk_thread_ref, _hk_stop_evt
@@ -1275,6 +1112,7 @@ def get_hotkey_status():
         'registered':     _hk_status.get('registered', 0),
         'failed':         _hk_status.get('failed', []),
         'fired':          _hk_status.get('fired', 0),
+        'crash':          _hk_status.get('crash', ''),
         'input_struct_size': ctypes.sizeof(_INPUT),
     })
 
@@ -2224,7 +2062,15 @@ def sf_open_ticket(ticket_number=""):
         # currently has focused — no element targeting required.
         search_btn = wait.until(EC.element_to_be_clickable(
             (By.CSS_SELECTOR, "button.search-button, button[aria-label='Search']")))
-        search_btn.click()
+        try:
+            search_btn.click()
+        except Exception:
+            # Salesforce's home page sometimes shows a promotional carousel
+            # banner that visually overlaps the search button, which makes
+            # Selenium's native click raise ElementClickIntercepted even
+            # though the button is technically "clickable" per the wait
+            # above. A JS-triggered click ignores what's on top of it.
+            driver.execute_script("arguments[0].click();", search_btn)
 
         typed_value = ""
         for attempt in range(4):

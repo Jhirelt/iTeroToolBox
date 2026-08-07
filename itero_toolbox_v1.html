@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>iTeroToolBox — V1.1</title>
+<title>iTeroToolBox — V1.2.2</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -86,21 +86,25 @@ html.melody{
   --titlebar-bg:#cf7aa0;--tb-name:#fdf3f9;--tb-role:#5a3a52;--tb-role-bg:#fff8fc;--tb-role-border:#ddb2ee}
 /* Shared structure for "character" themes (everything except roronoa).
    sponge is wired the same as the rest — images not dropped into
-   Reference/Mascot* yet just show as broken icons until they're added. */
-html.pompompurin body,html.melody body,html.sponge body{font-weight:600}
+   Reference/Mascot* yet just show as broken icons until they're added.
+   warner opts in the same way sponge originally did: font/rounding/bold
+   and the titlebar badge colors, but NOT #brand-square/#brand-mini-btn/
+   #issue-mascot, since there's no Animaniacs mascot artwork yet either. */
+html.pompompurin body,html.melody body,html.sponge body,html.warner body{font-weight:600}
 html.pompompurin .titlebar,html.melody .titlebar{background:var(--titlebar-bg)}
-html.pompompurin .app,html.melody .app,html.sponge .app{background:var(--bg)}
-html.pompompurin .iinput,html.melody .iinput,html.sponge .iinput{border-radius:14px;font-weight:600}
+html.pompompurin .app,html.melody .app,html.sponge .app,html.warner .app{background:var(--bg)}
+html.pompompurin .iinput,html.melody .iinput,html.sponge .iinput,html.warner .iinput{border-radius:14px;font-weight:600}
 html.pompompurin .bcard,html.pompompurin .hcard,html.melody .bcard,html.melody .hcard,
-html.sponge .bcard,html.sponge .hcard{border-radius:16px}
+html.sponge .bcard,html.sponge .hcard,html.warner .bcard,html.warner .hcard{border-radius:16px}
 html.pompompurin .sh-title,html.pompompurin .bcard-title,html.pompompurin label,
 html.melody .sh-title,html.melody .bcard-title,html.melody label,
-html.sponge .sh-title,html.sponge .bcard-title,html.sponge label{font-weight:700}
+html.sponge .sh-title,html.sponge .bcard-title,html.sponge label,
+html.warner .sh-title,html.warner .bcard-title,html.warner label{font-weight:700}
 html.pompompurin #brand-square,html.melody #brand-square,html.sponge #brand-square{display:none}
 html.pompompurin #brand-mini-btn,html.melody #brand-mini-btn,html.sponge #brand-mini-btn{display:inline-flex !important}
 html.pompompurin #issue-mascot,html.melody #issue-mascot,html.sponge #issue-mascot{display:block !important}
-html.pompompurin #tb-user-name,html.melody #tb-user-name,html.sponge #tb-user-name{color:var(--tb-name) !important}
-html.pompompurin #tb-user-role,html.melody #tb-user-role,html.sponge #tb-user-role{color:var(--tb-role) !important;background:var(--tb-role-bg) !important;border-color:var(--tb-role-border) !important}
+html.pompompurin #tb-user-name,html.melody #tb-user-name,html.sponge #tb-user-name,html.warner #tb-user-name{color:var(--tb-name) !important}
+html.pompompurin #tb-user-role,html.melody #tb-user-role,html.sponge #tb-user-role,html.warner #tb-user-role{color:var(--tb-role) !important;background:var(--tb-role-bg) !important;border-color:var(--tb-role-border) !important}
 html.itachi{
   --bg:#1c1e22;--bg2:#22252b;--bg3:#2b3550;--bg4:#333d5c;
   --border:#3a4565;--border2:#4a5680;
@@ -177,6 +181,29 @@ html.sponge .titlebar{
     radial-gradient(circle at 21% 25%, rgba(139,94,42,.4) 6px, transparent 6.5px),
     radial-gradient(circle at 60% 130%, rgba(139,94,42,.45) 11px, transparent 11.5px),
     radial-gradient(circle at 83% 40%, rgba(139,94,42,.35) 4px, transparent 4.5px)}
+html.warner{
+  --bg:#ffffff;--bg2:#ffffff;--bg3:#f7f5ef;--bg4:#fff799;
+  --border:#e8e3d4;--border2:#231f20;
+  --text:#231f20;--text2:#4a4544;--text3:#7a7570;
+  --blue:#8a6a00;--blue-bg:#fff799;--blue-dim:#ffe94d;
+  --green:#2e7d4f;--green-bg:#e3f5e9;
+  --amber:#b8860b;--amber-bg:#fff3c4;
+  --red:#c22b2b;--red-bg:#fbe2e2;
+  --teal:#8a6a00;--teal-bg:#fff799;
+  --purple:#231f20;--purple-bg:#fff799;
+  --mono:'Baloo 2',sans-serif;--sans:'Baloo 2',sans-serif;
+  --accent:#8a6a00;--accent-dim:#ffe94d;
+  --titlebar-bg:#231f20;--tb-name:#fff799;--tb-role:#231f20;--tb-role-bg:#fff799;--tb-role-border:#231f20}
+/* Marquee lights — a row of small evenly-spaced yellow dots along the
+   bottom edge of the black titlebar, unlike sponge's deliberately uneven
+   ones (these are meant to look like an old vaudeville marquee strip, so
+   evenly-tiled is the right call here, not a bug repeated from sponge). */
+html.warner .titlebar{
+  background-color:var(--titlebar-bg);
+  background-repeat:repeat-x;
+  background-position:0 bottom;
+  background-size:14px 100%;
+  background-image:radial-gradient(circle, var(--tb-name) 1.5px, transparent 2px)}
 .settings-item{display:block;width:100%;text-align:left;padding:7px 14px;font-size:12px;font-family:var(--sans);background:none;border:none;color:var(--text2);cursor:pointer;transition:background .1s}
 .settings-item:hover{background:var(--bg4);color:var(--text)}
 .settings-item.active{color:var(--blue);font-weight:600}
@@ -621,6 +648,7 @@ html.size-large #sidebar-icons{zoom:1.3}
         <button class="settings-item" id="theme-itachi-btn" onclick="setTheme('itachi')">🌙 Itachi</button>
         <button class="settings-item" id="theme-uzumaki-btn" onclick="setTheme('uzumaki')">🍥 Uzumaki</button>
         <button class="settings-item" id="theme-sponge-btn" onclick="setTheme('sponge')">🍍 Bob Esponja</button>
+        <button class="settings-item" id="theme-warner-btn" onclick="setTheme('warner')">🎩 Animaniacs</button>
       </div>
       <div style="height:1px;background:var(--border);margin:4px 0"></div>
       <button class="settings-item" onclick="event.stopPropagation();toggleSettingsSection('size')" style="display:flex;align-items:center;justify-content:space-between">
@@ -644,20 +672,24 @@ html.size-large #sidebar-icons{zoom:1.3}
         </span>
       </button>
       <div id="connections-section" style="display:none;padding-left:6px">
-        <!-- Debug mode -->
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px" title="Enables DevTools (F12 / right-click Inspect). Requires restart.">
-          <span style="font-size:12px;color:var(--text2)">Debug</span>
-          <label class="hk-switch">
-            <input type="checkbox" id="debug-mode-chk" onchange="saveDebugMode()"><span class="hk-slider"></span>
-          </label>
+        <!-- Debug mode + CMD terminal — advanced/risky (elevated shell,
+             DevTools) so kept out of sight for every agent except Jhirelt
+             logged in as ESC; see _updateAdminSettingsVisibility(). -->
+        <div id="settings-debug-cmd-wrap" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px" title="Enables DevTools (F12 / right-click Inspect). Requires restart.">
+            <span style="font-size:12px;color:var(--text2)">Debug</span>
+            <label class="hk-switch">
+              <input type="checkbox" id="debug-mode-chk" onchange="saveDebugMode()"><span class="hk-slider"></span>
+            </label>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px" title="Shows the elevated CMD terminal panel at the bottom of the app (TS/ESC roles only — Front Line never sees it). Applies immediately, no restart needed.">
+            <span style="font-size:12px;color:var(--text2)">CMD</span>
+            <label class="hk-switch">
+              <input type="checkbox" id="cmd-visible-chk" onchange="onCmdVisibleToggle()"><span class="hk-slider"></span>
+            </label>
+          </div>
+          <div style="height:1px;background:var(--border);margin:4px 0"></div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px" title="Shows the elevated CMD terminal panel at the bottom of the app (TS/ESC roles only — Front Line never sees it). Applies immediately, no restart needed.">
-          <span style="font-size:12px;color:var(--text2)">CMD</span>
-          <label class="hk-switch">
-            <input type="checkbox" id="cmd-visible-chk" onchange="onCmdVisibleToggle()"><span class="hk-slider"></span>
-          </label>
-        </div>
-        <div style="height:1px;background:var(--border);margin:4px 0"></div>
         <!-- MAT -->
         <button class="settings-item" onclick="event.stopPropagation();toggleSettingsSection('mat')" style="display:flex;align-items:center;justify-content:space-between">
           <span>MAT</span>
@@ -918,6 +950,10 @@ html.size-large #sidebar-icons{zoom:1.3}
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 5h6M5 8h6M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="12" cy="12" r="3.5" fill="var(--blue)" /><path d="M11 12h2M12 11v2" stroke="white" stroke-width="1.1" stroke-linecap="round"/></svg>
       Documentation
     </div>
+    <div class="nav-item" id="nav-ibe" onclick="switchPanel('ibe',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 2h4v1.5H6z" fill="currentColor"/><path d="M5.5 7h5M5.5 9.5h5M5.5 12h3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+      iBE
+    </div>
     <div class="nav-item" id="nav-snippets" onclick="switchPanel('snippets',this)">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6l2 2-2 2M9 10h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       CMD Snippets
@@ -981,6 +1017,7 @@ html.size-large #sidebar-icons{zoom:1.3}
   <!-- Collapsed icons-only strip -->
   <div id="sidebar-icons" style="display:none;flex-direction:column;align-items:center;padding-top:4px;gap:2px">
     <div class="nav-icon-only" title="Documentation" onclick="switchPanel('documentation',document.getElementById('nav-documentation'))"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 5h6M5 8h6M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+    <div class="nav-icon-only" title="iBE" onclick="switchPanel('ibe',document.getElementById('nav-ibe'))"><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 2h4v1.5H6z" fill="currentColor"/><path d="M5.5 7h5M5.5 9.5h5M5.5 12h3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div>
     <div class="nav-icon-only" title="CMD Snippets" onclick="switchPanel('snippets',document.getElementById('nav-snippets'))"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6l2 2-2 2M9 10h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <div class="nav-icon-only" id="icon-hotkeys" title="Hotkeys" onclick="switchPanel('hotkeys',document.getElementById('nav-hotkeys'))"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 7.5h1M7 7.5h1M10 7.5h1M4 10h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
     <div class="nav-icon-only" id="icon-ticketchecker" title="Ticket Checker" onclick="switchPanel('ticketchecker',document.getElementById('nav-ticketchecker'))"><svg viewBox="0 0 16 16" fill="none"><path d="M2 6a2 2 0 012-2h8a2 2 0 012 2v1a1.5 1.5 0 000 3v1a2 2 0 01-2 2H4a2 2 0 01-2-2v-1a1.5 1.5 0 000-3V6z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9 5v1M9 7.5v1M9 10v1" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div>
@@ -1227,6 +1264,65 @@ html.size-large #sidebar-icons{zoom:1.3}
       </div>
       <div id="qa-row" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     </div>
+  </div>
+
+</div>
+
+<!-- ══════════════ iBE ══════════════
+     Runs the same "fill in fields, get a copyable summary" idea as
+     Documentation, but for Lumina restorative-case tickets — one call can
+     cover several patients, so the patient block repeats instead of the
+     single Name/Phone/Email row, and there's no CB/chip/wand-flow stuff
+     since none of that applies here. -->
+<div class="panel" id="panel-ibe">
+
+  <!-- Scanner — Lumina family only, this panel doesn't apply to anything
+       else. Written once here, never repeated per patient below. -->
+  <div style="display:flex;gap:6px;margin-bottom:8px">
+    <div style="flex:1;min-width:0">
+      <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:2px">SCANNER S/N</label>
+      <input class="iinput" id="ibe-scanner" placeholder="Scanner S/N" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px;font-family:var(--mono)" oninput="ibeBuildOutput()">
+    </div>
+    <div style="flex:1;min-width:0">
+      <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:2px">SCANNER MODEL</label>
+      <select class="iinput" id="ibe-model" style="width:100%;height:24px;padding:2px 7px;font-size:12px" onchange="ibeBuildOutput()">
+        <option value="">Model</option>
+        <option value="Lumina - Cart">Lumina - Cart</option>
+        <option value="Lumina Pro - Cart">Lumina Pro - Cart</option>
+        <option value="Lumina - Mobile">Lumina - Mobile</option>
+        <option value="Lumina Pro - Mobile">Lumina Pro - Mobile</option>
+        <option value="Lumina PC">Lumina PC</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Patients — repeatable Patient / Order ID / Rx ID / SW version block.
+       Each block gets its own Add (append another, animated in) and,
+       once there's more than one, a Remove button. -->
+  <div id="ibe-patients" style="margin-bottom:8px"></div>
+
+  <!-- Details — replaces Documentation's Actions Taken; no chips below it -->
+  <div style="margin-bottom:8px">
+    <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:3px">DETAILS</label>
+    <textarea class="iinput" id="ibe-details" rows="4" placeholder="Details" spellcheck="true" lang="en" style="width:100%;min-height:96px;max-height:240px;resize:vertical;font-size:12px;display:block" oninput="ibeBuildOutput()"></textarea>
+  </div>
+
+  <!-- Add Questions + Clear -->
+  <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+    <button id="ibe-add-questions-btn" onclick="ibeToggleQuestions()" class="btn-sm" style="font-size:11px">+ Add Questions</button>
+    <button id="ibe-clear-btn" onclick="ibeClearAll()" class="btn-sm r" style="font-size:11px;margin-left:auto">Clear</button>
+  </div>
+
+  <!-- Output: Summary — tile, click anywhere to copy -->
+  <div style="margin-bottom:10px">
+    <div id="ibe-desc-header" onclick="ibeCopyDescBar()" style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:6px 12px;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)'">
+      <span style="display:flex;align-items:center;gap:5px">
+        <span id="ibe-desc-caret" onclick="event.stopPropagation();ibeDescToggle()" style="font-family:var(--mono);font-size:10px;color:var(--text3);cursor:pointer;padding:2px 4px;margin:-2px -4px">▶</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em">Summary</span>
+      </span>
+      <span id="ibe-desc-copy-hint" style="font-family:var(--mono);font-size:10px;color:var(--text3);flex-shrink:0;transition:color .15s">Copy</span>
+    </div>
+    <div id="ibe-out-desc" style="display:none;background:var(--bg4);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;font-family:var(--mono);font-size:11px;color:var(--text);min-height:32px;word-break:break-all;white-space:pre-wrap;line-height:1.6">—</div>
   </div>
 
 </div>
@@ -2252,179 +2348,6 @@ html.size-large #sidebar-icons{zoom:1.3}
 </div>
 
 
-<!-- ══════════════ ESCALATIONS ══════════════ -->
-<div class="panel" id="panel-escalations">
-
-  <div class="sh">
-    <span class="sh-title">Escalation Tracker</span>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span class="sh-sub" id="esc-count-badge"></span>
-      <button class="btn-sm p" onclick="escOpenAdd()">+ New Ticket</button>
-    </div>
-  </div>
-
-  <!-- Stats bar -->
-  <div id="esc-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;text-align:center">
-      <div id="esc-stat-open" style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--blue)">0</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">Open</div>
-    </div>
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;text-align:center">
-      <div id="esc-stat-overdue" style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--red)">0</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">Overdue</div>
-    </div>
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;text-align:center">
-      <div id="esc-stat-closed" style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--green)">0</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">Closed</div>
-    </div>
-  </div>
-
-  <!-- Filter tabs -->
-  <div style="display:flex;gap:4px;margin-bottom:14px">
-    <button id="esc-tab-all"    class="btn-sm p" onclick="escSetFilter('all')"    style="flex:1;font-size:11px">All</button>
-    <button id="esc-tab-open"   class="btn-sm"   onclick="escSetFilter('open')"   style="flex:1;font-size:11px">Open</button>
-    <button id="esc-tab-overdue" class="btn-sm"  onclick="escSetFilter('overdue')" style="flex:1;font-size:11px;color:var(--red)">Overdue</button>
-    <button id="esc-tab-closed" class="btn-sm"   onclick="escSetFilter('closed')" style="flex:1;font-size:11px">Closed</button>
-  </div>
-
-  <!-- Ticket list -->
-  <div id="esc-list" style="display:flex;flex-direction:column;gap:8px;min-height:60px"></div>
-  <div id="esc-empty" style="display:none;padding:30px 0;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text3)">
-    No tickets yet — click <strong>+ New Ticket</strong> to add one.
-  </div>
-
-  <!-- ── ADD / EDIT MODAL ── -->
-  <div id="esc-modal-bg" style="display:none;position:fixed;inset:0;background:rgba(5,7,11,.82);z-index:9990;align-items:center;justify-content:center">
-    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:10px;width:480px;max-width:92vw;padding:22px 24px;box-shadow:0 12px 48px rgba(0,0,0,.7)" onclick="event.stopPropagation()">
-
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-        <div style="font-weight:600;font-size:14px" id="esc-modal-title">New Escalation Ticket</div>
-        <button class="btn-sm r" onclick="escCloseModal()" style="font-size:11px">✕</button>
-      </div>
-
-      <!-- SF URL / ID -->
-      <div style="margin-bottom:12px">
-        <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:4px">SALESFORCE URL or CASE ID</label>
-        <div style="display:flex;gap:6px">
-          <input class="iinput" id="esc-inp-url" placeholder="https://align.lightning.force.com/... or 012345" style="flex:1;font-size:12px;font-family:var(--mono)"
-            oninput="escUrlChanged(this.value)">
-          <button class="btn-sm" id="esc-fetch-btn" onclick="escFetchSF()" style="font-size:11px;white-space:nowrap">
-            <span id="esc-fetch-lbl">Fetch title</span>
-          </button>
-        </div>
-        <div id="esc-fetch-status" style="font-family:var(--mono);font-size:10px;margin-top:4px;display:none"></div>
-      </div>
-
-      <!-- Case ID (auto-parsed or manual) -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-        <div>
-          <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:4px">CASE ID</label>
-          <input class="iinput" id="esc-inp-id" placeholder="e.g. 01234567" style="width:100%;font-family:var(--mono);font-size:12px">
-        </div>
-        <div>
-          <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:4px">CUSTOMER NAME</label>
-          <input class="iinput" id="esc-inp-customer" placeholder="Dr. Smith / Practice name" style="width:100%;font-size:12px">
-        </div>
-      </div>
-
-      <!-- Subject -->
-      <div style="margin-bottom:12px">
-        <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:4px">SUBJECT / TITLE</label>
-        <input class="iinput" id="esc-inp-subject" placeholder="e.g. Scanner not scanning — wand disconnection" style="width:100%;font-size:12px">
-      </div>
-
-      <!-- Priority + Follow-up -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-        <div>
-          <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:4px">PRIORITY</label>
-          <select class="iinput" id="esc-inp-priority" style="width:100%;font-size:12px">
-            <option value="normal">Normal</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:4px">FOLLOW-UP IN</label>
-          <select class="iinput" id="esc-inp-followup" style="width:100%;font-size:12px">
-            <option value="48">48 hours (default)</option>
-            <option value="24">24 hours</option>
-            <option value="72">72 hours</option>
-            <option value="168">1 week</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div style="margin-bottom:18px">
-        <label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:4px">INITIAL NOTES</label>
-        <textarea id="esc-inp-notes" class="notes" rows="3" placeholder="Issue description, troubleshooting done, reason for escalation..." style="width:100%;min-height:70px;font-size:12px"></textarea>
-      </div>
-
-      <div style="display:flex;justify-content:flex-end;gap:8px">
-        <button class="btn-sm" onclick="escCloseModal()">Cancel</button>
-        <button class="btn-sm p" id="esc-modal-save" onclick="escSaveTicket()">Save Ticket</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── TICKET DETAIL DRAWER ── -->
-  <div id="esc-drawer-bg" style="display:none;position:fixed;inset:0;background:rgba(5,7,11,.7);z-index:9991;align-items:flex-start;justify-content:flex-end" onclick="escCloseDrawer()">
-    <div id="esc-drawer" style="background:var(--bg2);border-left:1px solid var(--border2);width:440px;max-width:92vw;height:100%;overflow-y:auto;padding:22px 22px 40px" onclick="event.stopPropagation()">
-
-      <!-- Drawer header -->
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
-        <div>
-          <div id="drw-subject" style="font-size:14px;font-weight:600;color:var(--text);line-height:1.35"></div>
-          <div id="drw-meta" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px"></div>
-        </div>
-        <button class="btn-sm r" onclick="escCloseDrawer()" style="font-size:11px;flex-shrink:0;margin-left:10px">✕</button>
-      </div>
-
-      <!-- Status + actions -->
-      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
-        <button id="drw-btn-open"   class="btn-sm" onclick="escSetStatus('open')"   style="font-size:11px">Mark Open</button>
-        <button id="drw-btn-closed" class="btn-sm" onclick="escSetStatus('closed')" style="font-size:11px">Mark Closed</button>
-        <button id="drw-btn-waiting" class="btn-sm" onclick="escSetStatus('waiting')" style="font-size:11px">Waiting on Customer</button>
-        <button class="btn-sm p" onclick="escResetFollowup()" style="font-size:11px;margin-left:auto">↻ Reset 48h</button>
-        <button class="btn-sm r" onclick="escDeleteTicket()" style="font-size:11px">🗑 Delete</button>
-      </div>
-
-      <!-- Countdown -->
-      <div id="drw-countdown-wrap" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:3px">FOLLOW-UP COUNTDOWN</div>
-          <div id="drw-countdown" style="font-family:var(--mono);font-size:22px;font-weight:700">--:--:--</div>
-        </div>
-        <div id="drw-countdown-icon" style="font-size:28px">⏳</div>
-      </div>
-
-      <!-- SF link -->
-      <div id="drw-sf-wrap" style="display:none;margin-bottom:14px">
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px">SALESFORCE CASE</div>
-        <a id="drw-sf-link" href="#" onclick="escOpenSF(event)" style="font-family:var(--mono);font-size:11px;color:var(--blue);word-break:break-all;text-decoration:underline"></a>
-      </div>
-
-      <!-- Follow-up history -->
-      <div style="margin-bottom:14px">
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:6px">FOLLOW-UP HISTORY</div>
-        <div id="drw-history" style="display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto"></div>
-        <div id="drw-history-empty" style="font-family:var(--mono);font-size:11px;color:var(--text3)">No follow-ups recorded yet.</div>
-      </div>
-
-      <!-- Add note -->
-      <div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:6px">ADD FOLLOW-UP NOTE</div>
-        <textarea id="drw-note-input" class="notes" rows="3" placeholder="Write a follow-up note, update, or action taken..." style="width:100%;min-height:70px;font-size:12px;margin-bottom:8px"></textarea>
-        <button class="btn-sm p" onclick="escAddNote()" style="width:100%;font-size:12px">Add Note + Reset Timer</button>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="sh" style="margin-top:16px"><span class="sh-title">Agent notes</span></div>
-  <textarea class="notes" placeholder="Escalations general notes..."></textarea>
-</div>
-
 <!-- ══════════════ ESCALATIONS REPORT (foundation) ══════════════
      Every ticket added here or from Documentation's "+ Add to Report" row
      (ESC role only) lands as one entry — ticket number, scanner model,
@@ -2926,12 +2849,12 @@ function applyRole(role){
   }
 
   // Nav items hidden from FL (TS/ESC only)
-  var flHide  = ['nav-kill','nav-cleaninstall','nav-registry','nav-eventviewer','nav-escalations',
+  var flHide  = ['nav-kill','nav-cleaninstall','nav-registry','nav-eventviewer',
                  'nav-networking','nav-devmanager','nav-logcollector','nav-swdownload','icon-networking',
                  'nav-partscatalog','nav-battery','icon-battery','chip-bat-rep',
                  'nav-report','nav-report-sec','nav-report-div','esc-report-add-row','icon-report'];
   // Nav items only for ESC (hidden from FL and TS)
-  var escOnly = ['nav-escalations','nav-report','nav-report-sec','nav-report-div','esc-report-add-row','icon-report'];
+  var escOnly = ['nav-report','nav-report-sec','nav-report-div','esc-report-add-row','icon-report'];
   // UI elements only visible to TS / ESC
   var tsElems = ['wand-flow-toggle','wms-b','wms-done-a','wms-done-b'];
   // UI elements only visible to FL (hidden from TS/ESC)
@@ -2959,10 +2882,10 @@ function applyRole(role){
     flSyncFromIntake();
   } else if(_isTsOrEsc(role)){
     // ESC runs every bit of TS's setup below, then layers its own extras
-    // on top (escOnly nav, tracker tick) — sharing this block instead of
-    // keeping a hand-copied duplicate is the whole point: a future change
-    // to TS's behavior here reaches ESC automatically, with no separate
-    // copy to remember to update.
+    // on top (escOnly nav) — sharing this block instead of keeping a
+    // hand-copied duplicate is the whole point: a future change to TS's
+    // behavior here reaches ESC automatically, with no separate copy to
+    // remember to update.
     flOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
     applyCmdVisibility(_cmdVisible); // hidden by default — technician opts in via Settings → Connections
     var banner=document.getElementById('lumina-fl-banner'); if(banner)banner.style.display='none';
@@ -2972,9 +2895,6 @@ function applyRole(role){
     if (role === 'TS') {
       // ESC-only items hidden for plain TS
       escOnly.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
-    } else {
-      // ESC-only extras on top of everything TS just got above
-      escTickAll();
     }
   }
 }
@@ -3097,70 +3017,6 @@ function toggleStep(n) {
   if (chev) chev.style.transform = open ? 'rotate(-90deg)' : '';
 }
 
-// ── Sound outcome handler ──────────────────────────────────
-function handleWandSounds(btn) {
-  markStep(btn);
-  logAction('Step 1: Abnormal sounds reported from wand');
-  var out = document.getElementById('sounds-outcome');
-  var role = document.getElementById('in-role') ? document.getElementById('in-role').value : '';
-  if (out) {
-    out.style.display = 'block';
-    if (role === 'FL') {
-      out.style.background = 'var(--amber-bg)';
-      out.style.border = '1px solid var(--amber)';
-      out.style.color = 'var(--amber)';
-      out.innerHTML = '⚠ Get video evidence of the sounds and transfer the case to Tech Support.';
-    } else {
-      out.style.background = 'var(--red-bg)';
-      out.style.border = '1px solid var(--red)';
-      out.style.color = 'var(--red)';
-      out.innerHTML = '⚠ Wand producing abnormal sounds — double check and validate all information before proceeding.';
-    }
-  }
-}
-
-// ── Damage handlers ──────────────────────────────────────
-function handleCableDamage(btn) {
-  markStep(btn);
-  logAction('Step 3: Cable damage identified');
-  var out = document.getElementById('damage-outcome');
-  var role = document.getElementById('in-role') ? document.getElementById('in-role').value : '';
-  if (out) {
-    out.style.display = 'block';
-    if (role === 'FL') {
-      out.style.background = 'var(--amber-bg)';
-      out.style.border = '1px solid var(--amber)';
-      out.style.color = 'var(--amber)';
-      out.innerHTML = '⚠ Cable can be replaced as long as the wand itself does not present disconnections. Proceed to cable seating step to validate.';
-    } else {
-      out.style.background = 'var(--amber-bg)';
-      out.style.border = '1px solid var(--amber)';
-      out.style.color = 'var(--amber)';
-      out.innerHTML = '⚠ Cable damage found. Replace cable and validate wand connection.';
-    }
-  }
-}
-
-function handleWandDamage(btn) {
-  markStep(btn);
-  logAction('Step 3: Wand physical damage identified');
-  var out = document.getElementById('damage-outcome');
-  if (out) {
-    out.style.display = 'block';
-    out.style.background = 'var(--red-bg)';
-    out.style.border = '1px solid var(--red)';
-    out.style.color = 'var(--red)';
-    out.innerHTML = '❌ RMA the wand. Double check if the account has already used the one-time exception in the last year before submitting.';
-  }
-}
-
-// ── HW Diag message ──────────────────────────────────────
-function showNoHWDiag() {
-  var msg = document.getElementById('hw-diag-msg');
-  if (msg) msg.style.display = 'block';
-  logAction('Step 5: No red triangle — HW Diagnostics NOT run');
-}
-
 // ── Open collage for current model tab ──────────────────
 function openCurrentModelCollage() {
   var email = document.getElementById('woa-agent-email') ? document.getElementById('woa-agent-email').value.trim() : '';
@@ -3200,23 +3056,6 @@ function openWOACollage(){
   }
 }
 
-function rotateCable(){
-  var v0=document.getElementById('cv0');
-  var v1=document.getElementById('cv1');
-  var d0=document.getElementById('cd0');
-  var d1=document.getElementById('cd1');
-  var hint=document.getElementById('cable-hint-tb');
-  var showing=v0.style.opacity==='1'||v0.style.opacity==='';
-  if(showing){
-    v0.style.opacity='0';v1.style.opacity='1';
-    d0.style.background='#ccc';d1.style.background='#3b82f6';
-    if(hint)hint.textContent='tap · 2/2';
-  }else{
-    v0.style.opacity='1';v1.style.opacity='0';
-    d0.style.background='#3b82f6';d1.style.background='#ccc';
-    if(hint)hint.textContent='tap · 1/2';
-  }
-}
 var sessionActive=false,sessionLog=[],notes='',elapsed=0,clockInt=null,actionCount=0,_sessions=[],currentRole='',completedSteps={},_sessionId=null;
 var tmActive=false;
 
@@ -3809,9 +3648,21 @@ function applyProfile(name, role) {
   if (dispName) dispName.textContent = name;
 
   applyRole(role);
+  _updateAdminSettingsVisibility(name, role);
   _profileReady = true;
   switchPanel('documentation', document.getElementById('nav-documentation'));
   updateSF();
+}
+
+// Debug mode and the CMD terminal toggle are the app's own dev/admin
+// tools (DevTools access, an elevated shell) — not something a regular
+// FL/TS/ESC agent should be flipping, so the settings row is hidden from
+// everyone except Jhirelt logged in as Escalations.
+function _updateAdminSettingsVisibility(name, role) {
+  var wrap = document.getElementById('settings-debug-cmd-wrap');
+  if (!wrap) return;
+  var isAdmin = (name || '').trim().toLowerCase().startsWith('jhirelt') && role === 'ESC';
+  wrap.style.display = isAdmin ? 'block' : 'none';
 }
 
 function doLogin() {
@@ -5189,8 +5040,8 @@ document.addEventListener('wheel', function(e) {
 }, { passive: false });
 
 function setTheme(mode, skipSave) {
-  document.documentElement.classList.remove('light', 'pompompurin', 'roronoa', 'melody', 'itachi', 'uzumaki', 'sponge');
-  if (mode === 'light' || mode === 'pompompurin' || mode === 'roronoa' || mode === 'melody' || mode === 'itachi' || mode === 'uzumaki' || mode === 'sponge') {
+  document.documentElement.classList.remove('light', 'pompompurin', 'roronoa', 'melody', 'itachi', 'uzumaki', 'sponge', 'warner');
+  if (mode === 'light' || mode === 'pompompurin' || mode === 'roronoa' || mode === 'melody' || mode === 'itachi' || mode === 'uzumaki' || mode === 'sponge' || mode === 'warner') {
     document.documentElement.classList.add(mode);
   }
   if (!skipSave) localStorage.setItem('itero_theme', mode);
@@ -5202,6 +5053,7 @@ function setTheme(mode, skipSave) {
   var ib = document.getElementById('theme-itachi-btn');
   var ub = document.getElementById('theme-uzumaki-btn');
   var bb = document.getElementById('theme-sponge-btn');
+  var wb = document.getElementById('theme-warner-btn');
   if (db) db.className = 'settings-item' + (mode === 'dark'        ? ' active' : '');
   if (lb) lb.className = 'settings-item' + (mode === 'light'       ? ' active' : '');
   if (pb) pb.className = 'settings-item' + (mode === 'pompompurin' ? ' active' : '');
@@ -5210,13 +5062,14 @@ function setTheme(mode, skipSave) {
   if (ib) ib.className = 'settings-item' + (mode === 'itachi'      ? ' active' : '');
   if (ub) ub.className = 'settings-item' + (mode === 'uzumaki'     ? ' active' : '');
   if (bb) bb.className = 'settings-item' + (mode === 'sponge'  ? ' active' : '');
+  if (wb) wb.className = 'settings-item' + (mode === 'warner'  ? ' active' : '');
   var miniImg = document.getElementById('brand-mini-img');
   if (miniImg) miniImg.src = 'Reference/MascotMini/' + mode + '.png';
   var mascotImg = document.getElementById('issue-mascot');
   if (mascotImg && mode !== 'roronoa') {
     mascotImg.src = 'Reference/Mascot/' + (MASCOT_FILES[mode] || ('mascot_' + mode + '.png'));
   }
-  var THEME_LABELS = { dark: 'Dark', light: 'Light', pompompurin: 'Pompompurin', roronoa: 'Roronoa', melody: 'Melody', itachi: 'Itachi', uzumaki: 'Uzumaki', sponge: 'Bob Esponja' };
+  var THEME_LABELS = { dark: 'Dark', light: 'Light', pompompurin: 'Pompompurin', roronoa: 'Roronoa', melody: 'Melody', itachi: 'Itachi', uzumaki: 'Uzumaki', sponge: 'Bob Esponja', warner: 'Animaniacs' };
   var themeLabel = document.getElementById('theme-current-label');
   if (themeLabel) themeLabel.textContent = THEME_LABELS[mode] || mode;
 }
@@ -5254,7 +5107,7 @@ function playThemeMascotVideo() {
     miniImg.classList.add('mascot-jump');
     miniImg.addEventListener('animationend', function(){ miniImg.classList.remove('mascot-jump'); }, { once: true });
   }
-  var THEME_NAMES = ['light', 'pompompurin', 'roronoa', 'melody', 'itachi', 'uzumaki', 'sponge'];
+  var THEME_NAMES = ['light', 'pompompurin', 'roronoa', 'melody', 'itachi', 'uzumaki', 'sponge', 'warner'];
   var theme = THEME_NAMES.filter(function(t){ return document.documentElement.classList.contains(t); })[0] || 'dark';
   var audio = document.getElementById('theme-mascot-audio');
   if (!audio) return;
@@ -5264,58 +5117,6 @@ function playThemeMascotVideo() {
   audio.play().catch(function(){});
 }
 
-function toggleSession(){
-  if(sessionActive){
-    // Log the end event BEFORE setting sessionActive=false so logAction still works
-    var endTime=new Date().toLocaleTimeString();
-    sessionLog.push('['+endTime+'] Session ended · '+actionCount+' actions logged');
-    try{saveSessionHistory();}catch(e){console.error('saveSessionHistory:',e);}
-    try{resetDocFields();}catch(e){}
-    sessionActive=false;
-    if(clockInt){clearInterval(clockInt);clockInt=null;}
-    if(_holdActive){
-      _holdReset(document.getElementById('hold-btn'));
-    }
-    var btn=document.getElementById('session-btn');
-    if(btn){btn.textContent='Start session';btn.className='sbadge idle';}
-    var cs=document.getElementById('cmd-status');
-    if(cs)cs.textContent='Session ended · '+actionCount+' actions logged';
-    appendCmd('warn','Session ended: '+endTime+' · '+actionCount+' actions logged');
-    return;
-  }
-  var agent=document.getElementById('in-agent').value.trim();
-  var serial=document.getElementById('in-serial').value.trim();
-  var model=document.getElementById('in-model').value;
-  var phone=document.getElementById('in-phone')?document.getElementById('in-phone').value.trim():'';
-  var tvid=document.getElementById('in-tvid')?document.getElementById('in-tvid').value.trim():'';
-  if(!agent){appendCmd('warn','! Fill in Agent name to start.');return;}
-  sessionActive=true;elapsed=0;actionCount=0;sessionLog=[];notes='';completedSteps={};
-  _sessionId='sess_'+Date.now();
-  if(clockInt){clearInterval(clockInt);clockInt=null;}
-  clockInt=setInterval(function(){
-    elapsed++;
-    var m=pad(Math.floor(elapsed/60)),s=pad(elapsed%60);
-    document.getElementById('tb-clock').textContent=m+':'+s;
-  },1000);
-  var _sbtn=document.getElementById('session-btn');
-  if(_sbtn){_sbtn.textContent='● Active';_sbtn.className='sbadge active';}
-  document.getElementById('cmd-status').textContent=agent+' · logging ON';
-  document.getElementById('cmd-prompt').textContent=agent.split(' ')[0].substring(0,8)+'@iTero>';
-  appendCmd('info','─────────────────────────────────────────');
-  appendCmd('info','Session started: '+new Date().toLocaleTimeString());
-  appendCmd('info','Agent: '+agent+(serial?' · S/N: '+serial:'')+(model?' · '+model:''));
-  if(phone)appendCmd('info','Phone: '+phone);
-  if(tvid)appendCmd('info','TV ID: '+tvid);
-  appendCmd('info','─────────────────────────────────────────');
-  logAction('Session started · Agent: '+agent+(serial?' · S/N: '+serial:'')+(model?' · '+model:''));
-  pyApi('get_os_info').then(function(r){
-    if(r&&r.data){
-      document.getElementById('tb-os').textContent=r.data;
-      var el=document.getElementById('hv-os2');if(el)el.textContent=r.data;
-    }
-  });
-  setTimeout(runHealthCheck,400);
-}
 function pad(n){return String(n).padStart(2,'0')}
 
 function logAction(txt){
@@ -5734,40 +5535,47 @@ function hToggle(id){
   if(ch)ch.innerHTML=open?'&#9654;':'&#9660;';
 }
 function hEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function _hCopyStyle(){return 'position:relative;cursor:pointer;';}
-function _hCopyBtn(text){
-  var safe=hEsc(text||'');
-  return '<span class="hcopy-btn" data-copy="'+safe+'" title="Copy" onclick="event.stopPropagation();_hCopy(this)" '
-    +'style="display:none;position:absolute;top:4px;right:5px;font-size:10px;padding:1px 6px;border-radius:3px;'
-    +'background:var(--bg3);border:1px solid var(--border2);color:var(--text2);cursor:pointer;font-family:var(--mono)">copy</span>';
-}
+// Same tile pattern Documentation's own output uses (fl-context-bar /
+// fl-desc-header + flCopySubjectBar() / flCopyDescBar()) — click anywhere
+// on the tile to copy, border highlights blue on hover and flashes green
+// with a "Copied" hint on click. Reused here per-field instead of
+// Documentation's two fixed tiles since a history entry has many fields.
 function hCell(label,val){
   var v=val||'—';
-  return '<div style="'+_hCopyStyle()+'background:var(--bg4);border:1px solid var(--border);border-radius:var(--r);padding:6px 9px" '
-    +'onmouseenter="_hShowCopy(this)" onmouseleave="_hHideCopy(this)">'
-    +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:2px">'+label+'</div>'
+  return '<div class="h-tile" data-copy="'+hEsc(v)+'" onclick="_hCopyTile(this)" '
+    +'style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:6px 9px;cursor:pointer;transition:border-color .15s;user-select:none" '
+    +'onmouseover="this.style.borderColor=\'var(--blue)\'" onmouseout="this.style.borderColor=\'var(--border2)\'">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:2px">'
+      +'<span style="font-family:var(--mono);font-size:10px;color:var(--text3)">'+label+'</span>'
+      +'<span class="h-copy-hint" style="font-family:var(--mono);font-size:10px;color:var(--text3);transition:color .15s">Copy</span>'
+    +'</div>'
     +'<div style="font-size:12px;font-weight:500;color:var(--text)">'+hEsc(v)+'</div>'
-    +_hCopyBtn(v)
     +'</div>';
 }
 function hRow(label,val){
   if(!val||!val.trim())return'';
-  return '<div style="'+_hCopyStyle()+'background:var(--bg4);border:1px solid var(--border);border-radius:var(--r);padding:6px 9px;margin-bottom:6px" '
-    +'onmouseenter="_hShowCopy(this)" onmouseleave="_hHideCopy(this)">'
-    +'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:2px">'+label+'</div>'
-    +'<div style="font-size:12px;color:var(--text);white-space:pre-wrap;word-break:break-word">'+hEsc(val)+'</div>'
-    +_hCopyBtn(val)
+  return '<div class="h-tile" data-copy="'+hEsc(val)+'" onclick="_hCopyTile(this)" '
+    +'style="background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r);padding:6px 9px;margin-bottom:6px;cursor:pointer;transition:border-color .15s;user-select:none" '
+    +'onmouseover="this.style.borderColor=\'var(--blue)\'" onmouseout="this.style.borderColor=\'var(--border2)\'">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:2px">'
+      +'<span style="font-family:var(--mono);font-size:10px;color:var(--text3)">'+label+'</span>'
+      +'<span class="h-copy-hint" style="font-family:var(--mono);font-size:10px;color:var(--text3);transition:color .15s">Copy</span>'
+    +'</div>'
+    +'<div style="font-size:12px;color:var(--text);white-space:pre-wrap;word-break:break-word;font-family:var(--mono);line-height:1.6">'+hEsc(val)+'</div>'
     +'</div>';
 }
-function _hShowCopy(el){var b=el.querySelector('.hcopy-btn');if(b)b.style.display='inline-block';}
-function _hHideCopy(el){var b=el.querySelector('.hcopy-btn');if(b)b.style.display='none';}
-function _hCopy(btn){
-  var text=btn.getAttribute('data-copy')||'';
-  text=text.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+function _hCopyTile(el){
+  var text=(el.getAttribute('data-copy')||'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+  if(!text||text==='—')return;
+  var hint=el.querySelector('.h-copy-hint');
   navigator.clipboard.writeText(text).then(function(){
-    var old=btn.textContent;btn.textContent='✓';btn.style.color='var(--green)';
-    setTimeout(function(){btn.textContent=old;btn.style.color='';},1200);
-  }).catch(function(){});
+    el.style.borderColor='var(--green)';
+    if(hint){hint.textContent='Copied';hint.style.color='var(--green)';}
+    setTimeout(function(){
+      el.style.borderColor='';
+      if(hint){hint.textContent='Copy';hint.style.color='';}
+    },1600);
+  });
 }
 function hCopyAll(idx){
   var s=_sessions[idx];if(!s)return;
@@ -5798,6 +5606,232 @@ function hCopyAll(idx){
 }
 
 
+// ═══════════════════════════════════════════════════
+// iBE — Lumina restorative-case documentation
+// ═══════════════════════════════════════════════════
+// Same "fill fields, get a copyable summary" shape as Documentation, but
+// standalone: no CB, no chips/wand-flow, no ticket-add. The Patient block
+// repeats (one call can cover several patients) instead of a single
+// Name/Phone/Email row.
+
+function ibeFieldHtml(label, placeholder){
+  return '<div><label style="font-family:var(--mono);font-size:10px;color:var(--text3);display:block;margin-bottom:2px">'+label+'</label>'
+    +'<input class="iinput ibe-field" placeholder="'+placeholder+'" autocomplete="off" style="width:100%;height:24px;padding:2px 7px;font-size:12px" oninput="ibeBuildOutput()"></div>';
+}
+
+// Ordinal label shown above the 2nd+ patient block, both in the form and
+// in the built summary — the 1st block stays unlabeled (implicit).
+var IBE_ORDINALS=['','Second Order','Third Order','Fourth Order','Fifth Order','Sixth Order','Seventh Order','Eighth Order','Ninth Order','Tenth Order'];
+function ibeOrdinalLabel(index){
+  return IBE_ORDINALS[index] || ('Order #'+(index+1));
+}
+
+function ibeCreatePatientBlock(animate){
+  var block=document.createElement('div');
+  block.className='ibe-patient-block';
+  block.style.cssText='margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)'
+    +(animate?';opacity:0;transform:translateY(-6px);transition:opacity .3s var(--ease-out),transform .3s var(--ease-out)':'');
+  block.innerHTML=
+    '<div class="ibe-order-heading" style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text2);margin-bottom:5px;display:none"></div>'
+    // Row 1: Patient / Order ID / Rx ID (wider). Row 2 (auto-wraps): SW
+    // version lands under Patient, and the Add/Remove group is pinned to
+    // column 3 (under Rx ID) and pushed to the right edge of that cell.
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:6px;align-items:end">'
+      +ibeFieldHtml('PATIENT','Patient name')
+      +ibeFieldHtml('ORDER ID','Order ID')
+      +ibeFieldHtml('RX ID','Rx ID')
+      +ibeFieldHtml('SW VERSION','SW version')
+      +'<div style="grid-column:3;display:flex;gap:6px;justify-content:flex-end;align-items:center">'
+        +'<button class="btn-sm" onclick="ibeAddPatientBlock(this)" style="font-size:10px;padding:2px 8px;height:20px;line-height:14px;color:var(--text3)">+ Add Patient</button>'
+        +'<button class="btn-sm ibe-remove-btn" onclick="ibeRemovePatientBlock(this)" style="font-size:10px;padding:2px 8px;height:20px;line-height:14px;color:var(--text3);display:none">Remove</button>'
+      +'</div>'
+    +'</div>';
+  return block;
+}
+
+// Keeps the Remove buttons (hidden unless there's more than one block) and
+// the "Second Order"/"Third Order" headings (hidden on the first block)
+// in sync with each block's actual position after any add/remove.
+function ibeUpdatePatientChrome(){
+  var blocks=document.querySelectorAll('#ibe-patients .ibe-patient-block');
+  blocks.forEach(function(b,i){
+    var rm=b.querySelector('.ibe-remove-btn');
+    if(rm) rm.style.display = blocks.length>1 ? 'inline-flex' : 'none';
+    var heading=b.querySelector('.ibe-order-heading');
+    if(heading){
+      if(i>0){ heading.textContent=ibeOrdinalLabel(i); heading.style.display='block'; }
+      else { heading.style.display='none'; }
+    }
+  });
+}
+
+function ibeAddPatientBlock(){
+  var wrap=document.getElementById('ibe-patients');
+  if(!wrap)return;
+  var block=ibeCreatePatientBlock(true);
+  wrap.appendChild(block);
+  // Two rAFs so the browser commits the opacity:0/translateY starting
+  // state as a real paint before the transition target is applied —
+  // setting both in the same tick would just skip straight to the end
+  // state with no animation.
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ block.style.opacity='1'; block.style.transform='translateY(0)'; });
+  });
+  ibeUpdatePatientChrome();
+  ibeBuildOutput();
+}
+
+function ibeRemovePatientBlock(btn){
+  var block=btn.closest('.ibe-patient-block');
+  if(!block)return;
+  // Two phases: fade/lift the content out first, THEN smoothly collapse
+  // the space it took up. Removing the node right after the fade (the old
+  // behavior) let its height vanish instantly, snapping everything below
+  // it up in one frame — smooth fade, violent reflow. Freezing the
+  // height in px first (not the default "auto") is what makes it
+  // possible to transition it down to 0 instead of just jumping there.
+  var startHeight=block.offsetHeight;
+  block.style.overflow='hidden';
+  block.style.height=startHeight+'px';
+  block.style.transition='opacity .18s var(--ease-out),transform .18s var(--ease-out)';
+  block.style.opacity='0';
+  block.style.transform='translateY(-6px)';
+  setTimeout(function(){
+    block.style.transition='height .22s var(--ease-out),margin .22s var(--ease-out),padding .22s var(--ease-out),border-color .22s var(--ease-out)';
+    block.style.height='0px';
+    block.style.marginBottom='0px';
+    block.style.paddingBottom='0px';
+    block.style.borderBottomWidth='0px';
+    setTimeout(function(){
+      block.remove();
+      ibeUpdatePatientChrome();
+      ibeBuildOutput();
+    },220);
+  },180);
+}
+
+function ibeInitPatients(){
+  var wrap=document.getElementById('ibe-patients');
+  if(!wrap||wrap.children.length)return; // already seeded
+  wrap.appendChild(ibeCreatePatientBlock(false));
+  ibeUpdatePatientChrome();
+}
+
+function ibeDescToggle(forceOpen){
+  var el=document.getElementById('ibe-out-desc');
+  var caret=document.getElementById('ibe-desc-caret');
+  if(!el)return;
+  var open=(forceOpen===true)?true:(el.style.display==='none');
+  el.style.display=open?'block':'none';
+  if(caret)caret.textContent=open?'▼':'▶';
+}
+
+function ibeCopyDescBar(){
+  var el=document.getElementById('ibe-out-desc');
+  var hint=document.getElementById('ibe-desc-copy-hint');
+  var bar=document.getElementById('ibe-desc-header');
+  if(!el||el.textContent==='—')return;
+  navigator.clipboard.writeText(el.textContent).then(function(){
+    if(hint){hint.textContent='Copied';hint.style.color='var(--green)';}
+    if(bar){bar.style.borderColor='var(--green)';}
+    setTimeout(function(){
+      if(hint){hint.textContent='Copy';hint.style.color='';}
+      if(bar){bar.style.borderColor='';}
+    },1600);
+  });
+}
+
+// Verbatim per the requested clinical intake list — never edited
+// programmatically, just appended to / removed from the summary whole.
+var IBE_CLINICAL_QUESTIONS=[
+  '*Clinical intake questions*',
+  'When did this issue first occur?',
+  'How frequently does it happen? Rarely, sometimes, or often.',
+  'Detailed restorative case type, for example single crown, bridge, inlay, or onlay.',
+  'What tooth number is affected?',
+  'Adjacent tooth type: natural, crown, implant, or missing.',
+  'Where is the misfit seen?',
+  'Margin line.',
+  'Internal fit, comparing intaglio against the preparation.',
+  'Contact points, mesial or distal.',
+  'Contact with adjacent crowns in bridge cases.',
+  'Occlusion.',
+  'Path of insertion.',
+  'For implant cases, was an X-ray taken with the scan body before the scan? If yes, attach it to the ticket.',
+  'Type of restoration connection:',
+  'Direct.',
+  'Ti-base.',
+  'Individual abutment.'
+].join('\n');
+
+var _ibeQuestionsAdded=false;
+function ibeToggleQuestions(){
+  _ibeQuestionsAdded=!_ibeQuestionsAdded;
+  var btn=document.getElementById('ibe-add-questions-btn');
+  if(btn)btn.textContent=_ibeQuestionsAdded?'✕ Remove Questions':'+ Add Questions';
+  ibeBuildOutput();
+}
+
+function ibeClearAll(){
+  if(!confirm('Clear all iBE fields?'))return;
+  var scanner=document.getElementById('ibe-scanner');
+  var model=document.getElementById('ibe-model');
+  var details=document.getElementById('ibe-details');
+  if(scanner)scanner.value='';
+  if(model)model.value='';
+  if(details)details.value='';
+  var wrap=document.getElementById('ibe-patients');
+  if(wrap)wrap.innerHTML='';
+  ibeInitPatients();
+  _ibeQuestionsAdded=false;
+  var qBtn=document.getElementById('ibe-add-questions-btn');
+  if(qBtn)qBtn.textContent='+ Add Questions';
+  ibeBuildOutput();
+}
+
+function ibeBuildOutput(){
+  var scanner=(document.getElementById('ibe-scanner')||{}).value||'';
+  var model=(document.getElementById('ibe-model')||{}).value||'';
+  var details=(document.getElementById('ibe-details')||{}).value||'';
+
+  var lines=[];
+
+  // Scanner SN/model — written once at the top, never repeated per patient.
+  if(scanner||model){
+    var head=[];
+    if(scanner)head.push('Scanner SN: '+scanner);
+    if(model)head.push('Scanner model: '+model);
+    lines.push(head.join('\n'));
+  }
+
+  // One block per patient — unlabeled for the first, "Second Order" /
+  // "Third Order" / ... heading the rest (see ibeOrdinalLabel()).
+  document.querySelectorAll('#ibe-patients .ibe-patient-block').forEach(function(block,i){
+    var inputs=block.querySelectorAll('.ibe-field');
+    var patient=(inputs[0]&&inputs[0].value||'').trim();
+    var oid=(inputs[1]&&inputs[1].value||'').trim();
+    var rx=(inputs[2]&&inputs[2].value||'').trim();
+    var sw=(inputs[3]&&inputs[3].value||'').trim();
+    if(!patient&&!oid&&!rx&&!sw)return;
+    var blockLines=[];
+    if(i>0)blockLines.push(ibeOrdinalLabel(i));
+    if(patient)blockLines.push('‣ Patient: '+patient);
+    if(oid)blockLines.push('‣ Order ID: '+oid);
+    if(rx)blockLines.push('‣ Rx ID: '+rx);
+    if(sw)blockLines.push('‣ SW version: '+sw);
+    if(blockLines.length)lines.push(blockLines.join('\n'));
+  });
+
+  // Fixed boilerplate line — always present, regardless of what's filled in.
+  lines.push('Find on the attachment section the RTH files and Logs');
+
+  if(details.trim())lines.push('Details:\n'+details.trim());
+  if(_ibeQuestionsAdded)lines.push(IBE_CLINICAL_QUESTIONS);
+
+  var el=document.getElementById('ibe-out-desc');
+  if(el)el.textContent=lines.join('\n\n')||'—';
+}
+
 function switchPanel(name,el){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
@@ -5810,6 +5844,7 @@ function switchPanel(name,el){
   if(name==='partscatalog'){loadCatalog();}
   if(name==='documentation'){flSyncFromIntake();}
   if(name==='report'){escReportRender();}
+  if(name==='ibe'){ibeInitPatients();}
 }
 
 // ── HOLD timer ──────────────────────────────────────────
@@ -6512,483 +6547,14 @@ function wandBtnStillNotWorking(btn) {
 }
 
 
-function loadPBIReport() {
-  var token = document.getElementById('pbi-token-input').value.trim();
-  if (!token) {
-    var errEl = document.getElementById('pbi-error');
-    if (errEl) { errEl.style.display='block'; errEl.textContent='Please paste a Bearer token first.'; }
-    return;
-  }
-  var status = document.getElementById('pbi-token-status');
-  var section = document.getElementById('pbi-token-section');
-  var wrap = document.getElementById('pbi-frame-wrap');
-  var iframe = document.getElementById('pbi-iframe');
-  var errEl = document.getElementById('pbi-error');
-
-  // Build authenticated embed URL
-  // Power BI embed with token uses the reportEmbed URL loaded via postMessage after iframe loads
-  var embedUrl = 'https://app.powerbi.com/reportEmbed?reportId=3bd6aa6a-5fd5-4365-9d44-a110136cb4c0&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly9XQUJJLVdFU1QtVVMtQi1QUklNQVJZLXJlZGlyZWN0LmFuYWx5c2lzLndpbmRvd3MubmV0IiwiZW1iZWRGZWF0dXJlcyI6eyJ1c2FnZU1ldHJpY3NWTmV4dCI6dHJ1ZX19';
-
-  if (iframe) {
-    iframe.src = embedUrl;
-    iframe.onload = function() {
-      // Send token via postMessage to the Power BI iframe
-      try {
-        iframe.contentWindow.postMessage(JSON.stringify({
-          action: 'loadReport',
-          accessToken: token,
-          tokenType: 1,  // 1 = AAD token
-          id: '3bd6aa6a-5fd5-4365-9d44-a110136cb4c0',
-          embedUrl: embedUrl
-        }), 'https://app.powerbi.com');
-      } catch(e) {}
-    };
-  }
-
-  if (section) section.style.display = 'none';
-  if (wrap) wrap.style.display = 'block';
-  if (status) { status.textContent = 'Token loaded ✓'; status.style.color = 'var(--green)'; }
-  if (errEl) errEl.style.display = 'none';
-  logAction('Parts Catalog loaded');
-}
-
-
 // ═══════════════════════════════════════════════════
-// ESCALATIONS TRACKER
+// ESCALATIONS REPORT
 // ═══════════════════════════════════════════════════
-
-var _escTickets   = [];      // array of ticket objects
-var _escFilter    = 'all';   // current filter tab
-var _escEditId    = null;    // ticket being edited (null = new)
-var _escDrawerId  = null;    // ticket open in drawer
-var _escDrawerInterval = null;
-
-// ── Ticket schema ──────────────────────────────────────────────
-// {
-//   id, caseId, customer, subject, sfUrl, priority,
-//   status: 'open'|'closed'|'waiting',
-//   followupMs: epoch ms of next follow-up deadline,
-//   followupHours: 48,
-//   createdAt: epoch ms,
-//   history: [{ts, text}],
-//   notes: string
-// }
-
-// ── Storage (localStorage so it survives refreshes) ───────────
-var ESC_KEY = 'itero_esc_tickets_v1';
-
-function escLoad() {
-  try {
-    var raw = localStorage.getItem(ESC_KEY);
-    _escTickets = raw ? JSON.parse(raw) : [];
-  } catch(e) { _escTickets = []; }
-}
-function escSave() {
-  try { localStorage.setItem(ESC_KEY, JSON.stringify(_escTickets)); } catch(e){}
-}
-
-// ── Render list ────────────────────────────────────────────────
-function escRender() {
-  escLoad();
-  var list    = document.getElementById('esc-list');
-  var emptyEl = document.getElementById('esc-empty');
-  if (!list) return;
-
-  // Stats
-  var open=0, overdue=0, closed=0;
-  var now = Date.now();
-  _escTickets.forEach(function(t){
-    if (t.status === 'closed') { closed++; return; }
-    open++;
-    if (t.followupMs && t.followupMs < now) overdue++;
-  });
-  var so = document.getElementById('esc-stat-open');
-  var sr = document.getElementById('esc-stat-overdue');
-  var sc = document.getElementById('esc-stat-closed');
-  var cb = document.getElementById('esc-count-badge');
-  if(so) so.textContent = open;
-  if(sr) sr.textContent = overdue;
-  if(sc) sc.textContent = closed;
-  if(cb) cb.textContent = _escTickets.length + ' ticket(s)';
-
-  // Filter
-  var visible = _escTickets.filter(function(t){
-    if (_escFilter === 'open')    return t.status !== 'closed';
-    if (_escFilter === 'overdue') return t.status !== 'closed' && t.followupMs && t.followupMs < now;
-    if (_escFilter === 'closed')  return t.status === 'closed';
-    return true;
-  });
-
-  list.innerHTML = '';
-  if (visible.length === 0) {
-    emptyEl.style.display = 'block'; return;
-  }
-  emptyEl.style.display = 'none';
-
-  visible.forEach(function(t) {
-    var remaining = t.followupMs - now;
-    var isOverdue = t.status !== 'closed' && remaining < 0;
-    var isUrgent  = t.status !== 'closed' && remaining >= 0 && remaining < 6 * 3600000; // <6h
-
-    var priorityColors = { normal:'var(--blue)', high:'var(--amber)', critical:'var(--red)' };
-    var statusColors   = { open:'var(--blue)', waiting:'var(--amber)', closed:'var(--green)' };
-    var pColor = priorityColors[t.priority] || 'var(--blue)';
-    var sColor = statusColors[t.status]     || 'var(--blue)';
-
-    var card = document.createElement('div');
-    card.style.cssText = [
-      'background:var(--bg3)',
-      'border:1px solid ' + (isOverdue ? 'var(--red)' : isUrgent ? '#7c4a00' : 'var(--border)'),
-      'border-radius:var(--rl)',
-      'padding:11px 13px',
-      'cursor:pointer',
-      'transition:border-color .13s'
-    ].join(';');
-    card.onmouseenter = function(){ this.style.borderColor = isOverdue ? '#ff6b6b' : 'var(--border2)'; };
-    card.onmouseleave = function(){ this.style.borderColor = isOverdue ? 'var(--red)' : isUrgent ? '#7c4a00' : 'var(--border)'; };
-    card.onclick = function(){ escOpenDrawer(t.id); };
-
-    // Top row: case ID + priority badge + status
-    var topRow = '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'
-      + '<span style="font-family:var(--mono);font-size:11px;font-weight:600;color:'+pColor+'">'
-      + (t.caseId ? '#' + t.caseId : 'No ID') + '</span>'
-      + '<span style="font-size:9px;padding:1px 6px;border:1px solid '+pColor+';border-radius:3px;color:'+pColor+';font-family:var(--mono);text-transform:uppercase">'
-      + (t.priority||'normal') + '</span>'
-      + '<span style="font-size:9px;padding:1px 6px;border:1px solid '+sColor+';border-radius:3px;color:'+sColor+';font-family:var(--mono);text-transform:uppercase;margin-left:auto">'
-      + (t.status||'open') + '</span>'
-      + '</div>';
-
-    // Subject
-    var subj = '<div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
-      + escHtml(t.subject || '(no subject)') + '</div>';
-
-    // Customer
-    var cust = t.customer
-      ? '<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:6px">' + escHtml(t.customer) + '</div>'
-      : '';
-
-    // Countdown
-    var cdLabel = '', cdColor = 'var(--text2)';
-    if (t.status === 'closed') {
-      cdLabel = '✓ Closed';
-      cdColor = 'var(--green)';
-    } else if (isOverdue) {
-      cdLabel = '⚠ OVERDUE ' + escFmtDuration(Math.abs(remaining)) + ' ago';
-      cdColor = 'var(--red)';
-    } else {
-      cdLabel = '⏱ ' + escFmtDuration(remaining) + ' remaining';
-      cdColor = isUrgent ? 'var(--amber)' : 'var(--text3)';
-    }
-    var countdown = '<div style="font-family:var(--mono);font-size:10px;color:'+cdColor+'">' + cdLabel + '</div>';
-
-    card.innerHTML = topRow + subj + cust + countdown;
-    list.appendChild(card);
-  });
-}
-
-// ── Modal (add/edit) ───────────────────────────────────────────
-function escOpenAdd() {
-  _escEditId = null;
-  document.getElementById('esc-modal-title').textContent = 'New Escalation Ticket';
-  document.getElementById('esc-inp-url').value      = '';
-  document.getElementById('esc-inp-id').value       = '';
-  document.getElementById('esc-inp-customer').value = '';
-  document.getElementById('esc-inp-subject').value  = '';
-  document.getElementById('esc-inp-notes').value    = '';
-  document.getElementById('esc-inp-priority').value = 'normal';
-  document.getElementById('esc-inp-followup').value = '48';
-  document.getElementById('esc-fetch-status').style.display = 'none';
-  var bg = document.getElementById('esc-modal-bg');
-  bg.style.display = 'flex';
-}
-
-function escCloseModal() {
-  document.getElementById('esc-modal-bg').style.display = 'none';
-}
-
-function escUrlChanged(val) {
-  // Auto-extract case ID from SF URL pattern
-  var m = val.match(/\/([0-9]{8,18})/);
-  if (m) document.getElementById('esc-inp-id').value = m[1];
-}
-
-function escFetchSF() {
-  var url = document.getElementById('esc-inp-url').value.trim();
-  if (!url) return;
-  var statusEl = document.getElementById('esc-fetch-status');
-  var btnLbl   = document.getElementById('esc-fetch-lbl');
-  statusEl.style.display = 'block';
-  statusEl.style.color   = 'var(--text3)';
-  statusEl.textContent   = 'Fetching...';
-  btnLbl.textContent     = '...';
-
-  // Ask backend to fetch the SF page title using the system browser session
-  if (window.pywebview) {
-    pyApi('fetch_sf_case_title', url).then(function(r){
-      btnLbl.textContent = 'Fetch title';
-      if (r && r.status === 'ok' && r.data && r.data.title) {
-        document.getElementById('esc-inp-subject').value = r.data.title;
-        if (r.data.customer) document.getElementById('esc-inp-customer').value = r.data.customer;
-        if (r.data.case_id)  document.getElementById('esc-inp-id').value = r.data.case_id;
-        statusEl.style.color   = 'var(--green)';
-        statusEl.textContent   = '✓ Title fetched from Salesforce';
-      } else {
-        // SF requires login — fill title manually, but try to keep case ID if already parsed
-        statusEl.style.color   = 'var(--amber)';
-        statusEl.textContent   = '⚠ SF requires login — fill Subject manually.';
-      }
-    }).catch(function(e){
-      btnLbl.textContent = 'Fetch title';
-      statusEl.style.color = 'var(--amber)';
-      statusEl.textContent = '⚠ SF requires login — fill Subject manually.';
-    });
-  } else {
-    // Dev mode
-    setTimeout(function(){
-      btnLbl.textContent = 'Fetch title';
-      statusEl.style.color = 'var(--amber)';
-      statusEl.textContent = '⚠ Dev mode — fill in manually.';
-    }, 600);
-  }
-}
-
-function escSaveTicket() {
-  var caseId   = document.getElementById('esc-inp-id').value.trim();
-  var customer = document.getElementById('esc-inp-customer').value.trim();
-  var subject  = document.getElementById('esc-inp-subject').value.trim();
-  var url      = document.getElementById('esc-inp-url').value.trim();
-  var priority = document.getElementById('esc-inp-priority').value;
-  var fhours   = parseInt(document.getElementById('esc-inp-followup').value) || 48;
-  var notes    = document.getElementById('esc-inp-notes').value.trim();
-
-  if (!subject && !caseId) {
-    document.getElementById('esc-inp-subject').style.outline = '2px solid var(--red)';
-    return;
-  }
-  document.getElementById('esc-inp-subject').style.outline = '';
-
-  escLoad();
-  var now = Date.now();
-
-  if (_escEditId) {
-    // Edit existing
-    var t = _escTickets.find(function(x){ return x.id === _escEditId; });
-    if (t) {
-      t.caseId   = caseId;
-      t.customer = customer;
-      t.subject  = subject;
-      t.sfUrl    = url;
-      t.priority = priority;
-      if (notes) t.history.push({ ts: now, text: '📝 ' + notes });
-    }
-  } else {
-    // New ticket
-    var ticket = {
-      id:          'esc_' + now,
-      caseId:      caseId,
-      customer:    customer,
-      subject:     subject,
-      sfUrl:       url,
-      priority:    priority,
-      status:      'open',
-      followupMs:  now + fhours * 3600000,
-      followupHours: fhours,
-      createdAt:   now,
-      history:     [],
-      notes:       notes
-    };
-    if (notes) ticket.history.push({ ts: now, text: '📋 ' + notes });
-    _escTickets.unshift(ticket);
-  }
-
-  escSave();
-  escRender();
-  escCloseModal();
-  if (typeof logAction === 'function') logAction('Escalation ticket saved: ' + (subject || caseId));
-}
-
-// ── Drawer ─────────────────────────────────────────────────────
-function escOpenDrawer(id) {
-  escLoad();
-  var t = _escTickets.find(function(x){ return x.id === id; });
-  if (!t) return;
-  _escDrawerId = id;
-
-  document.getElementById('drw-subject').textContent = t.subject || '(no subject)';
-  document.getElementById('drw-meta').textContent =
-    (t.caseId ? 'Case #' + t.caseId + '  ·  ' : '') +
-    (t.customer ? t.customer + '  ·  ' : '') +
-    'Created ' + new Date(t.createdAt).toLocaleString();
-
-  var sfWrap = document.getElementById('drw-sf-wrap');
-  var sfLink = document.getElementById('drw-sf-link');
-  if (t.sfUrl) {
-    sfWrap.style.display = 'block';
-    sfLink.href = t.sfUrl;
-    sfLink.textContent = t.sfUrl;
-  } else {
-    sfWrap.style.display = 'none';
-  }
-
-  _escRenderHistory(t);
-  _escUpdateDrawerCountdown(t);
-
-  if (_escDrawerInterval) clearInterval(_escDrawerInterval);
-  _escDrawerInterval = setInterval(function(){
-    escLoad();
-    var tt = _escTickets.find(function(x){ return x.id === _escDrawerId; });
-    if (tt) _escUpdateDrawerCountdown(tt);
-  }, 1000);
-
-  document.getElementById('esc-drawer-bg').style.display = 'flex';
-}
-
-function escCloseDrawer() {
-  if (_escDrawerInterval) { clearInterval(_escDrawerInterval); _escDrawerInterval = null; }
-  _escDrawerId = null;
-  document.getElementById('esc-drawer-bg').style.display = 'none';
-}
-
-function _escUpdateDrawerCountdown(t) {
-  var el   = document.getElementById('drw-countdown');
-  var icon = document.getElementById('drw-countdown-icon');
-  var wrap = document.getElementById('drw-countdown-wrap');
-  if (!el) return;
-  if (t.status === 'closed') {
-    el.textContent = '✓ CLOSED';
-    el.style.color = 'var(--green)';
-    if(icon) icon.textContent = '✅';
-    if(wrap) wrap.style.borderColor = 'var(--green)';
-    return;
-  }
-  var remaining = t.followupMs - Date.now();
-  if (remaining < 0) {
-    el.textContent = '-' + escFmtDuration(Math.abs(remaining)) + ' overdue';
-    el.style.color = 'var(--red)';
-    if(icon) icon.textContent = '🚨';
-    if(wrap) wrap.style.borderColor = 'var(--red)';
-  } else if (remaining < 6 * 3600000) {
-    el.textContent = escFmtDuration(remaining);
-    el.style.color = 'var(--amber)';
-    if(icon) icon.textContent = '⚠️';
-    if(wrap) wrap.style.borderColor = 'var(--amber)';
-  } else {
-    el.textContent = escFmtDuration(remaining);
-    el.style.color = 'var(--text)';
-    if(icon) icon.textContent = '⏳';
-    if(wrap) wrap.style.borderColor = 'var(--border)';
-  }
-}
-
-function _escRenderHistory(t) {
-  var el   = document.getElementById('drw-history');
-  var emp  = document.getElementById('drw-history-empty');
-  if (!el) return;
-  if (!t.history || t.history.length === 0) {
-    el.innerHTML = '';
-    if(emp) emp.style.display = 'block';
-    return;
-  }
-  if(emp) emp.style.display = 'none';
-  el.innerHTML = t.history.slice().reverse().map(function(h){
-    return '<div style="background:var(--bg4);border-left:2px solid var(--border2);padding:7px 10px;border-radius:0 var(--r) var(--r) 0">'
-      + '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:3px">'
-      + new Date(h.ts).toLocaleString() + '</div>'
-      + '<div style="font-size:12px;color:var(--text2)">' + escHtml(h.text) + '</div>'
-      + '</div>';
-  }).join('');
-}
-
-function escAddNote() {
-  var inp = document.getElementById('drw-note-input');
-  if (!inp || !inp.value.trim()) return;
-  escLoad();
-  var t = _escTickets.find(function(x){ return x.id === _escDrawerId; });
-  if (!t) return;
-  var now = Date.now();
-  t.history.push({ ts: now, text: inp.value.trim() });
-  // Reset timer
-  t.followupMs = now + (t.followupHours || 48) * 3600000;
-  t.status = t.status === 'closed' ? 'open' : t.status;
-  inp.value = '';
-  escSave();
-  _escRenderHistory(t);
-  _escUpdateDrawerCountdown(t);
-  escRender();
-  if (typeof logAction === 'function') logAction('Escalation follow-up added: ' + t.caseId);
-}
-
-function escSetStatus(status) {
-  escLoad();
-  var t = _escTickets.find(function(x){ return x.id === _escDrawerId; });
-  if (!t) return;
-  t.status = status;
-  t.history.push({ ts: Date.now(), text: '🔄 Status changed to: ' + status });
-  escSave();
-  _escRenderHistory(t);
-  _escUpdateDrawerCountdown(t);
-  escRender();
-}
-
-function escResetFollowup() {
-  escLoad();
-  var t = _escTickets.find(function(x){ return x.id === _escDrawerId; });
-  if (!t) return;
-  var now = Date.now();
-  t.followupMs = now + (t.followupHours || 48) * 3600000;
-  t.history.push({ ts: now, text: '↻ Follow-up timer reset (' + (t.followupHours||48) + 'h)' });
-  escSave();
-  _escRenderHistory(t);
-  _escUpdateDrawerCountdown(t);
-  escRender();
-}
-
-function escDeleteTicket() {
-  if (!_escDrawerId) return;
-  if (!confirm('Delete this ticket? This cannot be undone.')) return;
-  escLoad();
-  _escTickets = _escTickets.filter(function(x){ return x.id !== _escDrawerId; });
-  escSave();
-  escCloseDrawer();
-  escRender();
-}
-
-function escOpenSF(e) {
-  e.preventDefault();
-  var t = _escTickets.find(function(x){ return x.id === _escDrawerId; });
-  if (!t || !t.sfUrl) return;
-  if (window.pywebview) {
-    try { window.pywebview.api.open_url_in_browser(t.sfUrl); } catch(er){}
-  } else {
-    window.open(t.sfUrl, '_blank');
-  }
-}
-
-function escSetFilter(f) {
-  _escFilter = f;
-  ['all','open','overdue','closed'].forEach(function(x){
-    var btn = document.getElementById('esc-tab-' + x);
-    if (btn) btn.className = (x === f) ? 'btn-sm p' : 'btn-sm';
-  });
-  escRender();
-}
-
-// Background tick — refreshes countdowns on the list every 30s
-function escTickAll() {
-  escRender();
-  setInterval(function(){ if (currentRole === 'ESC') escRender(); }, 30000);
-}
-
-// ── Utilities ──────────────────────────────────────────────────
-function escFmtDuration(ms) {
-  if (ms < 0) ms = 0;
-  var h = Math.floor(ms / 3600000);
-  var m = Math.floor((ms % 3600000) / 60000);
-  var s = Math.floor((ms % 60000) / 1000);
-  if (h > 0)  return h + 'h ' + String(m).padStart(2,'0') + 'm';
-  if (m > 0)  return m + 'm ' + String(s).padStart(2,'0') + 's';
-  return s + 's';
-}
+// (An older "Escalation Tracker" — a separate ticket board with follow-up
+// countdowns — used to live in this file too. It was superseded by the
+// report below and had no reachable nav entry left, so it was removed
+// rather than kept around unused. escHtml() is the one piece of it still
+// needed here.)
 
 function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -7005,6 +6571,9 @@ var ESC_REPORT_KEY = 'itero_esc_report_v1';
 var _escReportEntries = [];
 // Same magnifying-glass icon Documentation's MAT search button uses.
 var ESC_REPORT_LUPA_SVG = '<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="14.5" y2="14.5"/></svg>';
+// Small pencil next to Solution Provided — lets an agent type it in by
+// hand (or fix what the lupa pulled) without needing a Salesforce lookup.
+var ESC_REPORT_PENCIL_SVG = '<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/></svg>';
 
 // Mirrors backend.py's _ESC_REPORT_SOLUTION_TEMPLATES exactly — these are
 // the only phrases _esc_report_match_solution_template() recognizes in a
@@ -7104,10 +6673,16 @@ function escReportAdd(ticketInputId) {
     subIssueType:   (existing && existing.subIssueType) || '',
     solution:       (existing && existing.solution) || '',
     csat:           (existing && existing.csat) || '',
+    origin:         (existing && existing.origin) || '',
+    previousHandler: (existing && existing.previousHandler) || '',
     savedAt: new Date().toLocaleString()
   };
 
-  if (idx !== -1) _escReportEntries[idx] = entry; else _escReportEntries.push(entry);
+  // Newest first — re-adding an already-logged ticket counts as touching
+  // it again, so it moves back to the top too instead of staying wherever
+  // it was originally logged.
+  if (idx !== -1) _escReportEntries.splice(idx, 1);
+  _escReportEntries.unshift(entry);
   escReportSave();
   escReportRender();
 
@@ -7376,7 +6951,22 @@ function escReportRender() {
     }
     if (e.serialNumber)   detailParts.push('<div style="margin-bottom:6px"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">SERIAL NUMBER</span><br><span style="cursor:pointer" title="Double-click to copy" ondblclick="event.stopPropagation();_escReportCopyField(' + i + ',\'serialNumber\',this)">' + escHtml(e.serialNumber) + '</span></div>');
     if (e.categorization) detailParts.push('<div style="margin-bottom:6px"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">CATEGORIZATION</span><br>' + escHtml(e.categorization) + '</div>');
-    if (e.solution)        detailParts.push('<div style="margin-bottom:6px"><span style="color:var(--text3);font-family:var(--mono);font-size:10px">SOLUTION PROVIDED</span><br>' + escHtml(e.solution) + '</div>');
+    // Origin of the escalation — always manual, nothing pulls this from
+    // Salesforce, so it's just a plain input rather than the
+    // display-then-pencil-to-edit pattern Solution Provided uses.
+    detailParts.push('<div style="margin-bottom:6px">'
+      + '<span style="color:var(--text3);font-family:var(--mono);font-size:10px">ORIGIN OF THE ESCALATION</span><br>'
+      + '<input class="iinput" value="' + escHtml(e.origin || '') + '" placeholder="e.g. Chat, Phone, Email, SF Case" autocomplete="off" style="width:100%;height:26px;font-size:12px;margin-top:3px" onclick="event.stopPropagation()" oninput="escReportUpdateOrigin(' + i + ',this.value)">'
+      + '<span style="color:var(--text3);font-family:var(--mono);font-size:10px;display:block;margin-top:5px">PREVIOUS CASE HANDLER</span>'
+      + '<input class="iinput" value="' + escHtml(e.previousHandler || '') + '" placeholder="Who handled this case before it was escalated" autocomplete="off" style="width:100%;height:26px;font-size:12px;margin-top:3px" onclick="event.stopPropagation()" oninput="escReportUpdatePreviousHandler(' + i + ',this.value)">'
+    + '</div>');
+    detailParts.push('<div style="margin-bottom:6px">'
+      + '<div style="display:flex;align-items:center;gap:5px">'
+        + '<span style="color:var(--text3);font-family:var(--mono);font-size:10px">SOLUTION PROVIDED</span>'
+        + '<span onclick="event.stopPropagation();escReportEditSolution(' + i + ')" title="Edit" style="cursor:pointer;color:var(--text3);display:flex;align-items:center" onmouseover="this.style.color=\'var(--blue)\'" onmouseout="this.style.color=\'var(--text3)\'">' + ESC_REPORT_PENCIL_SVG + '</span>'
+      + '</div>'
+      + '<div id="esc-report-solution-box-' + i + '">' + (e.solution ? escHtml(e.solution) : '<span style="color:var(--text3)">—</span>') + '</div>'
+    + '</div>');
     if (e.csat)             detailParts.push('<div><span style="color:var(--text3);font-family:var(--mono);font-size:10px">CSAT</span><br>' + escHtml(e.csat) + '</div>');
     detail.innerHTML = detailParts.length ? detailParts.join('') : '<span style="color:var(--text3)">No info available</span>';
 
@@ -7384,6 +6974,51 @@ function escReportRender() {
     card.appendChild(detail);
     list.appendChild(card);
   });
+}
+
+// Swaps the Solution Provided display for an inline textarea — done as a
+// direct DOM swap on just this one box rather than a full escReportRender()
+// so a background re-render (e.g. Find All finishing another ticket)
+// can't wipe out an edit in progress before it's saved.
+function escReportEditSolution(idx) {
+  var box = document.getElementById('esc-report-solution-box-' + idx);
+  var entry = _escReportEntries[idx];
+  if (!box || !entry) return;
+  var current = entry.solution || '';
+  box.innerHTML = '<textarea id="esc-report-solution-input-' + idx + '" class="iinput" rows="3" spellcheck="true" lang="en" style="width:100%;font-size:12px;margin-top:3px;resize:vertical" onclick="event.stopPropagation()"></textarea>'
+    + '<div style="display:flex;gap:6px;margin-top:4px">'
+      + '<button class="btn-sm p" onclick="event.stopPropagation();escReportSaveSolution(' + idx + ')" style="font-size:10px;padding:2px 8px">Save</button>'
+      + '<button class="btn-sm" onclick="event.stopPropagation();escReportRender()" style="font-size:10px;padding:2px 8px">Cancel</button>'
+    + '</div>';
+  var ta = document.getElementById('esc-report-solution-input-' + idx);
+  if (ta) { ta.value = current; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+}
+
+function escReportSaveSolution(idx) {
+  var ta = document.getElementById('esc-report-solution-input-' + idx);
+  var entry = _escReportEntries[idx];
+  if (!ta || !entry) return;
+  entry.solution = ta.value.trim();
+  escReportSave();
+  escReportRender();
+}
+
+// Origin of the escalation is a plain input, not a display+pencil toggle
+// (see the render side) — updates on every keystroke without re-rendering
+// the list, so typing never loses focus or gets clobbered by a Find All
+// re-render finishing mid-type.
+function escReportUpdateOrigin(idx, value) {
+  var entry = _escReportEntries[idx];
+  if (!entry) return;
+  entry.origin = value;
+  escReportSave();
+}
+
+function escReportUpdatePreviousHandler(idx, value) {
+  var entry = _escReportEntries[idx];
+  if (!entry) return;
+  entry.previousHandler = value;
+  escReportSave();
 }
 
 function escReportExport() {
@@ -9068,17 +8703,6 @@ function flCopySubjectBar() {
   });
 }
 
-function flCopy(id, btn) {
-  var el = document.getElementById(id);
-  if (!el || el.textContent === '—') return;
-  navigator.clipboard.writeText(el.textContent).then(function(){
-    var orig = btn.textContent;
-    btn.textContent = 'Copied';
-    btn.style.color = 'var(--green)';
-    setTimeout(function(){ btn.textContent = orig; btn.style.color = ''; }, 1800);
-  });
-}
-
 function flDescToggle(forceOpen) {
   var el     = document.getElementById('fl-out-desc');
   var caret  = document.getElementById('fl-desc-caret');
@@ -9623,8 +9247,24 @@ function hkRenderList() {
     }).join('');
     pyApi('get_hotkey_status').then(function(s){
       var el2 = document.getElementById('hk-status-line');
-      if (!el2 || !s || !s.data) return;
+      if (!el2) return;
+      if (!s || !s.data) {
+        el2.textContent = 'Could not reach the app backend to check hotkey status.';
+        el2.style.color = 'var(--red)';
+        return;
+      }
       var d = s.data;
+      if (d.crash) {
+        el2.textContent = 'Hotkey listener crashed on startup: ' + d.crash;
+        el2.style.color = 'var(--red)';
+        return;
+      }
+      if (!d.thread_running) {
+        el2.textContent = 'Hotkey listener is not running.';
+        el2.style.color = 'var(--red)';
+        return;
+      }
+      el2.style.color = '';
       el2.textContent = d.registered + ' registered' + (d.failed && d.failed.length ? ' · ' + d.failed.length + ' failed: ' + d.failed.join(', ') : '');
     });
   });
