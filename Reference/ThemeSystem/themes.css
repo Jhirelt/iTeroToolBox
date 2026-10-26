@@ -1,0 +1,289 @@
+/* ============================================================================
+   THEME SYSTEM — portable palette engine, extracted from iTeroToolBox
+   ============================================================================
+
+   HOW IT WORKS
+   ------------
+   One flat set of CSS custom properties (design tokens) is defined on
+   :root — that's the DEFAULT theme ("dark" below). Every other theme is
+   just a class on <html> that redefines the same variable names with
+   different values. Nothing else in your CSS ever references a literal
+   color — everywhere else you write `color: var(--text)`,
+   `background: var(--bg2)`, etc., and swapping the theme is just swapping
+   which block of variable values is in effect.
+
+   ACTIVATING A THEME (JS)
+   ------------------------
+       function setTheme(name) {
+         document.documentElement.classList.remove(
+           'light', 'theme-b', 'theme-c' /* ...every theme name except the default */
+         );
+         if (name !== 'dark') document.documentElement.classList.add(name);
+         localStorage.setItem('app_theme', name);
+       }
+       // on load: setTheme(localStorage.getItem('app_theme') || 'dark');
+
+   The default theme (whatever :root defines) needs NO class — it's the
+   fallback. Every other theme is `html.<name> { --token: value; ... }`,
+   only overriding the tokens that actually change.
+
+   TOKEN REFERENCE
+   ----------------
+   Surfaces (4-step elevation, darkest/lowest to lightest/highest):
+     --bg      page background
+     --bg2     panel/card background (titlebar, sidebar, inputs sit here)
+     --bg3     one step up — hover states, secondary panels
+     --bg4     highest elevation — active/pressed states
+
+   Borders (2-step):
+     --border   default dividers/outlines
+     --border2  emphasized borders (focus, hover)
+
+   Text (3-step hierarchy):
+     --text     primary text
+     --text2    secondary text (labels, muted body text)
+     --text3    tertiary text (placeholders, disabled, timestamps)
+
+   Semantic colors — each has a matching pale "-bg" tint for badges/chips,
+   and --blue also carries a "-dim" step used for hover/pressed variants:
+     --blue / --blue-bg / --blue-dim   primary/info
+     --green / --green-bg              success
+     --amber / --amber-bg              warning
+     --red / --red-bg                  danger/destructive
+     --teal / --teal-bg                secondary accent slot
+     --purple / --purple-bg            secondary accent slot
+     (teal/purple are frequently just aliased to blue or amber in a given
+     theme rather than getting their own hue — see the blocks below)
+
+   Brand accent (usually mirrors --blue, kept separate so it CAN diverge):
+     --accent / --accent-dim
+
+   Typography & shape:
+     --mono     monospace font stack (data, technical fields)
+     --sans     UI font stack (everything else)
+     --r        small border-radius (buttons, inputs, chips)
+     --rl       large border-radius (cards, panels)
+     --ease-out standard transition easing curve
+
+   Optional secondary set — only meaningful if your app has a distinctly-
+   colored header/title bar separate from the main surface colors (the
+   "character" themes below use this for a colorful bar with a badge on
+   it; the plain dark/light themes skip it entirely and just inherit the
+   surface/text tokens instead):
+     --titlebar-bg     header bar background
+     --tb-name         header bar primary text color
+     --tb-role         header bar secondary badge text color
+     --tb-role-bg      header bar secondary badge background
+     --tb-role-border  header bar secondary badge border
+
+   ADDING A NEW THEME
+   -------------------
+   Copy the TEMPLATE block at the bottom of this file, rename the class,
+   fill in every token. You don't have to redefine --mono/--sans/--r/--rl
+   unless the theme wants a different font or corner radius — omit a
+   token and it just falls through to whatever :root already set.
+   ============================================================================ */
+
+:root {
+  /* dark — the default theme, needs no class on <html> */
+  --bg:#0d0f12;      --bg2:#13161b;     --bg3:#191d24;     --bg4:#1f242d;
+  --border:#252b36;  --border2:#2e3848;
+  --text:#edf1f7;    --text2:#9ab2c8;   --text3:#60788e;
+
+  --blue:#5fa8e8;    --blue-bg:#111d2e; --blue-dim:#152238;
+  --green:#4ab87e;   --green-bg:#0d1f17;
+  --amber:#e09b3a;   --amber-bg:#1f1608;
+  --red:#d95a4a;     --red-bg:#1e0f0d;
+  --teal:#5fa8e8;    --teal-bg:#111d2e;   /* aliased to blue in this theme */
+  --purple:#5fa8e8;  --purple-bg:#111d2e; /* aliased to blue in this theme */
+
+  --accent:#5fa8e8;  --accent-dim:#152238;
+
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+  --r:6px; --rl:8px;
+  --ease-out:cubic-bezier(.4,0,.2,1);
+}
+
+html.light {
+  --bg:#f0f3f7;      --bg2:#ffffff;     --bg3:#f5f7fa;     --bg4:#e8ecf2;
+  --border:#dde3eb;  --border2:#bcc7d4;
+  --text:#1a2636;    --text2:#3d5a72;   --text3:#6e8fa8;
+
+  --blue:#1a72c4;    --blue-bg:#deedfb; --blue-dim:#c2dff7;
+  --green:#1d8a55;   --green-bg:#d4f1e3;
+  --amber:#b5720a;   --amber-bg:#fdf0d9;
+  --red:#c42828;     --red-bg:#fce8e6;
+  --teal:#1a72c4;    --teal-bg:#deedfb;
+  --purple:#1a72c4;  --purple-bg:#deedfb;
+
+  --accent:#1a72c4;  --accent-dim:#c2dff7;
+}
+
+/* ---------------------------------------------------------------------
+   "Character" themes — same token system, plus the optional titlebar
+   set. Distinct fonts (Baloo 2, a rounded display face) on the playful
+   ones; --r left at :root's default everywhere except uzumaki, which
+   tightens it slightly.
+   --------------------------------------------------------------------- */
+
+html.theme-warm-cream /* was "pompompurin" */ {
+  --bg:#fdf2cf;      --bg2:#fffaf0;     --bg3:#fbeec9;     --bg4:#f5e1a8;
+  --border:#e8d3a0;  --border2:#d4b876;
+  --text:#4a2c1c;    --text2:#6e4226;   --text3:#8f5a36;
+
+  --blue:#7a4a2e;    --blue-bg:#f5e6c8; --blue-dim:#d4ad79;
+  --green:#4d6e2e;   --green-bg:#e8f0d4;
+  --amber:#a8600f;   --amber-bg:#fbe8c4;
+  --red:#a3402c;     --red-bg:#f7e0d4;
+  --teal:#7a4a2e;    --teal-bg:#f5e6c8;
+  --purple:#7a4a2e;  --purple-bg:#f5e6c8;
+
+  --accent:#7a4a2e;  --accent-dim:#d4ad79;
+  --mono:'Baloo 2',sans-serif; --sans:'Baloo 2',sans-serif;
+
+  --titlebar-bg:#7a4a2e; --tb-name:#fff8e8; --tb-role:#4a2c1c;
+  --tb-role-bg:#fffaf0;  --tb-role-border:#e8d3a0;
+}
+
+html.theme-forest-dark /* was "roronoa" */ {
+  --bg:#000000;      --bg2:#11150f;     --bg3:#1a2017;     --bg4:#232b1d;
+  --border:#3f4f3c;  --border2:#566b4f;
+  --text:#eaf2e6;    --text2:#a9c2a0;   --text3:#74926a;
+
+  --blue:#2fbd1f;    --blue-bg:#0a3d0f; --blue-dim:#0f5717;
+  --green:#2fbd1f;   --green-bg:#0a3d0f;
+  --amber:#c98a4a;   --amber-bg:#241a10;
+  --red:#a3402c;     --red-bg:#241616;
+  --teal:#2fbd1f;    --teal-bg:#0a3d0f;
+  --purple:#8a5c5c;  --purple-bg:#241616;
+
+  --accent:#2fbd1f;  --accent-dim:#0f5717;
+  /* no titlebar set — this theme colors its header via .titlebar{background}
+     directly instead of the optional tb-* tokens; add one if you want it */
+}
+
+html.theme-blush-pink /* was "melody" */ {
+  --bg:#fdf3f9;      --bg2:#fff8fc;     --bg3:#f3ddec;     --bg4:#ecc9e3;
+  --border:#ddb2ee;  --border2:#c98fd4;
+  --text:#5a3a52;    --text2:#7a5470;   --text3:#9c7693;
+
+  --blue:#e08bab;    --blue-bg:#fbe4ee; --blue-dim:#f0a0bb;
+  --green:#6a9e7a;   --green-bg:#e7f0e9;
+  --amber:#c99a5a;   --amber-bg:#f5ead8;
+  --red:#c96a7a;     --red-bg:#f7e2e6;
+  --teal:#e08bab;    --teal-bg:#fbe4ee;
+  --purple:#c98fd4;  --purple-bg:#f0ddf5;
+
+  --accent:#e08bab;  --accent-dim:#f0a0bb;
+  --mono:'Baloo 2',sans-serif; --sans:'Baloo 2',sans-serif;
+
+  --titlebar-bg:#cf7aa0; --tb-name:#fdf3f9; --tb-role:#5a3a52;
+  --tb-role-bg:#fff8fc;  --tb-role-border:#ddb2ee;
+}
+
+html.theme-midnight-maroon /* was "itachi" */ {
+  --bg:#1c1e22;      --bg2:#22252b;     --bg3:#2b3550;     --bg4:#333d5c;
+  --border:#3a4565;  --border2:#4a5680;
+  --text:#dcdcd8;    --text2:#a8acb5;   --text3:#7d8194;
+
+  --blue:#3f72b0;    --blue-bg:#163e6e; --blue-dim:#2a5283;
+  --green:#4a8f6a;   --green-bg:#16261e;
+  --amber:#c98a4a;   --amber-bg:#2a2014;
+  --red:#8e1b30;     --red-bg:#2a1318;
+  --teal:#3f72b0;    --teal-bg:#163e6e;
+  --purple:#8e1b30;  --purple-bg:#2a1318;
+
+  --accent:#3f72b0;  --accent-dim:#2a5283;
+
+  --titlebar-bg:#8e1b30; --tb-name:#f1ece9; --tb-role:#dcdcd8;
+  --tb-role-bg:#2b3550;  --tb-role-border:#4a5680;
+}
+
+html.theme-amber-orange /* was "uzumaki" */ {
+  --bg:#13100a;      --bg2:#1c1710;     --bg3:#2e2010;     --bg4:#3d2c16;
+  --border:#4a3418;  --border2:#6e4e22;
+  --text:#f0e0c0;    --text2:#c8a870;   --text3:#8a7048;
+
+  --blue:#e07820;    --blue-bg:#3a1c04; --blue-dim:#a85810;
+  --green:#60943a;   --green-bg:#162008;
+  --amber:#e0a828;   --amber-bg:#342408;
+  --red:#c03828;     --red-bg:#2e0e08;
+  --teal:#e07820;    --teal-bg:#3a1c04;
+  --purple:#e0a828;  --purple-bg:#342408;
+
+  --accent:#e07820;  --accent-dim:#a85810;
+  --r:5px;
+
+  --titlebar-bg:#c05818; --tb-name:#fff0d8; --tb-role:#ffc870;
+  --tb-role-bg:#3a1c04;  --tb-role-border:#6e4e22;
+}
+
+html.theme-lemon-yellow /* was "sponge" */ {
+  --bg:#fffce6;      --bg2:#ffffff;     --bg3:#fdf6c4;     --bg4:#f9ed5b;
+  --border:#f0dc7a;  --border2:#d4b83a;
+  --text:#2b2410;    --text2:#6b5a1f;   --text3:#9c8a4a;
+
+  --blue:#2f7ec4;    --blue-bg:#dcedfb; --blue-dim:#7bb4e6;
+  --green:#3f8f4a;   --green-bg:#dff2e1;
+  --amber:#b2793b;   --amber-bg:#f5e6cc;
+  --red:#e53636;     --red-bg:#fbdede;
+  --teal:#2f7ec4;    --teal-bg:#dcedfb;
+  --purple:#b2793b;  --purple-bg:#f5e6cc;
+
+  --accent:#2f7ec4;  --accent-dim:#7bb4e6;
+  --mono:'Baloo 2',sans-serif; --sans:'Baloo 2',sans-serif;
+
+  --titlebar-bg:#ebde3d; --tb-name:#2b2410; --tb-role:#6b5a1f;
+  --tb-role-bg:#fffef2;  --tb-role-border:#f0dc7a;
+}
+
+html.theme-black-red /* was "warner" */ {
+  /* Dark + red on purpose (not a pale swatch) — gray stays strictly on
+     borders/dividers/tertiary text, never a fill, so it reads as
+     background detail. --blue and --red are both red-family here but
+     different enough that a danger button doesn't disappear into a
+     normal primary one. */
+  --bg:#0d0d0d;      --bg2:#161616;     --bg3:#1c1c1c;     --bg4:#242424;
+  --border:#333333;  --border2:#4d4d4d;
+  --text:#f2f0ee;    --text2:#b0aca8;   --text3:#787472;
+
+  --blue:#b8291f;    --blue-bg:#2a0e0e; --blue-dim:#8a1f1f;
+  --green:#3fae63;   --green-bg:#0f2a18;
+  --amber:#d9932e;   --amber-bg:#2e2008;
+  --red:#e2342c;     --red-bg:#3a0f0d;
+  --teal:#b8291f;    --teal-bg:#2a0e0e;
+  --purple:#8a1f1f;  --purple-bg:#2a0e0e;
+
+  --accent:#b8291f;  --accent-dim:#8a1f1f;
+  --mono:'Baloo 2',sans-serif; --sans:'Baloo 2',sans-serif;
+
+  --titlebar-bg:#000000; --tb-name:#e2342c; --tb-role:#f2f0ee;
+  --tb-role-bg:#2a0e0e;  --tb-role-border:#e2342c;
+}
+
+/* ============================================================================
+   TEMPLATE — copy this block to add a new theme
+   ============================================================================
+html.theme-your-name {
+  --bg:#______;      --bg2:#______;     --bg3:#______;     --bg4:#______;
+  --border:#______;  --border2:#______;
+  --text:#______;    --text2:#______;   --text3:#______;
+
+  --blue:#______;    --blue-bg:#______; --blue-dim:#______;
+  --green:#______;   --green-bg:#______;
+  --amber:#______;   --amber-bg:#______;
+  --red:#______;     --red-bg:#______;
+  --teal:#______;    --teal-bg:#______;
+  --purple:#______;  --purple-bg:#______;
+
+  --accent:#______;  --accent-dim:#______;
+
+  ; optional — only if this theme changes fonts / corner radius / has its
+  ; own distinctly-colored header bar:
+  ; --mono:'...',monospace; --sans:'...',sans-serif;
+  ; --r:6px; --rl:8px;
+  ; --titlebar-bg:#______; --tb-name:#______; --tb-role:#______;
+  ; --tb-role-bg:#______;  --tb-role-border:#______;
+}
+   ============================================================================ */

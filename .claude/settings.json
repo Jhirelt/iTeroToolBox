@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name='msedgewebview2.exe'\")",
+      "Bash(timeout 6 python itero_toolbox.py)",
+      "Bash(timeout 25 python itero_toolbox.py)",
+      "Read(//tmp/**)",
+      "Bash(python -m py_compile itero_toolbox.py)",
+      "Bash(timeout 4 python itero_toolbox.py)",
+      "Bash(powershell -Command ' *)",
+      "Bash(timeout 5 python itero_toolbox.py)",
+      "Bash(rm -f /tmp/run*.log /tmp/final*.log /tmp/check_js.py /tmp/scan_ls*.py 2>/dev/null; echo done)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"from openpyxl.chart import PieChart, Reference; from openpyxl.chart.label import DataLabelList; print\\('OK'\\)\")",
+      "Bash(rm -f \"C:/iTeroToolbox/EscalationReports/EscReport_20260804_174142.xlsx\" && echo removed)",
+      "Bash(python -c ' *)",
+      "Bash(python -m py_compile themes.py)",
+      "Bash(timeout 6 python -c ' *)",
+      "Bash(python \"c:/iTeroToolBox/report.py\")"
+    ],
+    "additionalDirectories": [
+      "\\tmp",
+      "C:\\iTeroToolbox\\EscalationReports"
+    ]
+  }
+}

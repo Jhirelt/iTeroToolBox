@@ -1,0 +1,1090 @@
+[
+  {
+    "kb_id": "4585",
+    "title": "NA - iTero, FL - Change Account Name",
+    "category": "Account Management",
+    "keywords": "",
+    "name": "Change Account Name",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "4586",
+    "title": "NA - iTero, FL - Inactive accounts (iTero Accounts)",
+    "category": "Account Management",
+    "keywords": "",
+    "name": "Inactive accounts (iTero Accounts)",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "5759",
+    "title": "Global - iTero, All Teams - Lab Management",
+    "category": "Account Management",
+    "keywords": "",
+    "name": "Lab Management",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "4330",
+    "title": "iTero All Teams - How to add a lab for DSO Accounts",
+    "category": "Account Management",
+    "keywords": "",
+    "name": "How to add a lab for DSO Accounts",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "5071",
+    "title": "iTero All Teams - Add a lab (CPO/Leasing accounts)",
+    "category": "Account Management",
+    "keywords": "",
+    "name": "Add a lab (CPO/Leasing accounts)",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4248",
+    "title": "Change of Ownership & Scanner Resale",
+    "category": "Account Management",
+    "keywords": "",
+    "name": "Change of Ownership & Scanner Resale",
+    "prefix": ""
+  },
+  {
+    "kb_id": "3038",
+    "title": "NA - iTero, All Teams - Element Scanner Relocation",
+    "category": "Account Management",
+    "keywords": "",
+    "name": "Element Scanner Relocation",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "5760",
+    "title": "Global - iTero, All Teams - Account Management",
+    "category": "Account Management",
+    "keywords": "",
+    "name": "Account Management",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "3307",
+    "title": "NA - iTero, FL - Address Change Request",
+    "category": "Account Management",
+    "keywords": "",
+    "name": "Address Change Request",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "4941",
+    "title": "iTero FL - Credit Request",
+    "category": "Billing",
+    "keywords": "",
+    "name": "Credit Request",
+    "prefix": "iTero FL"
+  },
+  {
+    "kb_id": "5514",
+    "title": "NA - iTero, All Teams - Validation Process",
+    "category": "Call flow",
+    "keywords": "",
+    "name": "Validation Process",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "4777",
+    "title": "NA - Invisalign & iTero, All Teams - Angry vs Abusive customer",
+    "category": "Call flow",
+    "keywords": "",
+    "name": "Angry vs Abusive customer",
+    "prefix": "NA - Invisalign & iTero, All Teams"
+  },
+  {
+    "kb_id": "5724",
+    "title": "NA & CALA - iTero, All teams - Possible iTero Customer",
+    "category": "Call flow",
+    "keywords": "",
+    "name": "Possible iTero Customer",
+    "prefix": "NA & CALA - iTero, All teams"
+  },
+  {
+    "kb_id": "5742",
+    "title": "NA - iTero, FL - Scanner Purchase Process",
+    "category": "Commercial Services",
+    "keywords": "",
+    "name": "Scanner Purchase Process",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "4434",
+    "title": "NA - iTero, FL - Fulfillment process",
+    "category": "Commercial Services",
+    "keywords": "",
+    "name": "Fulfillment process",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "4802",
+    "title": "NA - iTero, FL – Fulfillment Items Free of Charge",
+    "category": "Commercial Services",
+    "keywords": "",
+    "name": "Fulfillment Items Free of Charge",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "4215",
+    "title": "NA - iTero, All Teams - DocuSign: Sending Forms",
+    "category": "Commercial Services",
+    "keywords": "",
+    "name": "DocuSign: Sending Forms",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "6246",
+    "title": "Global - iTero, All Teams - New Sign in with Auth0 (6-digit PIN)",
+    "category": "Contact Management",
+    "keywords": "",
+    "name": "New Sign in with Auth0 (6-digit PIN)",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "5006",
+    "title": "Global - iTero, All Teams - Link/ Unlink Process",
+    "category": "Contact Management",
+    "keywords": "",
+    "name": "Link/ Unlink Process",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "3723",
+    "title": "Global - ICA & iTero, All Teams - Invisalign Account Set up-Bridging (IOS option)",
+    "category": "Contact Management",
+    "keywords": "",
+    "name": "Invisalign Account Set up-Bridging (IOS option)",
+    "prefix": "Global - ICA & iTero, All Teams"
+  },
+  {
+    "kb_id": "4685",
+    "title": "Global iTero - Invisalign login on iTero (Doctor pairing feature)",
+    "category": "Contact Management",
+    "keywords": "",
+    "name": "Invisalign login on iTero (Doctor pairing feature)",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "4850",
+    "title": "Password Reset, Unlock User, and Change Login Email",
+    "category": "Contact Management",
+    "keywords": "",
+    "name": "Password Reset, Unlock User, and Change Login Email",
+    "prefix": ""
+  },
+  {
+    "kb_id": "4383",
+    "title": "iTero All Teams - How to Add & Remove Contacts in SFDC",
+    "category": "Contact Management",
+    "keywords": "",
+    "name": "How to Add & Remove Contacts in SFDC",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4242",
+    "title": "NA - iTero, All Teams - Request Patient Name Change",
+    "category": "Contact Management",
+    "keywords": "",
+    "name": "Request Patient Name Change",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "6147",
+    "title": "NA - iTero, All Teams - Rental vs. Demo Loan Scanner",
+    "category": "Demo",
+    "keywords": "",
+    "name": "Rental vs. Demo Loan Scanner",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "5586",
+    "title": "iTero All Teams- How to exit from DEMO mode from the scanner.",
+    "category": "Demo",
+    "keywords": "",
+    "name": "How to exit from DEMO mode from the scanner.",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4575",
+    "title": "iTero All Teams- How to escalate tickets to Business Support",
+    "category": "Documentation",
+    "keywords": "",
+    "name": "How to escalate tickets to Business Support",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4366",
+    "title": "Global iTero - How to document a Complaint Salesforce process",
+    "category": "Documentation",
+    "keywords": "",
+    "name": "How to document a Complaint Salesforce process",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5014",
+    "title": "iTero All Teams - Invisalign Complaint Tickets Creation",
+    "category": "Documentation",
+    "keywords": "",
+    "name": "Invisalign Complaint Tickets Creation",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4553",
+    "title": "iTero All Teams - Review iTero Part Replacement tickets",
+    "category": "Documentation",
+    "keywords": "",
+    "name": "Review iTero Part Replacement tickets",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "6163",
+    "title": "NA - iTero, FL - Frontline Master KBA: Calls & Tickets Handling Process",
+    "category": "Documentation",
+    "keywords": "",
+    "name": "Frontline Master KBA: Calls & Tickets Handling Process",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "5117",
+    "title": "Global iTero FL - Inventory Movement",
+    "category": "Inventory movement",
+    "keywords": "",
+    "name": "Inventory Movement",
+    "prefix": "Global iTero FL"
+  },
+  {
+    "kb_id": "5954",
+    "title": "Global iTero - Invisalign Smile Video",
+    "category": "Invisalign Smile Video",
+    "keywords": "",
+    "name": "Invisalign Smile Video",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3710",
+    "title": "iTero All Teams - Invisalign Outcome Simulator (IOSim)",
+    "category": "IOSIM",
+    "keywords": "",
+    "name": "Invisalign Outcome Simulator (IOSim)",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4959",
+    "title": "Global iTero - Invisalign Outcome Simulator Pro (IOSim Pro) Overview",
+    "category": "IOSIM Pro",
+    "keywords": "",
+    "name": "Invisalign Outcome Simulator Pro (IOSim Pro) Overview",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5920",
+    "title": "Global iTero - IOSim Pro with Multi-Treatment Simulations",
+    "category": "IOSIM Pro",
+    "keywords": "",
+    "name": "IOSim Pro with Multi-Treatment Simulations",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "4943",
+    "title": "Global iTero - Invisalign Outcome Simulator Pro - Troubleshooting Key Issues",
+    "category": "IOSIM Pro",
+    "keywords": "",
+    "name": "Invisalign Outcome Simulator Pro - Troubleshooting Key Issues",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3215",
+    "title": "iTero All Teams- IOSIM Progress Assessment",
+    "category": "IOSIM Progress Assesment",
+    "keywords": "",
+    "name": "IOSIM Progress Assessment",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "3982",
+    "title": "Global iTero - Progress Assessment- Patient Not Appearing",
+    "category": "IOSIM Progress Assesment",
+    "keywords": "",
+    "name": "Progress Assessment- Patient Not Appearing",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3702",
+    "title": "Global iTero - Failed to Send troubleshooting steps",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Failed to Send troubleshooting steps",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "6223",
+    "title": "NA - iTero, All Teams - Restorative Scenarios",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Restorative Scenarios",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "6868",
+    "title": "NA - iTero, All Teams - Orthodontic Scenarios",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Orthodontic Scenarios",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "4939",
+    "title": "iTero FL - Invisalign Scan Transfer",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Invisalign Scan Transfer",
+    "prefix": "iTero FL"
+  },
+  {
+    "kb_id": "3725",
+    "title": "Global iTero - Add Rx feature",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Add Rx feature",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3460",
+    "title": "iTero All Teams - G2/G3 Handling Process",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "G2/G3 Handling Process",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4469",
+    "title": "iTero FL - Direct to Lab workflow",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Direct to Lab workflow",
+    "prefix": "iTero FL"
+  },
+  {
+    "kb_id": "4774",
+    "title": "Global iTero - Case Still Scanning",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Case Still Scanning",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5753",
+    "title": "Global - iTero, All Teams - Manual Patient Transfer",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Manual Patient Transfer",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "4550",
+    "title": "NA - iTero, All Teams - Restorative case- Margin Line modification",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Restorative case- Margin Line modification",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "4293",
+    "title": "NA - iTero, All Teams - G2/G3 Clinical Issues",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "G2/G3 Clinical Issues",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "5121",
+    "title": "NA - iTero, All Teams – How to Request an Alert for G2-G3 Scenarios",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "How to Request an Alert for G2-G3 Scenarios",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "5010",
+    "title": "NA - iTero, FL - G2/G3 Modification Process",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "G2/G3 Modification Process",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "6086",
+    "title": "Global - iTero, All Teams - Single Scan Transfer",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Single Scan Transfer",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "4966",
+    "title": "NA - iTero, All Teams - Fitting Issues",
+    "category": "iTero Case",
+    "keywords": "",
+    "name": "Fitting Issues",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "5737",
+    "title": "Global iTero - Lumina known issues",
+    "category": "Lumina",
+    "keywords": "",
+    "name": "Lumina known issues",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5591",
+    "title": "Global iTero - iTero Lumina Upgrade",
+    "category": "Lumina",
+    "keywords": "",
+    "name": "iTero Lumina Upgrade",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5956",
+    "title": "Global iTero - iTero Lumina Pro Upgrade",
+    "category": "Lumina",
+    "keywords": "",
+    "name": "iTero Lumina Pro Upgrade",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5959",
+    "title": "Global iTero - Lumina Pro scanner Overview",
+    "category": "Lumina",
+    "keywords": "",
+    "name": "Lumina Pro scanner Overview",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5567",
+    "title": "Global iTero - iTero Lumina™ wand cable replacement",
+    "category": "Lumina",
+    "keywords": "",
+    "name": "iTero Lumina™ wand cable replacement",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3219",
+    "title": "Global - iTero, All Teams - Make it Mine Registration Process",
+    "category": "Registration",
+    "keywords": "",
+    "name": "Make it Mine Registration Process",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "4826",
+    "title": "iTero All Teams - Network basic troubleshooting",
+    "category": "Network",
+    "keywords": "",
+    "name": "Network basic troubleshooting",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "3949",
+    "title": "iTero All Teams - Ports and IP",
+    "category": "Network",
+    "keywords": "",
+    "name": "Ports and IP",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "5222",
+    "title": "Global iTero - Align Oral Health Suite (iTero 360)",
+    "category": "Oral Health Suite",
+    "keywords": "",
+    "name": "Align Oral Health Suite (iTero 360)",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5223",
+    "title": "Global iTero - Align Oral Health Suite FAQs",
+    "category": "Oral Health Suite",
+    "keywords": "",
+    "name": "Align Oral Health Suite FAQs",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5948",
+    "title": "Global iTero - Align™ Oral Health Suite - Patient Gallery",
+    "category": "Oral Health Suite",
+    "keywords": "",
+    "name": "Align™ Oral Health Suite - Patient Gallery",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "2959",
+    "title": "Global iTero - TimeLapse Tool",
+    "category": "Time Lapse Tool",
+    "keywords": "",
+    "name": "TimeLapse Tool",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3671",
+    "title": "NA - iTero, All Teams - OrthoCAD Diagnostic Tool – OB/OJ Tab",
+    "category": "OrthoCAD",
+    "keywords": "",
+    "name": "OrthoCAD Diagnostic Tool – OB/OJ Tab",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "3285",
+    "title": "NA - iTero, All Teams - OrthoCAD Installation",
+    "category": "OrthoCAD",
+    "keywords": "",
+    "name": "OrthoCAD Installation",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "3598",
+    "title": "NA - iTero, FL - OrthoCAD View Control",
+    "category": "OrthoCAD",
+    "keywords": "",
+    "name": "OrthoCAD View Control",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "3609",
+    "title": "NA - iTero, All Teams - OrthoCAD Diagnostic Tool – Teeth Width",
+    "category": "OrthoCAD",
+    "keywords": "",
+    "name": "OrthoCAD Diagnostic Tool – Teeth Width",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "2524",
+    "title": "NA - Invisalign & iTero, All Teams - Internal phone extensions and IVR options",
+    "category": "Phone numbers",
+    "keywords": "",
+    "name": "Internal phone extensions and IVR options",
+    "prefix": "NA - Invisalign & iTero, All Teams"
+  },
+  {
+    "kb_id": "5213",
+    "title": "NA - iTero, FL - iTero POC's List",
+    "category": "POC",
+    "keywords": "",
+    "name": "iTero POC's List",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "3879",
+    "title": "iTero All Teams - Pricing List",
+    "category": "Price",
+    "keywords": "",
+    "name": "Pricing List",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "3961",
+    "title": "NA - iTero, All Teams - UPS shipping fees",
+    "category": "Price",
+    "keywords": "",
+    "name": "UPS shipping fees",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "3290",
+    "title": "NA - iTero, All Teams - Product Safety Assessment Procedure",
+    "category": "Product Safety",
+    "keywords": "",
+    "name": "Product Safety Assessment Procedure",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "4937",
+    "title": "Global - iTero, FL - Scanner Re-Registration Process",
+    "category": "Registration",
+    "keywords": "",
+    "name": "Scanner Re-Registration Process",
+    "prefix": "Global - iTero, FL"
+  },
+  {
+    "kb_id": "5750",
+    "title": "Global iTero- How to Handle Rental Extensions",
+    "category": "Rental",
+    "keywords": "",
+    "name": "How to Handle Rental Extensions",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "4472",
+    "title": "NA - iTero, FL - Return scanner sleeves",
+    "category": "Return",
+    "keywords": "",
+    "name": "Return scanner sleeves",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "5903",
+    "title": "iTero All Teams - Reverse Logistics Requests (RMA)",
+    "category": "RMA",
+    "keywords": "",
+    "name": "Reverse Logistics Requests (RMA)",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "3384",
+    "title": "Global - iTero, All Teams - Procedures/Case Types (Orthodontic / Restorative)",
+    "category": "Rx",
+    "keywords": "",
+    "name": "Procedures/Case Types (Orthodontic / Restorative)",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "4972",
+    "title": "Global - iTero, All Teams - Rx Procedure - Study model/iRecord",
+    "category": "Rx",
+    "keywords": "",
+    "name": "Rx Procedure - Study model/iRecord",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "4977",
+    "title": "Global - iTero, All Teams - Rx procedure - Appliance",
+    "category": "Rx",
+    "keywords": "",
+    "name": "Rx procedure - Appliance",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "3383",
+    "title": "NA - iTero, All Teams - Manage favorite Scan Body / Implant List",
+    "category": "Rx",
+    "keywords": "",
+    "name": "Manage favorite Scan Body / Implant List",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "5763",
+    "title": "iTero Design Suite Installation Guide",
+    "category": "Design Suite",
+    "keywords": "",
+    "name": "iTero Design Suite Installation Guide",
+    "prefix": ""
+  },
+  {
+    "kb_id": "5764",
+    "title": "Global iTero - iTero™ Design Suite",
+    "category": "Design Suite",
+    "keywords": "",
+    "name": "iTero™ Design Suite",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "4502",
+    "title": "Global iTero - How to use iTero Scan report",
+    "category": "Scan Report",
+    "keywords": "",
+    "name": "How to use iTero Scan report",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "4637",
+    "title": "Global iTero - Salesforce product details for iTero scanner User Manuals",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "Salesforce product details for iTero scanner User Manuals",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5601",
+    "title": "iTero All Teams - Black Screen (No power)",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "Black Screen (No power)",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4054",
+    "title": "iTero All Teams - iTero Element Touchscreen issues",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "iTero Element Touchscreen issues",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "5037",
+    "title": "Global iTero - Wand Overheating",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "Wand Overheating",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5637",
+    "title": "iTero FL – Non-Serialized Part Replacement",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "Non-Serialized Part Replacement",
+    "prefix": "iTero FL"
+  },
+  {
+    "kb_id": "5236",
+    "title": "Global iTero - Faulty wand noises",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "Faulty wand noises",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "4538",
+    "title": "ICA & iTero All Teams - Natural Disaster Protocol",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "Natural Disaster Protocol",
+    "prefix": "ICA & iTero All Teams"
+  },
+  {
+    "kb_id": "5558",
+    "title": "iTero FL - Battery Issues",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "Battery Issues",
+    "prefix": "iTero FL"
+  },
+  {
+    "kb_id": "3711",
+    "title": "iTero FL - iTero Element Scanner Webcam Test",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "iTero Element Scanner Webcam Test",
+    "prefix": "iTero FL"
+  },
+  {
+    "kb_id": "3570",
+    "title": "iTero All Teams - Element Web Cam (Logitech HD Webcam C525)",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "Element Web Cam (Logitech HD Webcam C525)",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "3678",
+    "title": "iTero All Teams - iTero Element Wheel Stand Assembly Guide",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "iTero Element Wheel Stand Assembly Guide",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4413",
+    "title": "Global - iTero, All Teams - iTero Element Cleaning and Disinfection protocol",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "iTero Element Cleaning and Disinfection protocol",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "4641",
+    "title": "iTero FL - Wand Disconnection Troubleshooting",
+    "category": "Scanner Hardware",
+    "keywords": "",
+    "name": "Wand Disconnection Troubleshooting",
+    "prefix": "iTero FL"
+  },
+  {
+    "kb_id": "4931",
+    "title": "iTero FL - Slow Performances Troubleshooting",
+    "category": "Scanner Software",
+    "keywords": "",
+    "name": "Slow Performances Troubleshooting",
+    "prefix": "iTero FL"
+  },
+  {
+    "kb_id": "4061",
+    "title": "Global iTero - Gray Screen Error - Overview and Troubleshooting",
+    "category": "Scanner Software",
+    "keywords": "",
+    "name": "Gray Screen Error - Overview and Troubleshooting",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3525",
+    "title": "iTero TS - Software Application Links",
+    "category": "Scanner Software",
+    "keywords": "",
+    "name": "Software Application Links",
+    "prefix": "iTero TS"
+  },
+  {
+    "kb_id": "3807",
+    "title": "Global iTero - Power Drain Procedure (Scanner)",
+    "category": "Scanner Software",
+    "keywords": "",
+    "name": "Power Drain Procedure (Scanner)",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3468",
+    "title": "NA & CALA - iTero, All Teams - iTero Element Scanner Settings",
+    "category": "Scanner Software",
+    "keywords": "",
+    "name": "iTero Element Scanner Settings",
+    "prefix": "NA & CALA - iTero, All Teams"
+  },
+  {
+    "kb_id": "4779",
+    "title": "Global - iTero, All Teams - Restore Scanner to Factory Settings for Support Agents",
+    "category": "Scanner Software",
+    "keywords": "",
+    "name": "Restore Scanner to Factory Settings for Support Agents",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "3635",
+    "title": "NA - iTero, All Teams - Element Scanning Assistance Basics",
+    "category": "Scanning Assistance",
+    "keywords": "",
+    "name": "Element Scanning Assistance Basics",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "5058",
+    "title": "Global - iTero, All Teams - Edentulous and Denture scanning assistance",
+    "category": "Scanning Assistance",
+    "keywords": "",
+    "name": "Edentulous and Denture scanning assistance",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "3757",
+    "title": "NA - iTero, All Teams - Common Scanning Issues",
+    "category": "Scanning Assistance",
+    "keywords": "",
+    "name": "Common Scanning Issues",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "3287",
+    "title": "iTero All Teams - Element Restorative Scanning Protocol",
+    "category": "Scanning Assistance",
+    "keywords": "",
+    "name": "Element Restorative Scanning Protocol",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "5173",
+    "title": "Global iTero – Scanning Multiple Preps Tips & Best Practices",
+    "category": "Scanning Assistance",
+    "keywords": "",
+    "name": "Scanning Multiple Preps Tips & Best Practices",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3492",
+    "title": "NA - iTero, All Teams- Pre Treatment Plan",
+    "category": "Scanning Assistance",
+    "keywords": "",
+    "name": "Pre Treatment Plan",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "4484",
+    "title": "Global iTero - A.I. Cleanup Tool",
+    "category": "Scanning Assistance",
+    "keywords": "",
+    "name": "A.I. Cleanup Tool",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3664",
+    "title": "iTero All Teams - What is Die Separation in iTero Element?",
+    "category": "Scanning Assistance",
+    "keywords": "",
+    "name": "What is Die Separation in iTero Element?",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4892",
+    "title": "NA - iTero, All Teams - iTero Online Store Shopify Q&A",
+    "category": "Shopify",
+    "keywords": "",
+    "name": "iTero Online Store Shopify Q&A",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "4893",
+    "title": "NA - iTero, All Teams - iTero Online Store Shopify",
+    "category": "Shopify",
+    "keywords": "",
+    "name": "iTero Online Store Shopify",
+    "prefix": "NA - iTero, All Teams"
+  },
+  {
+    "kb_id": "5734",
+    "title": "Global iTero - Smile Architect integration with iTero",
+    "category": "Smile Architect",
+    "keywords": "",
+    "name": "Smile Architect integration with iTero",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "4504",
+    "title": "Global iTero - How to use iTero Snapshot tool",
+    "category": "Snapshot tool",
+    "keywords": "",
+    "name": "How to use iTero Snapshot tool",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5654",
+    "title": "Global - iTero, All Teams - Orthodontic STL Files Export Instructions",
+    "category": "STL Inquiry",
+    "keywords": "",
+    "name": "Orthodontic STL Files Export Instructions",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "5653",
+    "title": "Global - iTero, All Teams - Restorative STL Files Export Instructions",
+    "category": "STL Inquiry",
+    "keywords": "",
+    "name": "Restorative STL Files Export Instructions",
+    "prefix": "Global - iTero, All Teams"
+  },
+  {
+    "kb_id": "5957",
+    "title": "NA - iTero, FL & Sales Support - iTero Subscriptions Resource Center",
+    "category": "Subscription",
+    "keywords": "",
+    "name": "iTero Subscriptions Resource Center",
+    "prefix": "NA - iTero, FL & Sales Support"
+  },
+  {
+    "kb_id": "4252",
+    "title": "iTero All Teams - iTero Element Foundation intraoral scanner",
+    "category": "Subscription",
+    "keywords": "",
+    "name": "iTero Element Foundation intraoral scanner",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "5118",
+    "title": "NA - iTero, FL - Contract Information/Bundle",
+    "category": "Subscription",
+    "keywords": "",
+    "name": "Contract Information/Bundle",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "3670",
+    "title": "NA - Invisalign & iTero, All Teams - Malocclusion & Appliances",
+    "category": "Terminology",
+    "keywords": "",
+    "name": "Malocclusion & Appliances",
+    "prefix": "NA - Invisalign & iTero, All Teams"
+  },
+  {
+    "kb_id": "3289",
+    "title": "NA & CALA - Invisalign & iTero, All Teams - Orthodontic Glossary (Ortho 101)",
+    "category": "Terminology",
+    "keywords": "",
+    "name": "Orthodontic Glossary (Ortho 101)",
+    "prefix": "NA & CALA - Invisalign & iTero, All Teams"
+  },
+  {
+    "kb_id": "4535",
+    "title": "Global iTero - Enabling the DPMS API on the iTero side",
+    "category": "Third Party Software",
+    "keywords": "",
+    "name": "Enabling the DPMS API on the iTero side",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "4536",
+    "title": "Global iTero - Enabling the Lab Connector API on the iTero side",
+    "category": "Third Party Software",
+    "keywords": "",
+    "name": "Enabling the Lab Connector API on the iTero side",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3953",
+    "title": "iTero All Teams - Open Chairside Milling Workflow Powered by exocad",
+    "category": "Third Party Software",
+    "keywords": "",
+    "name": "Open Chairside Milling Workflow Powered by exocad",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "4688",
+    "title": "Global iTero - iTero Chair Side Milling (exocad and glidewell.io SW options)",
+    "category": "Third Party Software",
+    "keywords": "",
+    "name": "iTero Chair Side Milling (exocad and glidewell.io SW options)",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "3966",
+    "title": "iTero All Teams - Dentrix Integration",
+    "category": "Third Party Software",
+    "keywords": "",
+    "name": "Dentrix Integration",
+    "prefix": "iTero All Teams"
+  },
+  {
+    "kb_id": "3631",
+    "title": "NA & EMEA - iTero, All Teams - iTero Process Time Frames",
+    "category": "Time Frame",
+    "keywords": "",
+    "name": "iTero Process Time Frames",
+    "prefix": "NA & EMEA - iTero, All Teams"
+  },
+  {
+    "kb_id": "3465",
+    "title": "ICA & iTero All Teams - Sales Rep Notifications",
+    "category": "TM",
+    "keywords": "",
+    "name": "Sales Rep Notifications",
+    "prefix": "ICA & iTero All Teams"
+  },
+  {
+    "kb_id": "4589",
+    "title": "NA - iTero, FL - VCT / Additional Training Request",
+    "category": "Training",
+    "keywords": "",
+    "name": "VCT / Additional Training Request",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "5215",
+    "title": "NA - iTero, FL - How to remove orders in progress from MyiTero.com",
+    "category": "Website",
+    "keywords": "",
+    "name": "How to remove orders in progress from MyiTero.com",
+    "prefix": "NA - iTero, FL"
+  },
+  {
+    "kb_id": "5624",
+    "title": "Global iTero - Myitero.com (MIDC) Troubleshooting",
+    "category": "Website",
+    "keywords": "",
+    "name": "Myitero.com (MIDC) Troubleshooting",
+    "prefix": "Global iTero"
+  },
+  {
+    "kb_id": "5701",
+    "title": "Global iTero All Teams - Myitero.com Export Gallery Feature",
+    "category": "Website",
+    "keywords": "",
+    "name": "Myitero.com Export Gallery Feature",
+    "prefix": "Global iTero All Teams"
+  },
+  {
+    "kb_id": "4886",
+    "title": "NA - iTero, All Teams - MAT User guide",
+    "category": "Website",
+    "keywords": "",
+    "name": "MAT User guide",
+    "prefix": "NA - iTero, All Teams"
+  }
+]

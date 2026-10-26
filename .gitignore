@@ -3,9 +3,14 @@ build/
 dist/
 __pycache__/
 *.pyc
+*.spec
 
-# Generated at runtime
+# Generated at runtime — output goes to a fixed C:\iTeroToolbox\... location
+# in backend.py (easy to find regardless of where the exe runs from), which
+# happens to collide with this repo's own path on the dev machine
 LinkUnlink/*.xlsx
+EscalationReports/
+.itero_toolbox_v1_*.html
 
 # Local Claude Code settings (machine-specific permissions)
 .claude/settings.local.json
